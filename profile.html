@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profil Saya — Nusa East</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main class="profile-page">
+  <div class="container">
+    <div class="profile-heading">
+      <h1>PROFIL SAYA</h1>
+      <p>Lengkapi Informasi Bisnis Anda</p>
+    </div>
+
+    <div class="profile-shell">
+      <aside class="profile-sidebar">
+        <div class="profile-avatar" aria-hidden="true">♙</div>
+        <h3 id="profileName">Pengguna Nusa East</h3>
+        <p id="profileEmail">email@example.com</p>
+
+        <nav class="profile-menu" aria-label="Menu profil">
+          <button class="profile-menu-item active" data-tab="business"><span>▦</span> Informasi Bisnis</button>
+          <button class="profile-menu-item" data-tab="contact"><span>♙</span> Kontak Utama</button>
+          <button class="profile-menu-item" data-tab="orders"><span>▧</span> Riwayat Pesanan</button>
+          <button class="profile-menu-item" data-tab="account"><span>◉</span> Akun Terdaftar</button>
+          <button class="profile-menu-item logout-item" id="profileLogout"><span>↪</span> Keluar</button>
+        </nav>
+      </aside>
+
+      <section class="profile-content-card">
+        <div class="profile-panel active" id="panel-business">
+          <div class="profile-panel-title">
+            <div class="profile-title-icon">▦</div>
+            <div>
+              <h2>Informasi Bisnis</h2>
+              <p>Data ini digunakan untuk keperluan proyek dan komunikasi dengan tim Nusa East</p>
+            </div>
+          </div>
+          <form id="businessForm" class="profile-form">
+            <div class="profile-form-grid">
+              <label>Nama Brand
+                <input type="text" id="brandName" placeholder="Nama brand Anda">
+              </label>
+              <label>Produk
+                <input type="text" id="brandProduct" placeholder="Contoh: Fashion handmade">
+              </label>
+              <label>Instagram
+                <input type="text" id="brandInstagram" placeholder="@username">
+              </label>
+              <label>Website
+                <input type="text" id="brandWebsite" placeholder="https://website.com">
+              </label>
+              <label>Target Customer
+                <input type="text" id="brandTarget" placeholder="Contoh: 18–35 tahun">
+              </label>
+              <label>Kota Operasional
+                <input type="text" id="brandCity" placeholder="Makassar">
+              </label>
+            </div>
+            <label class="profile-full-label">Deskripsi Brand
+              <textarea id="brandDescription" rows="5" placeholder="Ceritakan singkat tentang brand Anda"></textarea>
+            </label>
+            <div class="profile-form-actions"><button class="profile-save-btn" type="submit">Simpan Perubahan</button></div>
+          </form>
+        </div>
+
+        <div class="profile-panel" id="panel-contact">
+          <div class="profile-panel-title">
+            <div class="profile-title-icon">♙</div>
+            <div>
+              <h2>Kontak Utama</h2>
+              <p>Kelola Informasi dan Kontak Anda di sini</p>
+            </div>
+          </div>
+          <form id="contactForm" class="profile-form">
+            <div class="profile-form-grid">
+              <label>Nama
+                <input type="text" id="contactName">
+              </label>
+              <label>Email
+                <input type="email" id="contactEmail">
+              </label>
+              <label>Nomor Telepon
+                <input type="text" id="contactPhone" placeholder="+62 ...">
+              </label>
+              <label>Posisi / Jabatan
+                <input type="text" id="contactPosition" placeholder="Owner / Marketing / Admin">
+              </label>
+              <label>Preferensi Kontak
+                <select id="contactPreference">
+                  <option>WhatsApp</option>
+                  <option>Email</option>
+                  <option>Telepon</option>
+                </select>
+              </label>
+            </div>
+            <div class="profile-form-actions"><button class="profile-save-btn" type="submit">Simpan Perubahan</button></div>
+          </form>
+        </div>
+
+        <div class="profile-panel" id="panel-orders">
+          <div class="profile-panel-title">
+            <div class="profile-title-icon">▧</div>
+            <div><h2>Riwayat Pesanan</h2><p>Lihat pesanan dan status project Anda</p></div>
+          </div>
+          <div id="profileOrders" class="profile-orders-list"></div>
+        </div>
+
+        <div class="profile-panel" id="panel-account">
+          <div class="profile-panel-title">
+            <div class="profile-title-icon">◉</div>
+            <div><h2>Akun Terdaftar</h2><p>Informasi akun Nusa East yang sedang digunakan</p></div>
+          </div>
+          <div class="profile-account-box">
+            <div><span>Nama</span><strong id="accountName">-</strong></div>
+            <div><span>Email</span><strong id="accountEmail">-</strong></div>
+            <div><span>Nomor WhatsApp</span><strong id="accountPhone">-</strong></div>
+            <div><span>Status Akun</span><strong class="account-active">Aktif</strong></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/profile.js"></script>
+<script>
+  renderHeader('profile');
+  renderFooter();
+</script>
+</body>
+</html>

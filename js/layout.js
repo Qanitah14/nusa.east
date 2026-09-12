@@ -16,39 +16,118 @@ function renderHeader(activePage) {
     `<a href="${l.href}" class="${activePage === l.key ? 'active' : ''}">${l.label}</a>`
   ).join("");
 
+  let session = null;
+
+  try {
+    session = JSON.parse(
+      localStorage.getItem("nusaeast_session") || "null"
+    );
+  } catch (_) {}
+
+  // Kalau sudah login → profile.html
+  // Kalau belum login → login.html
+  const accountHref = session ? "profile.html" : "login.html";
+  const accountTitle = session ? "Profil Saya" : "Masuk";
+
   const header = document.createElement("header");
   header.className = "site-header";
+
   header.innerHTML = `
-    <div class="container">
-      <a href="index.html" class="logo">
-        <span class="logo-mark">S</span> NUSAEAST
-      </a>
-      <nav class="nav-main" id="navMain">${navHTML}</nav>
-      <div class="header-actions">
-        <a href="cart.html" class="icon-btn" title="Keranjang">
-          🛒<span class="cart-count" id="cartCount">0</span>
-        </a>
-        <a href="login.html" class="icon-btn" title="Akun">👤</a>
-        <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
-      </div>
-    </div>
-  `;
+  <div class="container">
+
+    <!-- LOGO -->
+    <a href="index.html" class="logo">
+      <img
+        src="img/logo (2).png"
+        alt="Nusa East"
+        class="header-logo-img"
+      >
+    </a>
+
+    <!-- NAVIGATION -->
+    <nav class="nav-main" id="navMain">
+      ${navHTML}
+    </nav>
+
+   <!-- CART & PROFILE -->
+<div class="header-actions">
+
+  <!-- CART -->
+  <a
+    href="cart.html"
+    class="header-icon-btn"
+    title="Keranjang"
+    aria-label="Keranjang"
+  >
+    <i class="fas fa-shopping-cart"></i>
+
+    <span class="cart-count" id="cartCount">0</span>
+  </a>
+
+
+  <!-- PROFILE -->
+  <a
+    href="${accountHref}"
+    class="header-icon-btn ${activePage === 'profile' ? 'active-account' : ''}"
+    title="${accountTitle}"
+    aria-label="${accountTitle}"
+  >
+    <i class="fas fa-user"></i>
+  </a>
+
+
+  <!-- MOBILE MENU -->
+  <button
+    class="nav-toggle"
+    id="navToggle"
+    aria-label="Menu"
+  >
+  </button>
+
+</div>
+
+  </div>
+`;
+
   document.body.prepend(header);
 
   const toggle = document.getElementById("navToggle");
   const nav = document.getElementById("navMain");
+
   toggle.addEventListener("click", () => {
+
     const open = nav.classList.toggle("open");
-    toggle.setAttribute("aria-expanded", String(open));
+
+    toggle.setAttribute(
+      "aria-expanded",
+      String(open)
+    );
+
     toggle.textContent = open ? "✕" : "☰";
-    document.body.classList.toggle("menu-open", open);
+
+    document.body.classList.toggle(
+      "menu-open",
+      open
+    );
   });
-  nav.querySelectorAll("a").forEach(a => a.addEventListener("click", () => {
-    nav.classList.remove("open");
-    document.body.classList.remove("menu-open");
-    toggle.setAttribute("aria-expanded", "false");
-    toggle.textContent = "☰";
-  }));
+
+  nav.querySelectorAll("a").forEach(a =>
+    a.addEventListener("click", () => {
+
+      nav.classList.remove("open");
+
+      document.body.classList.remove(
+        "menu-open"
+      );
+
+      toggle.setAttribute(
+        "aria-expanded",
+        "false"
+      );
+
+      toggle.textContent = "☰";
+    })
+  );
 
   updateCartCount();
 }
