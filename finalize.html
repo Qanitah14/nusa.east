@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finalisasi Project — Nusa East</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<section class="section">
+  <div class="container">
+    <div class="form-card text-center" style="max-width:600px; margin:0 auto;" id="finalizeBox"></div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+
+<script src="js/cart.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/layout.js"></script>
+<script>
+renderHeader('services'); renderFooter(); const orderId=new URLSearchParams(location.search).get('order'); const box=document.getElementById('finalizeBox');
+(async()=>{try{const order=await getOrder(orderId);box.innerHTML=`<div style="font-size:3rem">📦</div><h2 class="mt-16">Project Siap Difinalisasi</h2><p class="mt-8">Order ${order.id} — pastikan semua hasil sudah sesuai sebelum ditutup.</p><div class="card mt-24" style="background:var(--color-cream-card);border:none;text-align:left"><strong>File Hasil Akhir</strong><p class="hint mt-8">📎 final-deliverables-${order.id}.zip (simulasi)</p></div><button class="btn btn-primary btn-block mt-24" id="finishBtn">Tandai Project Selesai</button>`;document.getElementById('finishBtn').addEventListener('click',async()=>{try{await advanceOrder(order.id,'Project Selesai','Project ditandai selesai oleh klien');location.href='tracking.html?order='+encodeURIComponent(order.id);}catch(err){showToast(err.message);}});}catch(err){box.innerHTML=`<h2>Order tidak ditemukan</h2><p>${err.message}</p>`;}})();
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konfirmasi Pesanan — Nusa East</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<section class="section">
+  <div class="container">
+    <div class="form-card text-center" style="max-width:600px; margin:0 auto;" id="confirmBox"></div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+
+<script src="js/cart.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/layout.js"></script>
+<script>
+renderHeader('services'); renderFooter();
+async function initConfirmation(){ const box=document.getElementById('confirmBox'); const id=new URLSearchParams(location.search).get('order'); if(!id){box.innerHTML='<h2>Pesanan tidak ditemukan</h2>';return;} try { const order=await getOrder(id); box.innerHTML=`<div class="order-flow mb-24" style="text-align:left"><div class="order-step done"><span class="step-no">✓</span><span class="step-copy"><span class="step-title">Pilih Pembayaran</span><span class="step-sub">Selesai</span></span></div><div class="order-step active"><span class="step-no">2</span><span class="step-copy"><span class="step-title">Pembayaran Berhasil</span><span class="step-sub">Terkonfirmasi</span></span></div><div class="order-step"><span class="step-no">3</span><span class="step-copy"><span class="step-title">Isi Brief</span><span class="step-sub">Opsional / diskusi WA</span></span></div><div class="order-step"><span class="step-no">4</span><span class="step-copy"><span class="step-title">Lihat Tracking</span><span class="step-sub">Pantau pengerjaan</span></span></div></div><div style="font-size:3rem;">✅</div><h2 class="mt-16">Pembayaran Berhasil!</h2><p class="mt-8">Nomor Order Kamu</p><div class="va-number" style="font-size:1.4rem;margin:6px 0 20px;">${order.id}</div><div class="summary-row total"><span>Total Dibayar</span><span>${formatIDR(order.total)}</span></div><p class="mt-16">Sekarang kamu bisa memilih cara melanjutkan project.</p><a href="brief.html?order=${encodeURIComponent(order.id)}" class="btn btn-primary btn-block mt-24">Isi Brief Project</a><a href="https://wa.me/6281234567890?text=${encodeURIComponent('Halo Nusa East, saya ingin diskusi mengenai order '+order.id)}" target="_blank" rel="noopener" class="btn btn-whatsapp btn-block mt-16">Diskusi via WhatsApp</a><a href="tracking.html?order=${encodeURIComponent(order.id)}" class="btn btn-outline btn-block mt-16">Lewati Brief & Lihat Tracking</a><p class="hint mt-16">Brief dapat dilengkapi nanti. Jika dilewati, tim akan menunggu detail project dari hasil diskusi atau informasi lanjutan.</p>`; } catch(err){box.innerHTML=`<h2>Pesanan tidak ditemukan</h2><p class="mt-8">${err.message}</p>`;} }
+initConfirmation();
+</script>
+</body>
+</html>

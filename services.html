@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layanan — Nusa East</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Layanan Kami</span>
+    <h1>4 Layanan Utama untuk Brand Kamu</h1>
+    <p>Pilih layanan sesuai kebutuhan — setiap layanan punya paket dan cara kerja yang disesuaikan dengan jenis pekerjaannya masing-masing.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:20px;">
+  <div class="container" id="serviceList"></div>
+</section>
+
+<section class="section bg-alt text-center">
+  <div class="container">
+    <h2>Bagaimana cara memesan?</h2>
+    <p class="mt-16" style="max-width:520px;margin:0 auto;">Ada 2 jalur pemesanan tergantung kebutuhanmu.</p>
+    <div class="grid-2 mt-40">
+      <div class="card text-center">
+        <h3>1. Paket Lengkap</h3>
+        <p class="mt-8">Semua kebutuhan sudah dalam satu paket dengan harga tetap.</p>
+        <a href="packages.html" class="btn btn-outline btn-sm mt-16">Lihat Paket</a>
+      </div>
+      <div class="card text-center">
+        <h3>2. Layanan Satuan</h3>
+        <p class="mt-8">Beli per-item tanpa harus ambil paket penuh.</p>
+        <a href="singles.html" class="btn btn-outline btn-sm mt-16">Lihat Satuan</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+
+<script src="js/cart.js"></script>
+<script src="js/layout.js"></script>
+<script>
+  renderHeader('services');
+  renderFooter();
+
+  const serviceImages = {
+    smm: "images/service-social.jpg",
+    content: "images/service-content.jpg",
+    ecommerce: "images/service-ecommerce.jpg",
+    brand: "images/service-brand.jpg"
+  };
+
+  const wrap = document.getElementById("serviceList");
+  NUSAEAST_DATA.services.forEach((s, idx) => {
+    const reverse = idx % 2 === 1;
+    const row = document.createElement("div");
+    row.className = "grid-2 mb-40";
+    row.style.alignItems = "center";
+    row.innerHTML = `
+      <div style="${reverse ? 'order:2' : ''}">
+        <!-- GANTI GAMBAR: foto layanan ${s.name} -->
+        <img src="${serviceImages[s.id]}" alt="${s.name}" style="border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);">
+      </div>
+      <div style="${reverse ? 'order:1' : ''}">
+        <span class="eyebrow">${s.tag}</span>
+        <h2>${s.name}</h2>
+        <p class="mt-16">${s.short}</p>
+        <p class="mt-8"><span class="badge ${s.type === 'subscription' ? 'badge-green' : 'badge-orange'}">${s.type === 'subscription' ? 'Langganan Bulanan' : 'Per Project (Ada Deadline)'}</span></p>
+        <div class="hero-actions mt-24">
+          <a href="packages.html#${s.id}" class="btn btn-primary btn-sm">Lihat Paket ${s.name}</a>
+          <a href="singles.html#${s.id}" class="btn btn-outline btn-sm">Layanan Satuan</a>
+        </div>
+      </div>
+    `;
+    wrap.appendChild(row);
+  });
+</script>
+</body>
+</html>

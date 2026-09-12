@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review & Revisi — Nusa East</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<section class="page-hero" style="text-align:left; padding-bottom:0;">
+  <div class="container">
+    <span class="eyebrow">Preview Hasil Kerja</span>
+    <h1>Review & Revisi</h1>
+    <p>Cek hasil pekerjaan tim kami. Jika ada yang perlu diubah, ajukan revisi sesuai batas revisi paketmu.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" id="reviewBox"></div>
+</section>
+
+<script src="js/data.js"></script>
+
+<script src="js/cart.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/layout.js"></script>
+<script>
+renderHeader('services'); renderFooter(); const orderId=new URLSearchParams(location.search).get('order'); const box=document.getElementById('reviewBox'); let order=null;
+async function render(){try{order=await getOrder(orderId);const max=order.revisionLimit||1;box.innerHTML=`<div class="grid-2" style="align-items:start"><div><div class="card mb-16"><img src="images/service-content.jpg" alt="Preview hasil pekerjaan" style="border-radius:var(--radius-sm)"><p class="hint mt-16">Preview dikirim tim Nusa East untuk Order ${order.id}.</p></div></div><div><div class="revision-counter"><span>Revisi Terpakai</span><strong>${order.revisionsUsed} / ${max}</strong></div><div class="form-card mb-16"><div class="form-group"><label>Catatan Revisi</label><textarea class="form-control" id="revisionNote" placeholder="Jelaskan bagian yang ingin direvisi..."></textarea></div><button class="btn btn-outline btn-block" id="requestRevisionBtn" ${order.revisionsUsed>=max?'disabled':''}>Ajukan Revisi</button></div><button class="btn btn-primary btn-block" id="approveBtn">✓ Setujui, Lanjut ke Finalisasi</button></div></div>`;document.getElementById('requestRevisionBtn').addEventListener('click',async()=>{const note=document.getElementById('revisionNote').value.trim();if(!note)return showToast('Isi catatan revisi terlebih dahulu');try{await requestRevision(order.id,note);showToast('Permintaan revisi terkirim');setTimeout(()=>location.href='tracking.html?order='+encodeURIComponent(order.id),700);}catch(err){showToast(err.message);}});document.getElementById('approveBtn').addEventListener('click',async()=>{try{await advanceOrder(order.id,'Finalisasi','Preview disetujui oleh klien');location.href='finalize.html?order='+encodeURIComponent(order.id);}catch(err){showToast(err.message);}});}catch(err){box.innerHTML=`<div class="empty-state"><h3>Order tidak ditemukan</h3><p>${err.message}</p></div>`;}}
+render();
+</script>
+</body>
+</html>

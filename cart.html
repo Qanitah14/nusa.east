@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keranjang — Nusa East</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<section class="page-hero" style="text-align:left; padding-bottom:0;">
+  <div class="container"><span class="eyebrow">Langkah 1</span><h1>Keranjang Kamu</h1><p>Centang layanan yang ingin kamu bayar sekarang. Item yang tidak dicentang tetap tersimpan di keranjang browser ini.</p></div>
+</section>
+<section class="section"><div class="container"><div class="cart-layout" id="cartLayout"></div></div></section>
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script><script src="js/layout.js"></script>
+<script>
+renderHeader('services'); renderFooter();
+async function renderCartPage() {
+  const layout = document.getElementById('cartLayout');
+  try {
+    const cart = await getCart();
+    const { breakdown, base, total } = await calculateCartTotals(true);
+    if (!cart.length) { layout.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><h3>Keranjang kamu masih kosong</h3><p class="mt-8">Yuk mulai pilih paket atau layanan satuan.</p><a href="packages.html" class="btn btn-primary mt-24">Lihat Paket</a></div>`; return; }
+    const typeLabel = { package:'Paket Lengkap', single:'Layanan Satuan' };
+    const linesHTML = cart.map(item => {
+      const checked = item.selected !== false; const lineTotal = Number(item.price) * (item.qty || 1);
+      return `<div class="cart-line ${checked ? '' : 'cart-line-unselected'}">
+        <label class="cart-select" title="Pilih untuk dibayar"><input type="checkbox" ${checked?'checked':''} onchange="toggleCartSelection('${item.cartId}', this.checked)"><span></span></label>
+        <div><div class="line-title">${item.name}</div><div class="line-meta"><span class="badge badge-gray">${typeLabel[item.type] || 'Item'}</span>${item.meta ? ` · ${item.meta}`:''}</div></div>
+        <div><div class="qty-control"><button onclick="updateQty('${item.cartId}', ${item.qty}, -1)">−</button><input type="text" value="${item.qty}" readonly><button onclick="updateQty('${item.cartId}', ${item.qty}, 1)">+</button></div></div>
+        <div style="font-weight:700;color:var(--color-primary)">${formatIDR(lineTotal)}</div>
+        <button class="line-remove" onclick="removeFromCart('${item.cartId}')">Hapus</button>
+      </div>`;
+    }).join('');
+    const selectedCount = breakdown.reduce((sum,i)=>sum+(i.qty||1),0);
+    layout.innerHTML = `<div><div class="card">${linesHTML}</div><a href="packages.html" class="btn btn-outline mt-24">+ Tambah Item Lain</a></div>
+      <div class="card summary-box"><h3 class="mb-16">Ringkasan Pesanan</h3><div class="summary-row"><span>Item dipilih</span><span>${selectedCount}</span></div><div class="summary-row"><span>Subtotal Terpilih</span><span>${formatIDR(base)}</span></div><div class="summary-row total"><span>Total Bayar</span><span>${formatIDR(total)}</span></div>${selectedCount ? '<a href="checkout.html" class="btn btn-primary btn-block mt-24">Bayar Item Terpilih</a>' : '<button class="btn btn-primary btn-block mt-24" disabled style="opacity:.5;cursor:not-allowed">Pilih Item untuk Dibayar</button>'}<p class="hint mt-16">Hanya item yang dicentang yang masuk ke pembayaran.</p></div>`;
+  } catch (err) { layout.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><h3>Keranjang gagal dimuat</h3><p class="mt-8">${err.message}</p></div>`; }
+}
+renderCartPage();
+</script>
+</body></html>

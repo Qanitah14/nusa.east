@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daftar — Nusa East</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="text-center mb-24">
+      <div class="logo-mark" style="margin:0 auto 14px;">S</div>
+      <h2>Buat Akun Baru</h2>
+      <p class="mt-8">Daftar untuk mulai memesan layanan Nusa East.</p>
+    </div>
+    <form id="registerForm">
+      <div class="form-group">
+        <label>Nama Lengkap</label>
+        <input type="text" class="form-control" name="name" required>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" class="form-control" name="email" required>
+      </div>
+      <div class="form-group">
+        <label>No. WhatsApp</label>
+        <input type="tel" class="form-control" name="phone" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" class="form-control" name="password" required minlength="8">
+        <p class="hint">Minimal 8 karakter.</p>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Daftar</button>
+    </form>
+    <p class="auth-switch">Sudah punya akun? <a href="login.html">Masuk di sini</a></p>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+
+<script src="js/cart.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  document.getElementById("registerForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    await nusaeastRegister(data);
+  });
+</script>
+</body>
+</html>

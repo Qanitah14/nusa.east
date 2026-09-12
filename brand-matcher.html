@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brand Style Matcher — Nusa East</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Fitur Gratis</span>
+    <h1>Brand Style Matcher</h1>
+    <p>Jawab 4 pertanyaan singkat, dan kami bantu temukan gaya visual, palet warna, serta tone yang paling cocok untuk brand kamu.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:10px;">
+  <div class="container">
+    <div class="quiz-box" id="quizBox"></div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+
+<script src="js/cart.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/brand-matcher.js"></script>
+<script>
+  renderHeader('matcher');
+  renderFooter();
+  initBrandMatcher();
+</script>
+</body>
+</html>

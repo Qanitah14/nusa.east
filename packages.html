@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paket Lengkap — Nusa East</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Jalur Pemesanan 1</span>
+    <h1>Paket Lengkap</h1>
+    <p>Setiap layanan punya paket dan harga sendiri — karena beban pengerjaan Social Media Management, Content Creation, E-Commerce, dan Brand Development berbeda-beda.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:10px;">
+  <div class="container">
+    <div class="package-tabs" id="packageTabs"></div>
+    <div id="packageGroups"></div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+
+<script src="js/cart.js"></script>
+<script src="js/layout.js"></script>
+<script>
+  renderHeader('packages');
+  renderFooter();
+
+  const tabsWrap = document.getElementById("packageTabs");
+  const groupsWrap = document.getElementById("packageGroups");
+
+  function renderRow(label, value) {
+    let display, cls = "";
+    if (value === true) { display = "✓"; cls = "yes"; }
+    else if (value === false) { display = "✕"; cls = "no"; }
+    else { display = value; }
+    return `<li><span class="row-label">${label}</span><span class="row-value ${cls}">${display}</span></li>`;
+  }
+
+  NUSAEAST_DATA.services.forEach((s, idx) => {
+    // Tab button
+    const btn = document.createElement("button");
+    btn.textContent = s.name;
+    btn.dataset.target = s.id;
+    if (idx === 0) btn.classList.add("active");
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#packageTabs button").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".package-group").forEach(g => g.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("group-" + s.id).classList.add("active");
+    });
+    tabsWrap.appendChild(btn);
+
+    // Group
+    const pkg = NUSAEAST_DATA.packages[s.id];
+    const group = document.createElement("div");
+    group.className = "package-group" + (idx === 0 ? " active" : "");
+    group.id = "group-" + s.id;
+
+    const cardsHTML = pkg.tiers.map(tier => `
+      <div class="pricing-card ${tier.highlight ? 'highlight' : ''}">
+        ${tier.highlight ? '<span class="badge badge-popular">Paling Populer</span>' : ''}
+        <span class="tier-name">${tier.name}</span>
+        <div class="tier-price">${formatIDR(tier.price)}<span>${s.type === 'subscription' ? '/bulan' : '/project'}</span></div>
+        ${tier.eta ? `<div class="tier-eta">⏱ Estimasi: ${tier.eta}</div>` : ''}
+        <p class="tier-fit">${tier.fit}</p>
+        <ul class="tier-rows">
+          ${Object.entries(tier.rows).map(([k,v]) => renderRow(k, v)).join("")}
+        </ul>
+        <button class="btn btn-primary btn-block" onclick='addToCart(${JSON.stringify({
+          id: tier.id, type: "package", name: s.name + " — " + tier.name, price: tier.price,
+          meta: s.type === "subscription" ? pkg.durationLabel : ("Estimasi: " + (tier.eta || ""))
+        })})'>Pilih ${tier.name}</button>
+      </div>
+    `).join("");
+
+    group.innerHTML = `
+      <div class="package-group-header">
+        <span class="eyebrow">${s.tag}</span>
+        <h2>${s.name}</h2>
+        <span class="duration-label">${pkg.durationLabel}</span>
+      </div>
+      <div class="pricing-grid">${cardsHTML}</div>
+    `;
+    groupsWrap.appendChild(group);
+  });
+
+  // Jika ada hash (#smm, #content, dst) buka tab tsb otomatis
+  window.addEventListener("DOMContentLoaded", () => {
+    const hash = location.hash.replace("#", "");
+    if (hash) {
+      const btn = [...document.querySelectorAll("#packageTabs button")].find(b => b.dataset.target === hash);
+      if (btn) btn.click();
+    }
+  });
+</script>
+</body>
+</html>

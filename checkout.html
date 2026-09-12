@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pembayaran — Nusa East</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<section class="page-hero" style="text-align:left; padding-bottom:0;">
+  <div class="container">
+    <span class="eyebrow">Langkah 2</span>
+    <h1>Simulasi Pembayaran</h1>
+    <p>Pilih metode pembayaran untuk melanjutkan pesananmu.</p>
+    <div class="order-flow-wrap">
+      <div class="order-flow" aria-label="Alur pesanan">
+        <div class="order-step active"><span class="step-no">1</span><span class="step-copy"><span class="step-title">Pilih Pembayaran</span><span class="step-sub">Pilih metode dan bayar</span></span></div>
+        <div class="order-step"><span class="step-no">2</span><span class="step-copy"><span class="step-title">Pembayaran Berhasil</span><span class="step-sub">Konfirmasi otomatis</span></span></div>
+        <div class="order-step"><span class="step-no">3</span><span class="step-copy"><span class="step-title">Isi Brief</span><span class="step-sub">Opsional atau diskusi via WA</span></span></div>
+        <div class="order-step"><span class="step-no">4</span><span class="step-copy"><span class="step-title">Lihat Tracking</span><span class="step-sub">Pantau proses pengerjaan</span></span></div>
+      </div>
+      <div class="flow-note">Setelah pembayaran berhasil, kamu bisa mengisi brief langsung, melewati form brief, atau berdiskusi dulu dengan tim Nusa East melalui WhatsApp.</div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cart-layout" id="checkoutLayout"></div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/layout.js"></script>
+<script>
+renderHeader('services'); renderFooter();
+async function initCheckout() {
+  const layout = document.getElementById("checkoutLayout");
+  if (!getAuthToken()) { location.href="login.html"; return; }
+  try {
+    const { cart, breakdown, base, total } = await calculateCartTotals(true);
+    if (!cart.length) { layout.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><h3>Tidak ada item terpilih</h3><p class="mt-8">Centang item yang ingin dibayar di keranjang.</p><a href="cart.html" class="btn btn-primary mt-24">Kembali ke Keranjang</a></div>`; return; }
+    layout.innerHTML=`<div><div class="card mb-24"><h3 class="mb-16">Metode Pembayaran</h3><div class="payment-methods"><label class="payment-method selected"><input type="radio" name="pm" value="va" checked>🏦 Virtual Account</label><label class="payment-method"><input type="radio" name="pm" value="ewallet">📱 E-Wallet</label><label class="payment-method"><input type="radio" name="pm" value="qris">🔳 QRIS</label></div></div><div class="card" id="paymentDetail"></div></div><div class="card summary-box"><h3 class="mb-16">Ringkasan Pembayaran</h3><div class="summary-row"><span>Subtotal Item Terpilih</span><span>${formatIDR(base)}</span></div><div class="summary-row total"><span>Total Bayar</span><span>${formatIDR(total)}</span></div><button class="btn btn-primary btn-block mt-24" id="payBtn">Bayar Sekarang</button><p class="hint mt-16">Pada versi frontend ini, pesanan tersimpan sementara di browser yang sedang digunakan.</p></div>`;
+    const detailBox=document.getElementById("paymentDetail");
+    function renderDetail(m){ detailBox.innerHTML=m==='va'?`<h3 class="mb-16">Transfer Virtual Account</h3><div class="va-box"><div><div class="line-meta">Bank Nusa Digital (Simulasi)</div><div class="va-number">8807 2026 1029 33</div></div><span class="badge badge-orange">Menunggu Pembayaran</span></div>`:m==='ewallet'?`<h3 class="mb-16">Bayar dengan E-Wallet</h3><div class="grid-3"><button class="btn btn-outline btn-block">GoPay</button><button class="btn btn-outline btn-block">OVO</button><button class="btn btn-outline btn-block">DANA</button></div>`:`<h3 class="mb-16">Scan QRIS</h3><div class="qris-box"><img src="images/qris-sample.jpg" alt="QRIS Nusa East"><p>Scan menggunakan aplikasi bank / e-wallet apa pun.</p></div>`; }
+    renderDetail('va');
+    document.querySelectorAll('input[name="pm"]').forEach(r=>r.addEventListener('change',()=>{document.querySelectorAll('.payment-method').forEach(l=>l.classList.remove('selected'));r.closest('.payment-method').classList.add('selected');renderDetail(r.value)}));
+    document.getElementById('payBtn').addEventListener('click',async()=>{ const btn=document.getElementById('payBtn'); try { btn.disabled=true; btn.textContent='Memproses...'; const method=document.querySelector('input[name="pm"]:checked').value; const order=await createOrder({items:breakdown,total,paymentMethod:method}); await removeSelectedFromCart(); location.href='confirmation.html?order='+encodeURIComponent(order.id); } catch(err){ showToast(err.message); btn.disabled=false; btn.textContent='Bayar Sekarang'; }});
+  } catch(err) { layout.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><h3>Checkout gagal dimuat</h3><p>${err.message}</p></div>`; }
+}
+initCheckout();
+</script>
+</body>
+</html>

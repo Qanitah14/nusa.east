@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracking Project — Nusa East</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<section class="page-hero" style="text-align:left; padding-bottom:0;">
+  <div class="container">
+    <span class="eyebrow">Tracking</span>
+    <h1>Tracking Status Project</h1>
+    <p>Pantau proses pengerjaan mulai dari brief, produksi, preview, revisi, finalisasi, sampai project selesai.</p>
+    <div class="order-flow-wrap">
+      <div class="order-flow">
+        <div class="order-step done"><span class="step-no">✓</span><span class="step-copy"><span class="step-title">Pilih Pembayaran</span><span class="step-sub">Selesai</span></span></div>
+        <div class="order-step done"><span class="step-no">✓</span><span class="step-copy"><span class="step-title">Pembayaran Berhasil</span><span class="step-sub">Terkonfirmasi</span></span></div>
+        <div class="order-step done"><span class="step-no">✓</span><span class="step-copy"><span class="step-title">Brief / Diskusi</span><span class="step-sub">Bisa dilengkapi sambil berjalan</span></span></div>
+        <div class="order-step active"><span class="step-no">4</span><span class="step-copy"><span class="step-title">Tracking Proses</span><span class="step-sub">Pantau pengerjaan</span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="form-card mb-32" style="max-width:420px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Cari berdasarkan Nomor Order</label>
+        <div style="display:flex; gap:10px;">
+          <input type="text" class="form-control" id="searchOrder" placeholder="Contoh: NE-2026-0091">
+          <button class="btn btn-primary" onclick="loadOrder()">Cari</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="process-help mb-32">
+      <strong>Alur pengerjaan project</strong>
+      <p class="hint mt-8">Setelah pembayaran, tim akan mengecek brief atau hasil diskusi WhatsApp. Selanjutnya status bergerak melalui Project Dimulai → Produksi → Preview Dikirim → Revisi bila diperlukan → Finalisasi → Project Selesai.</p>
+    </div>
+    <div id="trackingResult"></div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+
+<script src="js/cart.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/layout.js"></script>
+<script>
+renderHeader('services'); renderFooter(); const resultBox=document.getElementById('trackingResult');
+function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'Menunggu';}
+function renderOrder(order){const current=STATUS_STEPS[order.statusIndex]||order.status;const done=current==='Project Selesai';const timeline=STATUS_STEPS.map((step,idx)=>{const log=order.log.find(l=>l.step===step);let cls=idx<order.statusIndex?'done':idx===order.statusIndex?'active':'';return `<div class="timeline-item ${cls}"><div class="t-date">${log?fmtDate(log.date):'Menunggu'}</div><div class="t-title">${step}</div></div>`}).join('');resultBox.innerHTML=`<div class="grid-2" style="align-items:start"><div class="card"><div class="flex-between mb-24"><div><span class="badge badge-gray">Order ${order.id}</span><p class="hint mt-8">Dipesan ${fmtDate(order.createdAt)}</p></div><span class="status-pill"><span class="dot"></span>${current}</span></div><div class="timeline">${timeline}</div>${done?`<div class="card mt-24" style="background:#DCEAE0;border:none"><strong>🎉 Project Selesai!</strong><p class="mt-8">Terima kasih sudah menggunakan layanan Nusa East.</p></div>`:''}${current==='Preview Dikirim'||current==='Revisi'?`<a href="review.html?order=${order.id}" class="btn btn-accent btn-block mt-16">Lihat Preview & Ajukan Revisi</a>`:''}${current==='Finalisasi'?`<a href="finalize.html?order=${order.id}" class="btn btn-accent btn-block mt-16">Finalisasi Project</a>`:''}</div><div class="card summary-box"><h3 class="mb-16">Detail Pesanan</h3>${order.items.map(i=>`<div class="summary-row"><span>${i.name}</span><span>${formatIDR(i.lineTotal)}</span></div>`).join('')}<div class="summary-row total"><span>Total</span><span>${formatIDR(order.total)}</span></div></div></div>`;}
+async function loadOrder(){const id=document.getElementById('searchOrder').value.trim();if(!id)return;try{const order=await getOrder(id);history.replaceState(null,'','tracking.html?order='+encodeURIComponent(order.id));renderOrder(order);}catch(err){resultBox.innerHTML=`<div class="empty-state"><h3>Order tidak ditemukan</h3><p class="mt-8">${err.message}</p></div>`;}}
+(async()=>{const id=new URLSearchParams(location.search).get('order');if(id){document.getElementById('searchOrder').value=id;await loadOrder();}else resultBox.innerHTML='<div class="empty-state"><h3>Masukkan nomor order</h3><p class="mt-8">Masukkan nomor order yang dibuat pada browser ini untuk melihat progres pesanan.</p></div>';})();
+</script>
+</body>
+</html>

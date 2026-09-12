@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layanan Satuan — Nusa East</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Jalur Pemesanan 2</span>
+    <h1>Layanan Satuan</h1>
+    <p>Butuh 1–2 item saja tanpa harus ambil paket bulanan atau paket project penuh? Pilih layanan satuan di bawah ini.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:10px;">
+  <div class="container">
+    <div class="package-tabs" id="filterTabs"></div>
+    <div id="singleList" class="grid-2"></div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+
+<script src="js/cart.js"></script>
+<script src="js/layout.js"></script>
+<script>
+  renderHeader('services');
+  renderFooter();
+
+  const filterTabs = document.getElementById("filterTabs");
+  const listWrap = document.getElementById("singleList");
+
+  const allBtn = document.createElement("button");
+  allBtn.textContent = "Semua"; allBtn.dataset.filter = "all"; allBtn.classList.add("active");
+  filterTabs.appendChild(allBtn);
+
+  NUSAEAST_DATA.services.forEach(s => {
+    const b = document.createElement("button");
+    b.textContent = s.name; b.dataset.filter = s.id;
+    filterTabs.appendChild(b);
+  });
+
+  function qtyControl(id) {
+    return `
+      <div class="qty-control">
+        <button onclick="stepQty('${id}', -1)">−</button>
+        <input type="text" id="qty-${id}" value="1" readonly>
+        <button onclick="stepQty('${id}', 1)">+</button>
+      </div>`;
+  }
+
+  window.stepQty = function(id, delta) {
+    const input = document.getElementById("qty-" + id);
+    let val = Math.max(1, parseInt(input.value) + delta);
+    input.value = val;
+  };
+
+  function renderList(filter) {
+    listWrap.innerHTML = "";
+    NUSAEAST_DATA.singles
+      .filter(item => filter === "all" || item.service === filter)
+      .forEach(item => {
+        const serviceName = NUSAEAST_DATA.services.find(s => s.id === item.service).name;
+        const card = document.createElement("div");
+        card.className = "card single-item-card";
+        card.id = item.service;
+        card.innerHTML = `
+          <div>
+            <div class="item-name">${item.name}</div>
+            <div class="item-unit">${item.unit} · ${serviceName}</div>
+            <div class="item-price mt-8">${formatIDR(item.price)}</div>
+          </div>
+          <div class="item-right">
+            ${qtyControl(item.id)}
+            <button class="btn btn-primary btn-sm" onclick='addSingleToCart("${item.id}")'>+ Keranjang</button>
+          </div>
+        `;
+        listWrap.appendChild(card);
+      });
+  }
+
+  window.addSingleToCart = function(itemId) {
+    const item = NUSAEAST_DATA.singles.find(i => i.id === itemId);
+    const qty = parseInt(document.getElementById("qty-" + itemId).value);
+    addToCart({ id: item.id, type: "single", name: item.name, price: item.price, qty, meta: item.unit });
+  };
+
+  filterTabs.addEventListener("click", e => {
+    if (e.target.tagName !== "BUTTON") return;
+    filterTabs.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+    e.target.classList.add("active");
+    renderList(e.target.dataset.filter);
+  });
+
+  const initialHash = location.hash.replace("#", "");
+  renderList(initialHash || "all");
+  if (initialHash) {
+    const btn = [...filterTabs.querySelectorAll("button")].find(b => b.dataset.filter === initialHash);
+    if (btn) { filterTabs.querySelectorAll("button").forEach(b => b.classList.remove("active")); btn.classList.add("active"); }
+  }
+</script>
+</body>
+</html>
