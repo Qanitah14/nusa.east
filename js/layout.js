@@ -135,47 +135,132 @@ function renderHeader(activePage) {
 function renderFooter() {
   const footer = document.createElement("footer");
   footer.className = "site-footer";
+
   footer.innerHTML = `
     <div class="container">
+
       <div class="footer-grid">
-        <div>
-          <div class="footer-logo"><span class="logo-mark">S</span> NUSA EAST</div>
-          <p>Digital marketing untuk brand lokal dengan tujuan yang lebih besar.</p>
-          <div class="footer-social">
-            <a href="#" aria-label="Instagram">📷</a>
-            <a href="#" aria-label="TikTok">🎵</a>
-          </div>
+
+        <!-- =========================
+             LOGO + DESKRIPSI
+        ========================== -->
+        <div class="footer-brand">
+
+          <a href="index.html" class="footer-logo">
+            <img 
+              src="img/logo.png" 
+              alt="Nusa East"
+              class="footer-logo-img"
+            >
+
+            <span class="footer-brand-name">NUSA EAST</span>
+          </a>
+
+          <p class="footer-description">
+            Nusa East membantu brand handmade, fashion, dan produk lokal dengan membangun media sosial yang konsisten, konten visual yang menarik, serta toko digital yang lebih profesional.
+          </p>
+
         </div>
-        <div>
+
+
+        <!-- =========================
+             MENU
+        ========================== -->
+        <div class="footer-column">
+
           <h4>Menu</h4>
+
           <ul>
             <li><a href="index.html">Beranda</a></li>
-            <li><a href="about.html">Tentang</a></li>
             <li><a href="services.html">Layanan</a></li>
             <li><a href="packages.html">Paket</a></li>
-            <li><a href="singles.html">Layanan Satuan</a></li>
+            <li><a href="brand-matcher.html">Brand Matcher</a></li>
+            <li><a href="about.html">About</a></li>
           </ul>
+
         </div>
-        <div>
+
+
+        <!-- =========================
+             KONTAK
+        ========================== -->
+        <div class="footer-column">
+
           <h4>Kontak</h4>
-          <ul>
-            <li>✉️ hello@nusaeast.id</li>
-            <li>📞 +62 812 3456 7890</li>
-            <li>📍 Makassar, Indonesia</li>
+
+          <ul class="footer-contact">
+
+            <li>
+              <i class="fas fa-envelope" aria-hidden="true"></i>
+              <a href="mailto:hello@nusaeast.id">
+                hello@nusaeast.id
+              </a>
+            </li>
+
+            <li>
+              <i class="fas fa-phone-alt" aria-hidden="true"></i>
+              <a href="tel:+6281234567890">
+                +62 812 3456 7890
+              </a>
+            </li>
+
+            <li>
+              <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+              <span>Makassar, Indonesia</span>
+            </li>
+
           </ul>
+
         </div>
-        <div>
-          <h4>Akun</h4>
-          <ul>
-            <li><a href="login.html">Masuk</a></li>
-            <li><a href="register.html">Daftar</a></li>
-            <li><a href="cart.html">Keranjang</a></li>
-          </ul>
+
+
+        <!-- =========================
+             SOCIAL MEDIA
+        ========================== -->
+        <div class="footer-column">
+
+          <h4>Ikuti Kami</h4>
+
+          <div class="footer-social">
+
+            <!-- INSTAGRAM -->
+            <a 
+              href="https://www.instagram.com/nusa.east/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram Nusa East"
+            >
+              <i class="fab fa-instagram" aria-hidden="true"></i>
+            </a>
+
+
+            <!-- TIKTOK -->
+            <a 
+              href="https://www.tiktok.com/@nusa.east?is_from_webapp=1&sender_device=pc"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="TikTok Nusa East"
+            >
+              <i class="fab fa-tiktok" aria-hidden="true"></i>
+            </a>
+
+          </div>
+
         </div>
+
       </div>
-      <div class="footer-bottom">© 2026 Nusa East. All rights reserved.</div>
+
+
+      <!-- =========================
+           FOOTER BOTTOM
+      ========================== -->
+      <div class="footer-bottom">
+        © 2026 Nusa East. All rights reserved.
+      </div>
+
     </div>
   `;
+
   document.body.appendChild(footer);
 }
 
