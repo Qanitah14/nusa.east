@@ -47,10 +47,10 @@ const NUSAEAST_DATA = {
   /* ---------- PAKET LENGKAP (per layanan, tier berbeda) ---------- */
   packages: {
     smm: {
-      durationLabel: "Durasi Paket: 1 Bulan",
+      durationLabel: "Estimasi Pengerjaan per Project",
       tiers: [
         {
-          id: "smm-basic", name: "Basic", price: 1500000,
+          id: "smm-basic", name: "Kenal", price: 750000, eta: "5–7 hari kerja",
           rows: { "Feed Content": "8", "Reels": "2", "Story": "4",
             "Content Planning": true, "Copywriting & Caption": true, "Hashtag Research": true,
             "Scheduling Posting": true, "Monthly Report": false, "Competitor Analysis": false,
@@ -58,7 +58,7 @@ const NUSAEAST_DATA = {
           fit: "Cocok untuk UMKM yang baru mulai aktif di media sosial."
         },
         {
-          id: "smm-growth", name: "Growth", price: 2500000, highlight: true,
+          id: "smm-growth", name: "Dekat", price: 1500000, highlight: true, eta: "7–10 hari kerja",
           rows: { "Feed Content": "12", "Reels": "4", "Story": "8",
             "Content Planning": true, "Copywriting & Caption": true, "Hashtag Research": true,
             "Scheduling Posting": true, "Monthly Report": true, "Competitor Analysis": false,
@@ -66,7 +66,7 @@ const NUSAEAST_DATA = {
           fit: "Cocok untuk brand yang ingin meningkatkan engagement."
         },
         {
-          id: "smm-premium", name: "Premium", price: 4000000,
+          id: "smm-premium", name: "Melekat", price: 2750000, eta: "10–14 hari kerja",
           rows: { "Feed Content": "16", "Reels": "6", "Story": "12",
             "Content Planning": true, "Copywriting & Caption": true, "Hashtag Research": true,
             "Scheduling Posting": true, "Monthly Report": true, "Competitor Analysis": true,
@@ -79,21 +79,21 @@ const NUSAEAST_DATA = {
       durationLabel: "Estimasi Pengerjaan (bukan langganan bulanan)",
       tiers: [
         {
-          id: "content-starter", name: "Starter Shoot", price: 750000, eta: "5–7 hari kerja",
+          id: "content-starter", name: "Kenal", price: 750000, eta: "5–7 hari kerja",
           rows: { "Foto Produk": "10 foto", "Video/Reels": "1", "Konsep Konten": "Sederhana",
             "Editing Foto": true, "Editing Video": true, "Copywriting": false, "Moodboard": false,
             "Campaign Concept": false, "Revisi": "1x" },
           fit: "Cocok untuk kebutuhan konten cepat & sederhana."
         },
         {
-          id: "content-boost", name: "Content Boost", price: 1500000, highlight: true, eta: "7–10 hari kerja",
+          id: "content-boost", name: "Dekat", price: 1500000, highlight: true, eta: "7–10 hari kerja",
           rows: { "Foto Produk": "20 foto", "Video/Reels": "3", "Konsep Konten": "✓",
             "Editing Foto": true, "Editing Video": true, "Copywriting": true, "Moodboard": true,
             "Campaign Concept": false, "Revisi": "2x" },
           fit: "Cocok untuk brand fashion/handmade dengan koleksi baru."
         },
         {
-          id: "content-campaign", name: "Full Campaign", price: 2750000, eta: "10–14 hari kerja",
+          id: "content-campaign", name: "Melekat", price: 2750000, eta: "10–14 hari kerja",
           rows: { "Foto Produk": "30 foto", "Video/Reels": "5", "Konsep Konten": "✓",
             "Editing Foto": true, "Editing Video": true, "Copywriting": true, "Moodboard": true,
             "Campaign Concept": true, "Revisi": "3x" },
@@ -105,7 +105,7 @@ const NUSAEAST_DATA = {
       durationLabel: "Estimasi Pengerjaan per Project",
       tiers: [
         {
-          id: "ecom-setup", name: "Setup", price: 800000, eta: "5–7 hari kerja",
+          id: "ecom-setup", name: "Kenal", price: 800000, eta: "5–7 hari kerja",
           rows: { "Upload/Optimasi Produk": "10", "Judul Produk": true, "Deskripsi Produk": true,
             "Kategori Produk": true, "Optimasi Foto/Katalog": false, "Keyword Produk": false,
             "Banner Toko": "–", "Analisis Kompetitor": false, "Rekomendasi Promo": false,
@@ -113,7 +113,7 @@ const NUSAEAST_DATA = {
           fit: "Cocok untuk toko yang baru mulai berjualan online."
         },
         {
-          id: "ecom-optimize", name: "Optimize", price: 1500000, highlight: true, eta: "7–10 hari kerja",
+          id: "ecom-optimize", name: "Dekat", price: 1500000, highlight: true, eta: "7–10 hari kerja",
           rows: { "Upload/Optimasi Produk": "20", "Judul Produk": true, "Deskripsi Produk": true,
             "Kategori Produk": true, "Optimasi Foto/Katalog": true, "Keyword Produk": true,
             "Banner Toko": "1", "Analisis Kompetitor": false, "Rekomendasi Promo": true,
@@ -121,7 +121,7 @@ const NUSAEAST_DATA = {
           fit: "Cocok untuk toko yang ingin naik performa penjualan."
         },
         {
-          id: "ecom-complete", name: "Complete Store", price: 2500000, eta: "10–14 hari kerja",
+          id: "ecom-complete", name: "Melekat", price: 2500000, eta: "10–14 hari kerja",
           rows: { "Upload/Optimasi Produk": "40", "Judul Produk": true, "Deskripsi Produk": true,
             "Kategori Produk": true, "Optimasi Foto/Katalog": true, "Keyword Produk": true,
             "Banner Toko": "2", "Analisis Kompetitor": true, "Rekomendasi Promo": true,
@@ -134,21 +134,21 @@ const NUSAEAST_DATA = {
       durationLabel: "Estimasi Pengerjaan per Project",
       tiers: [
         {
-          id: "brand-starter", name: "Brand Starter", price: 750000, eta: "5–7 hari kerja",
+          id: "brand-starter", name: "Kenal", price: 750000, eta: "5–7 hari kerja",
           rows: { "Brand Style Matcher": true, "Color Palette": true, "Typography": true,
             "Moodboard": true, "Logo Development": false, "Tone of Voice": false,
             "Social Media Style": false, "Brand Guideline": "–", "Revisi": "1x" },
           fit: "Cocok untuk brand baru yang butuh fondasi visual."
         },
         {
-          id: "brand-identity", name: "Brand Identity", price: 1500000, highlight: true, eta: "7–10 hari kerja",
+          id: "brand-identity", name: "Dekat", price: 1500000, highlight: true, eta: "7–10 hari kerja",
           rows: { "Brand Style Matcher": true, "Color Palette": true, "Typography": true,
             "Moodboard": true, "Logo Development": true, "Tone of Voice": true,
             "Social Media Style": true, "Brand Guideline": "Mini", "Revisi": "2x" },
           fit: "Cocok untuk brand yang ingin identitas lebih matang."
         },
         {
-          id: "brand-complete", name: "Brand Complete", price: 2500000, eta: "10–14 hari kerja",
+          id: "brand-complete", name: "Melekat", price: 2500000, eta: "10–14 hari kerja",
           rows: { "Brand Style Matcher": true, "Color Palette": true, "Typography": true,
             "Moodboard": true, "Logo Development": true, "Tone of Voice": true,
             "Social Media Style": true, "Brand Guideline": "Lengkap", "Revisi": "3x" },
@@ -160,13 +160,13 @@ const NUSAEAST_DATA = {
 
   /* ---------- LAYANAN SATUAN (bisa dibeli tanpa paket) ---------- */
   singles: [
-    { id: "single-feed", service: "content", name: "1 Feed Design", price: 150000, unit: "1 desain" },
-    { id: "single-carousel", service: "content", name: "1 Carousel", price: 200000, unit: "1 set carousel" },
-    { id: "single-reels", service: "content", name: "1 Reels/Video Pendek", price: 250000, unit: "1 video" },
-    { id: "single-story", service: "content", name: "1 Story Design", price: 40000, unit: "1 desain" },
-    { id: "single-foto", service: "content", name: "1 Foto Produk", price: 50000, unit: "1 foto" },
-    { id: "single-caption", service: "smm", name: "Copywriting / Caption", price: 50000, unit: "per konten" },
-    { id: "single-hashtag", service: "smm", name: "Riset Hashtag", price: 50000, unit: "per riset" },
+    { id: "single-feed", service: "content", name: "Feed Design", price: 50000, unit: "1 desain" },
+    { id: "single-carousel", service: "content", name: "Carousel", price: 100000, unit: "1 set carousel" },
+    { id: "single-reels", service: "content", name: "Reels/Video Pendek", price: 95000, unit: "1 video" },
+    { id: "single-story", service: "content", name: "Story Design", price: 25000, unit: "1 desain" },
+    { id: "single-foto", service: "content", name: "Foto Produk", price: 50000, unit: "Per 3 foto" },
+    { id: "single-caption", service: "smm", name: "Copywriting / Caption", price: 25000, unit: "per konten" },
+    { id: "single-hashtag", service: "smm", name: "Riset Hashtag", price: 20000, unit: "per riset" },
     { id: "single-upload", service: "ecommerce", name: "Upload & Optimasi 1 Produk", price: 40000, unit: "1 produk" },
     { id: "single-banner", service: "ecommerce", name: "1 Banner Toko", price: 200000, unit: "1 banner" },
     { id: "single-logo", service: "brand", name: "Logo Development", price: 500000, unit: "1 logo" },
