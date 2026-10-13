@@ -164,14 +164,14 @@ const NUSAEAST_DATA = {
     { id: "single-carousel", service: "content", name: "Carousel", price: 100000, unit: "1 set carousel" },
     { id: "single-reels", service: "content", name: "Reels/Video Pendek", price: 95000, unit: "1 video" },
     { id: "single-story", service: "content", name: "Story Design", price: 25000, unit: "1 desain" },
-    { id: "single-foto", service: "content", name: "Foto Produk", price: 50000, unit: "Per 3 foto" },
+    { id: "single-foto", service: "content", name: "Foto Produk", price: 50000, unit: "3 foto" },
     { id: "single-caption", service: "smm", name: "Copywriting / Caption", price: 25000, unit: "per konten" },
     { id: "single-hashtag", service: "smm", name: "Riset Hashtag", price: 20000, unit: "per riset" },
-    { id: "single-upload", service: "ecommerce", name: "Upload & Optimasi 1 Produk", price: 40000, unit: "1 produk" },
-    { id: "single-banner", service: "ecommerce", name: "1 Banner Toko", price: 200000, unit: "1 banner" },
-    { id: "single-logo", service: "brand", name: "Logo Development", price: 500000, unit: "1 logo" },
-    { id: "single-palette", service: "brand", name: "Color Palette & Typography", price: 250000, unit: "1 paket visual" },
-    { id: "single-guideline", service: "brand", name: "Mini Brand Guideline", price: 400000, unit: "1 dokumen" }
+    { id: "single-upload", service: "ecommerce", name: "Upload & Optimasi Produk", price: 35000, unit: "1 produk" },
+    { id: "single-banner", service: "ecommerce", name: "Iklan PPC (Pay-Per-Click)", price: 45000, unit: "1 banner" },
+    { id: "single-logo", service: "brand", name: "Logo Development", price: 100000, unit: "1 logo" },
+    { id: "single-palette", service: "brand", name: "Color Palette & Typography", price: 125000, unit: "1 paket visual" },
+    { id: "single-guideline", service: "brand", name: "Brand Identity", price: 150000, unit: "1 dokumen" }
   ],
 
   /* ---------- Brand Style Matcher: pilihan kuis ---------- */
