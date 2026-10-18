@@ -71,4 +71,10 @@ function requireAuth(req, res, next) {
   }
 }
 
-module.exports = { router, requireAuth };
+// Khusus admin — pasang SETELAH requireAuth: router.post("/x", requireAuth, requireAdmin, handler)
+function requireAdmin(req, res, next) {
+  if (req.user?.role !== "admin") return res.status(403).json({ error: "Hanya admin yang boleh mengakses ini." });
+  next();
+}
+
+module.exports = { router, requireAuth, requireAdmin };

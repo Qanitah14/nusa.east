@@ -1,6 +1,7 @@
 const express = require("express");
 const pool = require("../db/pool");
 const { requireAuth } = require("./auth");
+const { Order, OrderItem } = require("../models");
 
 const router = express.Router();
 const STATUS_STEPS = ["Pesanan Dibuat","Pembayaran Berhasil","Brief Diisi","Brief & Bahan Lengkap","Project Dimulai","Produksi","Preview Dikirim","Revisi","Finalisasi","Project Selesai"];
@@ -74,22 +75,13 @@ router.delete("/cart/:cartId", requireAuth, async (req, res) => {
 router.post("/", requireAuth, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { items, total, paymentMethod } = req.body;
+    const { items, total, paymentMethod, customerName = null, phoneNumber = null, address = null } = req.body;
     if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: "Item pesanan kosong." });
     const orderId = generateOrderId();
 
     await client.query("BEGIN");
-    await client.query(
-      `INSERT INTO orders (id, user_id, total, payment_method, payment_status, status) VALUES ($1, $2, $3, $4, 'paid', 'Pembayaran Berhasil')`,
-      [orderId, req.user.userId, total, paymentMethod]
-    );
-    for (const item of items) {
-      await client.query(
-        `INSERT INTO order_items (order_id, item_type, item_ref_id, name, price, qty, line_total)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [orderId, item.type, item.id, item.name, item.price, item.qty || 1, item.lineTotal]
-      );
-    }
+    await Order.create(client, { id: orderId, userId: req.user.userId, total, paymentMethod, customerName, phoneNumber, address });
+    for (const item of items) await OrderItem.create(client, orderId, item);
     await client.query(
       `INSERT INTO project_status_log (order_id, step) VALUES ($1, 'Pesanan Dibuat')`, [orderId]
     );
@@ -99,6 +91,7 @@ router.post("/", requireAuth, async (req, res) => {
     res.status(201).json({ orderId });
   } catch (err) {
     await client.query("ROLLBACK");
+    if (err.status) return res.status(err.status).json({ error: err.message });
     console.error(err);
     res.status(500).json({ error: "Gagal membuat pesanan." });
   } finally {
