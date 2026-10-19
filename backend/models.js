@@ -1,5 +1,5 @@
-/* =========================================================
-   NUSA EAST — MODELS (padanan models.py Django, versi PostgreSQL)
+/* 
+   NUSA EAST — MODELS (versi PostgreSQL)
    Isi file ini: Category, Product, Order, OrderItem, Customer, Page
 
    Buat/update tabel (setelah db/schema.sql dijalankan sekali):
@@ -10,7 +10,7 @@
      Customer  -> users        (+ kolom address)
      Order     -> orders       (+ customer_name, phone_number, address; total_price = total)
      OrderItem -> order_items  (+ product_id; quantity = qty; subtotal = line_total)
-   ========================================================= */
+   */
 const pool = require("./db/pool");
 const { removeUploadedFile } = require("./middleware/upload");
 
