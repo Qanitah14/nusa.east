@@ -1,13 +1,11 @@
-// Padanan django.utils.text.slugify: "Tentang Kami!" -> "tentang-kami"
+"use strict";
 function slugify(value) {
-  return String(value || "")
+  return String(value ?? "")
     .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")   // buang aksen
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/[^a-z0-9\s_-]/g, "")     // buang karakter aneh
     .trim()
-    .replace(/[\s_-]+/g, "-")          // spasi/underscore -> "-"
+    .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
-
 module.exports = { slugify };

@@ -1,64 +1,43 @@
-/* =========================================================
-   NUSA EAST — FRONTEND AUTH DEMO
-   Untuk tahap frontend HTML: akun/sesi tersimpan lokal di browser.
-   Nanti fungsi ini dapat diganti kembali dengan fetch() ke backend.
-   ========================================================= */
+/* NUSA EAST — autentikasi frontend. Tidak menggunakan fallback demo diam-diam. */
+const API_BASE = (window.NUSAEAST_API_BASE || "http://localhost:4000/api").replace(/\/$/, "");
 
-const USERS_KEY = "nusaeast_demo_users";
-const SESSION_KEY = "nusaeast_session";
-const TOKEN_KEY = "nusaeast_token";
-
-function getDemoUsers() {
-  try { return JSON.parse(localStorage.getItem(USERS_KEY) || "[]"); }
-  catch (_) { return []; }
-}
-
-function getAuthToken() {
-  return localStorage.getItem(TOKEN_KEY);
+async function authRequest(path, payload) {
+  let response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  } catch (_) {
+    throw new Error(`Tidak dapat menghubungi backend (${API_BASE}). Pastikan server aktif dan CORS mengizinkan alamat frontend ini.`);
+  }
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || `Permintaan gagal (HTTP ${response.status}).`);
+  return data;
 }
 
 async function nusaeastRegister(payload) {
-  const users = getDemoUsers();
-  const email = String(payload.email || "").trim().toLowerCase();
-  if (users.some(u => u.email === email)) {
-    showToast("Email sudah terdaftar. Silakan masuk.");
-    return;
-  }
-  const user = {
-    id: `USR-${Date.now()}`,
-    name: String(payload.name || payload.fullName || "Pengguna Nusa East").trim(),
-    email,
-    phone: String(payload.phone || payload.whatsapp || "").trim()
-  };
-  users.push({ ...user, password: String(payload.password || "") });
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-  localStorage.setItem(TOKEN_KEY, `demo-${user.id}`);
-  showToast("Akun berhasil dibuat.");
-  setTimeout(() => location.href = "index.html", 450);
+  const data = await authRequest("/auth/register", payload);
+  localStorage.setItem("nusaeast_session", JSON.stringify(data.user));
+  if (data.token) localStorage.setItem("nusaeast_token", data.token);
+  location.href = "index.html";
 }
 
 async function nusaeastLogin(email, password) {
-  const normalized = String(email || "").trim().toLowerCase();
-  const user = getDemoUsers().find(u => u.email === normalized && u.password === String(password || ""));
-  if (!user) {
-    showToast("Email atau password belum cocok. Daftar dulu jika belum punya akun.");
-    return;
-  }
-  const session = { id: user.id, name: user.name, email: user.email, phone: user.phone };
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  localStorage.setItem(TOKEN_KEY, `demo-${user.id}`);
-  showToast("Berhasil masuk.");
-  setTimeout(() => location.href = "index.html", 350);
+  const data = await authRequest("/auth/login", { email, password });
+  localStorage.setItem("nusaeast_session", JSON.stringify(data.user));
+  if (data.token) localStorage.setItem("nusaeast_token", data.token);
+  location.href = "index.html";
 }
 
 function nusaeastLogout() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem("nusaeast_session");
+  localStorage.removeItem("nusaeast_token");
   location.href = "login.html";
 }
 
 function getSession() {
-  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); }
+  try { return JSON.parse(localStorage.getItem("nusaeast_session") || "null"); }
   catch (_) { return null; }
 }

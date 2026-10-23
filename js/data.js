@@ -1,7 +1,7 @@
 /* =========================================================
    NUSA EAST — DATA SOURCE
-   Semua harga, paket, dan layanan satuan didefinisikan
-   di sini SEKALI SAJA. Semua halaman (packages, singles,
+   Semua harga, paket, layanan satuan, dan add-on didefinisikan
+   di sini SEKALI SAJA. Semua halaman (packages, singles, addon,
    cart, checkout) mengambil data dari file ini supaya konsisten
    dan mudah diubah tanpa harus edit banyak file.
    ========================================================= */
@@ -45,7 +45,7 @@ const NUSAEAST_DATA = {
   ],
 
   /* ---------- PAKET LENGKAP (per layanan, tier berbeda) ---------- */
-  packages: {
+ packages: {
     smm: {
       durationLabel: "Estimasi Pengerjaan per Project",
       tiers: [
@@ -174,6 +174,19 @@ const NUSAEAST_DATA = {
     { id: "single-guideline", service: "brand", name: "Brand Identity", price: 150000, unit: "1 dokumen" }
   ],
 
+
+  /* ---------- ADD-ON (khusus project yang sedang berjalan) ---------- */
+  addons: [
+    { id: "addon-feed", name: "+1 Feed Design", price: 100000 },
+    { id: "addon-carousel", name: "+1 Carousel", price: 150000 },
+    { id: "addon-reels", name: "+1 Reels", price: 200000 },
+    { id: "addon-story5", name: "+5 Story Design", price: 200000 },
+    { id: "addon-foto5", name: "+5 Foto Produk", price: 250000 },
+    { id: "addon-copy", name: "Extra Copywriting", price: 50000, note: "per konten" },
+    { id: "addon-revisi", name: "Extra Revision", price: 50000, note: "per konten" },
+    { id: "addon-express", name: "Express / Priority", price: null, percent: 20, note: "+20% dari biaya pekerjaan" }
+  ],
+
   /* ---------- Brand Style Matcher: pilihan kuis ---------- */
   brandMatcherQuiz: [
     {
@@ -232,4 +245,24 @@ const NUSAEAST_DATA = {
       desc: "Brand kamu terasa jujur dan natural — cocok dengan palet earth tone dan foto bernuansa outdoor."
     }
   }
+}
+
+// Foto produk layanan satuan: ganti nilai src atau file gambar di folder images/products.
+const SINGLE_PRODUCT_IMAGES = {
+  "single-feed": "images/products/single-feed.jpg",
+  "single-carousel": "images/products/single-carousel.jpg",
+  "single-reels": "images/products/single-reels.jpg",
+  "single-story5": "images/products/single-story5.jpg",
+  "single-foto5": "images/products/single-foto5.jpg",
+  "single-caption": "images/products/single-caption.jpg",
+  "single-hashtag": "images/products/single-hashtag.jpg",
+  "single-upload10": "images/products/single-upload10.jpg",
+  "single-banner": "images/products/single-banner.jpg",
+  "single-logo": "images/products/single-logo.jpg",
+  "single-palette": "images/products/single-palette.jpg",
+  "single-guideline": "images/products/single-guideline.jpg"
 };
+NUSAEAST_DATA.singles.forEach((item) => {
+  item.image = SINGLE_PRODUCT_IMAGES[item.id] || "images/service-content.jpg";
+  item.description = item.description || `Layanan ${item.name} dari Nusa East. Cocok untuk UMKM dan brand lokal yang membutuhkan hasil kreatif profesional dengan proses yang terarah.`;
+});

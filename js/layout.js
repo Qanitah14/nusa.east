@@ -1,3 +1,12 @@
+// Icon library untuk ikon header yang konsisten di semua halaman.
+if (!document.querySelector('link[data-nusaeast-icons]')) {
+  const iconCss = document.createElement('link');
+  iconCss.rel = 'stylesheet';
+  iconCss.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
+  iconCss.dataset.nusaeastIcons = 'true';
+  document.head.appendChild(iconCss);
+}
+
 /* =========================================================
    NUSA EAST — HEADER & FOOTER (dipakai semua halaman)
    Supaya ganti menu/link cukup 1x edit di sini.
@@ -16,118 +25,54 @@ function renderHeader(activePage) {
     `<a href="${l.href}" class="${activePage === l.key ? 'active' : ''}">${l.label}</a>`
   ).join("");
 
-  let session = null;
-
-  try {
-    session = JSON.parse(
-      localStorage.getItem("nusaeast_session") || "null"
-    );
-  } catch (_) {}
-
-  // Kalau sudah login → profile.html
-  // Kalau belum login → login.html
-  const accountHref = session ? "profile.html" : "login.html";
-  const accountTitle = session ? "Profil Saya" : "Masuk";
-
   const header = document.createElement("header");
   header.className = "site-header";
-
   header.innerHTML = `
-  <div class="container">
-
-    <!-- LOGO -->
-    <a href="index.html" class="logo">
-      <img
-        src="img/logo (2).png"
-        alt="Nusa East"
-        class="header-logo-img"
-      >
-    </a>
-
-    <!-- NAVIGATION -->
-    <nav class="nav-main" id="navMain">
-      ${navHTML}
-    </nav>
-
-   <!-- CART & PROFILE -->
-<div class="header-actions">
-
-  <!-- CART -->
-  <a
-    href="cart.html"
-    class="header-icon-btn"
-    title="Keranjang"
-    aria-label="Keranjang"
+    <div class="container">
+      <a href="index.html" class="logo">
+  <img
+    src="img/logo.png"
+    alt="Logo Nusa East"
+    class="header-logo"
   >
-    <i class="fas fa-shopping-cart"></i>
-
-    <span class="cart-count" id="cartCount">0</span>
-  </a>
-
-
-  <!-- PROFILE -->
-  <a
-    href="${accountHref}"
-    class="header-icon-btn ${activePage === 'profile' ? 'active-account' : ''}"
-    title="${accountTitle}"
-    aria-label="${accountTitle}"
-  >
-    <i class="fas fa-user"></i>
-  </a>
-
-
-  <!-- MOBILE MENU -->
-  <button
-    class="nav-toggle"
-    id="navToggle"
-    aria-label="Menu"
-  >
-  </button>
-
-</div>
-
-  </div>
-`;
-
+  <span>NUSAEAST</span>
+</a>
+      <nav class="nav-main" id="navMain">${navHTML}</nav>
+      <div class="header-actions">
+        <form class="header-search" id="headerSearchForm" role="search" action="search.html" method="get">
+          <label class="sr-only" for="headerSearchInput">Cari layanan dan paket</label>
+          <input id="headerSearchInput" name="q" type="search" placeholder="Cari layanan atau paket…" autocomplete="off">
+          <button class="icon-btn search-toggle" type="button" id="searchToggle" aria-label="Buka pencarian" aria-expanded="false"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span class="search-fallback" aria-hidden="true">⌕</span></button>
+        </form>
+        <a href="cart.html" class="icon-btn" title="Keranjang" aria-label="Keranjang">
+          <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i><span class="cart-fallback" aria-hidden="true">🛒</span><span class="cart-count" id="cartCount">0</span>
+        </a>
+        <a href="login.html" class="icon-btn" title="Akun" aria-label="Login pengguna atau admin"><i class="fa-regular fa-user" aria-hidden="true"></i><span class="user-fallback" aria-hidden="true">👤</span></a>
+        <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">☰</button>
+      </div>
+    </div>
+  `;
   document.body.prepend(header);
 
-  const toggle = document.getElementById("navToggle");
-  const nav = document.getElementById("navMain");
-
-  toggle.addEventListener("click", () => {
-
+  document.getElementById("navToggle").addEventListener("click", (event) => {
+    const nav = document.getElementById("navMain");
     const open = nav.classList.toggle("open");
-
-    toggle.setAttribute(
-      "aria-expanded",
-      String(open)
-    );
-
-    toggle.textContent = open ? "✕" : "☰";
-
-    document.body.classList.toggle(
-      "menu-open",
-      open
-    );
+    event.currentTarget.setAttribute("aria-expanded", String(open));
   });
 
-  nav.querySelectorAll("a").forEach(a =>
-    a.addEventListener("click", () => {
-
-      nav.classList.remove("open");
-
-      document.body.classList.remove(
-        "menu-open"
-      );
-
-      toggle.setAttribute(
-        "aria-expanded",
-        "false"
-      );
-
-      toggle.textContent = "☰";
-    })
-  );
+  const searchForm = document.getElementById("headerSearchForm");
+  const searchInput = document.getElementById("headerSearchInput");
+  const searchToggle = document.getElementById("searchToggle");
+  searchToggle.addEventListener("click", () => {
+    const open = searchForm.classList.toggle("is-open");
+    searchToggle.setAttribute("aria-expanded", String(open));
+    if (open) searchInput.focus();
+    else if (!searchInput.value.trim()) searchInput.blur();
+    else searchForm.requestSubmit();
+  });
+  searchForm.addEventListener("submit", (event) => {
+    if (!searchInput.value.trim()) { event.preventDefault(); searchForm.classList.add("is-open"); searchToggle.setAttribute("aria-expanded", "true"); searchInput.focus(); }
+  });
 
   updateCartCount();
 }
@@ -260,15 +205,11 @@ function renderFooter() {
 
     </div>
   `;
-
   document.body.appendChild(footer);
 }
 
-async function updateCartCount() {
+function updateCartCount() {
+  const cart = JSON.parse(localStorage.getItem("nusaeast_cart") || "[]");
   const el = document.getElementById("cartCount");
-  if (!el) return;
-  try {
-    const cart = typeof getCart === "function" ? await getCart() : [];
-    el.textContent = cart.reduce((sum, i) => sum + (i.qty || 1), 0);
-  } catch (_) { el.textContent = "0"; }
+  if (el) el.textContent = cart.reduce((sum, i) => sum + (i.qty || 1), 0);
 }

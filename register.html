@@ -4,18 +4,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Daftar — Nusa East</title>
+<title>Register — Nusa East</title>
+<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<!-- Vercel Web Analytics -->
-<script>
-  window.va = window.va || function () {
-    (window.vaq = window.vaq || []).push(arguments);
-  };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
 <body>
 
 <div class="auth-wrap">
@@ -25,6 +19,7 @@
       <h2>Buat Akun Baru</h2>
       <p class="mt-8">Daftar untuk mulai memesan layanan Nusa East.</p>
     </div>
+    <div class="form-error" id="registerError" role="alert" hidden></div>
     <form id="registerForm">
       <div class="form-group">
         <label>Nama Lengkap</label>
@@ -50,7 +45,6 @@
 </div>
 
 <script src="js/data.js"></script>
-
 <script src="js/cart.js"></script>
 <script src="js/layout.js"></script>
 <script src="js/auth.js"></script>
@@ -58,7 +52,13 @@
   document.getElementById("registerForm").addEventListener("submit", async e => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target).entries());
-    await nusaeastRegister(data);
+    const errorBox = document.getElementById("registerError");
+    const submit = e.target.querySelector('button[type="submit"]');
+    errorBox.hidden = true; errorBox.textContent = "";
+    submit.disabled = true; submit.textContent = "Mendaftarkan…";
+    try { await nusaeastRegister(data); }
+    catch (error) { errorBox.textContent = error.message || "Pendaftaran gagal. Silakan coba lagi."; errorBox.hidden = false; }
+    finally { submit.disabled = false; submit.textContent = "Daftar"; }
   });
 </script>
 </body>

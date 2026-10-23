@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Paket — Admin Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-body">
+<div class="admin-app" id="adminApp">
+  <main class="admin-main">
+    <div class="admin-content">
+      <div class="a-page-head">
+        <div>
+          <span class="eyebrow">Katalog</span>
+          <h1 style="font-size:clamp(1.8rem,3.4vw,2.6rem);">Paket Lengkap</h1>
+          <p>Tingkatan paket per layanan beserta harga dan isi fitur yang tampil di halaman Paket.</p>
+        </div>
+        <div class="a-actions"><button class="btn btn-primary btn-sm" id="addBtn"><i class="fas fa-plus"></i> Tambah Paket</button></div>
+      </div>
+      <div class="a-tabs" id="tabs"></div>
+      <div id="list"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/admin.js"></script>
+<script>
+  let services = [], packages = [], filter = "all";
+
+  if (Admin.init("packages")) { load(); document.getElementById("addBtn").addEventListener("click", () => openForm()); }
+
+  async function load() {
+    const box = document.getElementById("list");
+    box.innerHTML = Admin.loading();
+    try {
+      [services, packages] = await Promise.all([Admin.api.get("/services/admin/services"), Admin.api.get("/services/admin/packages")]);
+      renderTabs(); render();
+    } catch (err) { box.innerHTML = Admin.errorBox(err.message); document.getElementById("retryBtn")?.addEventListener("click", load); }
+  }
+
+  const svcName = (id) => (services.find((s) => s.id === id) || {}).name || id;
+
+  function renderTabs() {
+    const tabs = document.getElementById("tabs");
+    tabs.innerHTML = [{ id: "all", name: "Semua" }, ...services].map((s) => `<button class="${filter === s.id ? "active" : ""}" data-f="${Admin.esc(s.id)}">${Admin.esc(s.name)}</button>`).join("");
+    tabs.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { filter = b.dataset.f; renderTabs(); render(); }));
+  }
+
+  function render() {
+    const box = document.getElementById("list");
+    const rows = packages.filter((p) => filter === "all" || p.serviceId === filter);
+    if (!services.length) { box.innerHTML = Admin.empty("fa-layer-group", "Belum ada layanan", "Buat layanan terlebih dahulu di menu Layanan."); return; }
+    if (!rows.length) { box.innerHTML = Admin.empty("fa-box-open", "Belum ada paket", "Klik “Tambah Paket” untuk membuat paket pertama."); return; }
+    box.innerHTML = `<div class="a-table-wrap"><table class="a-table">
+      <thead><tr><th>Paket</th><th>Layanan</th><th>Estimasi</th><th>Fitur</th><th>Status</th><th class="num">Harga</th><th></th></tr></thead>
+      <tbody>${rows.map((p) => `
+        <tr>
+          <td class="main"><span class="name">${Admin.esc(p.name)} ${p.highlight ? '<span class="badge badge-popular" style="margin-left:6px;">Populer</span>' : ""}</span><span class="sub">${Admin.esc(p.id)}</span></td>
+          <td data-label="Layanan">${Admin.esc(svcName(p.serviceId))}</td>
+          <td data-label="Estimasi">${Admin.esc(p.eta || "-")}</td>
+          <td data-label="Fitur">${Object.keys(p.rows || {}).length} item</td>
+          <td data-label="Status">${Admin.statusBadge(p.isActive)}</td>
+          <td class="num" data-label="Harga"><b>${Admin.idr(p.price)}</b></td>
+          <td class="acts">
+            <button class="a-row-btn" data-edit="${Admin.esc(p.id)}" aria-label="Ubah ${Admin.esc(p.name)}"><i class="fas fa-pen"></i></button>
+            <button class="a-row-btn danger" data-del="${Admin.esc(p.id)}" aria-label="Hapus ${Admin.esc(p.name)}"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`).join("")}
+      </tbody></table></div>`;
+    box.querySelectorAll("[data-edit]").forEach((b) => b.addEventListener("click", () => openForm(packages.find((p) => p.id === b.dataset.edit))));
+    box.querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => askDelete(packages.find((p) => p.id === b.dataset.del))));
+  }
+
+  /* ---------- editor fitur paket: label + (teks | ya | tidak) ---------- */
+  function featRow(label = "", value = "") {
+    const type = value === true ? "yes" : value === false ? "no" : "text";
+    const div = document.createElement("div");
+    div.className = "a-feat";
+    div.innerHTML = `
+      <input class="form-control f-label" placeholder="Nama fitur, mis. Feed Content" maxlength="80" value="${Admin.esc(label)}">
+      <select class="form-control f-type" aria-label="Jenis nilai">
+        <option value="text" ${type === "text" ? "selected" : ""}>Teks</option>
+        <option value="yes" ${type === "yes" ? "selected" : ""}>✓ Ada</option>
+        <option value="no" ${type === "no" ? "selected" : ""}>✕ Tidak</option>
+      </select>
+      <input class="form-control f-val" placeholder="Nilai, mis. 8 / 1x" maxlength="80" value="${type === "text" ? Admin.esc(value) : ""}" ${type !== "text" ? "hidden" : ""}>
+      <button type="button" class="a-row-btn danger" aria-label="Hapus fitur"><i class="fas fa-times"></i></button>`;
+    const sel = div.querySelector(".f-type"), val = div.querySelector(".f-val");
+    sel.addEventListener("change", () => { val.hidden = sel.value !== "text"; });
+    div.querySelector(".a-row-btn").addEventListener("click", () => div.remove());
+    return div;
+  }
+
+  function readFeatures(form) {
+    const out = {};
+    for (const row of form.querySelectorAll(".a-feat")) {
+      const label = row.querySelector(".f-label").value.trim();
+      const type = row.querySelector(".f-type").value;
+      const text = row.querySelector(".f-val").value.trim();
+      if (!label) { if (type === "text" && !text) continue; throw new Error("Ada fitur yang belum diberi nama."); }
+      if (label in out) throw new Error(`Nama fitur “${label}” dipakai dua kali.`);
+      out[label] = type === "yes" ? true : type === "no" ? false : text;
+    }
+    return out;
+  }
+
+  function openForm(p) {
+    const edit = !!p;
+    if (!services.length) return Admin.toast("Buat layanan terlebih dahulu.");
+    const v = p || { serviceId: filter !== "all" ? filter : services[0].id, name: "", price: "", eta: "", fit: "", revisionLimit: 1, rows: {}, highlight: false, sortOrder: packages.length + 1, isActive: true };
+    const ctx = Admin.openModal({
+      title: edit ? "Ubah Paket" : "Tambah Paket", size: "lg",
+      submitLabel: edit ? "Simpan Perubahan" : "Tambah Paket",
+      body: `
+        <div class="form-row">
+          <div class="form-group"><label>Layanan <span class="req">*</span></label>
+            <select class="form-control" name="serviceId">${services.map((s) => `<option value="${Admin.esc(s.id)}" ${s.id === v.serviceId ? "selected" : ""}>${Admin.esc(s.name)}</option>`).join("")}</select></div>
+          <div class="form-group"><label>Nama paket <span class="req">*</span></label>
+            <input class="form-control" name="name" maxlength="50" placeholder="Kenal / Dekat / Melekat" value="${Admin.esc(v.name)}" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Harga (Rp) <span class="req">*</span></label>
+            <input class="form-control" type="number" name="price" min="0" step="1" inputmode="numeric" value="${Admin.esc(v.price)}" required></div>
+          <div class="form-group"><label>Estimasi pengerjaan</label>
+            <input class="form-control" name="eta" maxlength="100" placeholder="7–10 hari kerja" value="${Admin.esc(v.eta)}"></div>
+        </div>
+        <div class="form-group"><label>Cocok untuk</label>
+          <textarea class="form-control" name="fit" rows="2" placeholder="Cocok untuk UMKM yang baru mulai…">${Admin.esc(v.fit)}</textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>Batas revisi</label>
+            <input class="form-control" type="number" name="revisionLimit" min="0" step="1" value="${Admin.esc(v.revisionLimit)}"></div>
+          <div class="form-group"><label>Urutan tampil</label>
+            <input class="form-control" type="number" name="sortOrder" min="0" step="1" value="${Admin.esc(v.sortOrder)}"></div>
+        </div>
+        <div class="form-group"><label>Isi paket / fitur</label>
+          <div class="a-feat-list" id="featList"></div>
+          <button type="button" class="btn btn-accent btn-sm mt-8" id="addFeat"><i class="fas fa-plus"></i> Tambah fitur</button></div>
+        <div class="a-switch-group">
+          ${Admin.switchHTML("highlight", "Tandai “Paling Populer”", v.highlight)}
+          ${Admin.switchHTML("isActive", "Tampilkan di situs", v.isActive)}
+        </div>`,
+      onSubmit: async (form) => {
+        const price = Number(form.price.value);
+        if (!form.elements.name.value.trim()) throw new Error("Nama paket wajib diisi.");
+        if (form.price.value === "" || !Number.isFinite(price) || price < 0) throw new Error("Harga tidak valid.");
+        const payload = {
+          serviceId: form.serviceId.value, name: form.elements.name.value.trim(), price,
+          eta: form.eta.value.trim(), fit: form.fit.value.trim(),
+          revisionLimit: Number(form.revisionLimit.value) || 0, sortOrder: Number(form.sortOrder.value) || 0,
+          highlight: form.highlight.checked, isActive: form.isActive.checked, rows: readFeatures(form)
+        };
+        if (edit) await Admin.api.put(`/services/admin/packages/${encodeURIComponent(p.id)}`, payload);
+        else await Admin.api.post("/services/admin/packages", payload);
+        ctx.close(); Admin.toast(edit ? "Paket diperbarui." : "Paket ditambahkan."); load();
+      }
+    });
+    const list = document.getElementById("featList");
+    const entries = Object.entries(v.rows || {});
+    (entries.length ? entries : [["", ""]]).forEach(([k, val]) => list.appendChild(featRow(k, val)));
+    document.getElementById("addFeat").addEventListener("click", () => { const r = featRow(); list.appendChild(r); r.querySelector(".f-label").focus(); });
+  }
+
+  function askDelete(p) {
+    Admin.confirmDialog({
+      title: "Hapus paket?",
+      message: `Paket <b>${Admin.esc(p.name)}</b> (${Admin.esc(svcName(p.serviceId))}) akan dihapus permanen. Riwayat pesanan lama tidak terpengaruh.`,
+      onConfirm: async () => { await Admin.api.del(`/services/admin/packages/${encodeURIComponent(p.id)}`); Admin.toast("Paket dihapus."); load(); }
+    });
+  }
+</script>
+</body>
+</html>

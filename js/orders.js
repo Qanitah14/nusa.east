@@ -1,88 +1,88 @@
 /* =========================================================
-   NUSA EAST — FRONTEND ORDER/TRACKING DEMO (localStorage)
-   Fokus tahap HTML + responsive. Data sementara di browser.
+   NUSA EAST — ORDER SIMULATION ENGINE
+   Simulasi alur: Pesan Paket → Pembayaran → Isi Brief →
+   Brief & Bahan Lengkap → Project Dimulai → Produksi → Preview
+   → Revisi → Finalisasi → Project Selesai
+   Disimpan di localStorage supaya tracking page bisa membaca
+   status yang sama tanpa perlu backend aktif (untuk demo/offline).
+   Struktur data ini identik dengan skema tabel `orders` &
+   `project_status_log` di backend/db/schema.sql.
    ========================================================= */
 
 const ORDERS_KEY = "nusaeast_orders";
+
+function getOrders() {
+  return JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]");
+}
+function saveOrders(orders) {
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+}
+
+function generateOrderId() {
+  const year = new Date().getFullYear();
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `NE-${year}-${rand}`;
+}
+
 const STATUS_STEPS = [
-  "Pesanan Dibuat", "Pembayaran Berhasil", "Brief Diisi", "Brief & Bahan Lengkap",
-  "Project Dimulai", "Produksi", "Preview Dikirim", "Revisi", "Finalisasi", "Project Selesai"
+  "Pesanan Dibuat",
+  "Pembayaran Berhasil",
+  "Brief Diisi",
+  "Brief & Bahan Lengkap",
+  "Project Dimulai",
+  "Produksi",
+  "Preview Dikirim",
+  "Revisi",
+  "Finalisasi",
+  "Project Selesai"
 ];
 
-function readOrders() {
-  try { return JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]"); }
-  catch (_) { return []; }
-}
-function saveOrders(orders) { localStorage.setItem(ORDERS_KEY, JSON.stringify(orders)); }
-function makeOrderId() {
-  const d = new Date();
-  return `NE-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
-}
-
-async function createOrder({ items, total, paymentMethod }) {
-  const orders = readOrders();
-  const now = new Date().toISOString();
+function createOrder({ items, total, paymentMethod }) {
+  const orders = getOrders();
+  const today = new Date();
   const order = {
-    id: makeOrderId(),
-    items: (items || []).map(i => ({ ...i, lineTotal: Number(i.price) * (i.qty || 1) })),
-    total: Number(total) || 0,
-    paymentMethod: paymentMethod || "Belum dipilih",
-    paymentStatus: "Berhasil",
-    createdAt: now,
-    status: "Pembayaran Berhasil",
-    statusIndex: 1,
+    id: generateOrderId(),
+    items,
+    total,
+    paymentMethod,
+    createdAt: today.toISOString(),
+    statusIndex: 1, // langsung "Pembayaran Berhasil" karena simulasi pembayaran instan
     revisionsUsed: 0,
-    revisionLimit: 1,
-    brief: null,
     log: [
-      { step: "Pesanan Dibuat", note: "Pesanan berhasil dibuat.", date: now },
-      { step: "Pembayaran Berhasil", note: "Pembayaran demo berhasil dikonfirmasi.", date: now }
-    ]
+      { step: "Pesanan Dibuat", date: today.toISOString() },
+      { step: "Pembayaran Berhasil", date: today.toISOString() }
+    ],
+    brief: null
   };
-  orders.unshift(order);
+  orders.push(order);
   saveOrders(orders);
   return order;
 }
 
-async function getOrder(id) {
-  return readOrders().find(o => o.id === id) || null;
+function getOrder(id) {
+  return getOrders().find(o => o.id === id);
 }
 
-async function advanceOrder(id, step, note = "") {
-  const orders = readOrders();
+function advanceOrder(id, note) {
+  const orders = getOrders();
   const order = orders.find(o => o.id === id);
   if (!order) return null;
-  if (!step) step = STATUS_STEPS[Math.min((order.statusIndex || 0) + 1, STATUS_STEPS.length - 1)];
-  order.status = step;
-  order.statusIndex = Math.max(0, STATUS_STEPS.indexOf(step));
-  order.log = order.log || [];
-  order.log.push({ step, note: note || `Status berubah menjadi ${step}.`, date: new Date().toISOString() });
+  if (order.statusIndex < STATUS_STEPS.length - 1) {
+    order.statusIndex++;
+    order.log.push({ step: STATUS_STEPS[order.statusIndex], date: new Date().toISOString(), note: note || "" });
+  }
   saveOrders(orders);
   return order;
 }
 
-async function saveBrief(id, briefData) {
-  const orders = readOrders();
+function saveBrief(id, briefData) {
+  const orders = getOrders();
   const order = orders.find(o => o.id === id);
-  if (!order) throw new Error("Order tidak ditemukan.");
+  if (!order) return null;
   order.brief = briefData;
-  order.status = "Brief Diisi";
-  order.statusIndex = STATUS_STEPS.indexOf("Brief Diisi");
-  order.log = order.log || [];
-  order.log.push({ step: "Brief Diisi", note: "Brief project telah dikirim.", date: new Date().toISOString() });
   saveOrders(orders);
-  return order;
-}
-
-async function requestRevision(id, note) {
-  const orders = readOrders();
-  const order = orders.find(o => o.id === id);
-  if (!order) throw new Error("Order tidak ditemukan.");
-  order.revisionsUsed = (order.revisionsUsed || 0) + 1;
-  order.status = "Revisi";
-  order.statusIndex = STATUS_STEPS.indexOf("Revisi");
-  order.log = order.log || [];
-  order.log.push({ step: "Revisi", note: note || "Permintaan revisi dikirim.", date: new Date().toISOString() });
-  saveOrders(orders);
+  advanceOrder(id, "Brief disubmit oleh klien");
+  // Simulasikan bahan otomatis lengkap setelah brief (untuk keperluan demo)
+  advanceOrder(id, "Bahan pendukung diterima");
   return order;
 }

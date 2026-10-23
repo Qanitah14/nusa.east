@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Daftar Admin — Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-body">
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="text-center mb-24">
+      <img src="../img/logo.png" alt="Nusa East" style="width:64px;height:64px;margin:0 auto 14px;object-fit:contain" onerror="this.style.display='none'">
+      <span class="eyebrow">Admin Panel</span>
+      <h2>Buat Akun Admin</h2>
+      <p class="mt-8">Pendaftaran admin dibatasi menggunakan kunci registrasi dari pengelola sistem.</p>
+    </div>
+    <div class="form-error" id="registerError" hidden></div>
+    <div class="form-success" id="registerSuccess" hidden></div>
+    <form id="adminRegisterForm" novalidate>
+      <div class="form-group"><label for="name">Nama lengkap</label><input class="form-control" id="name" name="name" autocomplete="name" required maxlength="150"></div>
+      <div class="form-group"><label for="email">Email</label><input class="form-control" type="email" id="email" name="email" autocomplete="email" required></div>
+      <div class="form-group"><label for="phone">Nomor telepon (opsional)</label><input class="form-control" type="tel" id="phone" name="phone" autocomplete="tel"></div>
+      <div class="form-group"><label for="password">Password (minimal 8 karakter)</label><input class="form-control" type="password" id="password" name="password" autocomplete="new-password" minlength="8" required></div>
+      <div class="form-group"><label for="registrationKey">Kunci registrasi admin</label><input class="form-control" type="password" id="registrationKey" name="registrationKey" autocomplete="off" required aria-describedby="keyHelp"><small id="keyHelp">Kunci ini harus sama dengan ADMIN_REGISTRATION_KEY di file .env backend.</small></div>
+      <button type="submit" class="btn btn-primary btn-block" id="registerBtn">Buat Akun Admin</button>
+    </form>
+    <p class="auth-switch"><a href="login.html">← Kembali ke login admin</a></p>
+    <p class="a-login-note">Jangan bagikan kunci registrasi. Hapus atau ganti kunci setelah akun admin dibuat.</p>
+  </div>
+</div>
+<script>
+const form = document.getElementById('adminRegisterForm');
+const errorBox = document.getElementById('registerError');
+const successBox = document.getElementById('registerSuccess');
+const btn = document.getElementById('registerBtn');
+function showError(message) { errorBox.textContent = message; errorBox.hidden = !message; }
+form.addEventListener('submit', async (event) => {
+  event.preventDefault(); showError(''); successBox.hidden = true;
+  const data = Object.fromEntries(new FormData(form).entries());
+  data.name = data.name.trim(); data.email = data.email.trim().toLowerCase();
+  if (!data.name || !data.email || !data.password || !data.registrationKey) return showError('Lengkapi semua kolom wajib.');
+  if (data.password.length < 8) return showError('Password minimal 8 karakter.');
+  btn.disabled = true; btn.textContent = 'Membuat akun…';
+  try {
+    const apiBase = (window.NUSAEAST_API_BASE || 'http://localhost:4000/api').replace(/\/$/, '');
+    const response = await fetch(`${apiBase}/auth/admin-register`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || `Pendaftaran gagal (${response.status}).`);
+    successBox.textContent = result.message || 'Akun admin berhasil dibuat. Silakan masuk.';
+    successBox.hidden = false; form.reset();
+    setTimeout(() => location.href = 'login.html', 1600);
+  } catch (error) {
+    showError(error instanceof TypeError ? `Tidak dapat menghubungi backend (${window.NUSAEAST_API_BASE || 'http://localhost:4000/api'}). Pastikan server aktif dan CORS mengizinkan alamat frontend ini.` : error.message);
+  } finally { btn.disabled = false; btn.textContent = 'Buat Akun Admin'; }
+});
+</script>
+</body>
+</html>

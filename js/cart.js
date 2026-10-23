@@ -1,112 +1,113 @@
 /* =========================================================
-   NUSA EAST — FRONTEND CART (localStorage)
-   Versi frontend-only: data keranjang disimpan sementara
-   di browser agar seluruh alur HTML dapat diuji tanpa backend.
+   NUSA EAST — CART ENGINE
+   Menyimpan cart di localStorage (key: nusaeast_cart) supaya
+   persist antar halaman tanpa perlu login dulu.
+   Struktur 1 item cart:
+   {
+     id, type: 'package' | 'single' | 'addon',
+     name, price, qty, meta (misal nama layanan / eta), percent (untuk express)
+   }
    ========================================================= */
 
 const CART_KEY = "nusaeast_cart";
 
-function readCart() {
-  try { return JSON.parse(localStorage.getItem(CART_KEY) || "[]"); }
-  catch (_) { return []; }
+function getCart() {
+  return JSON.parse(localStorage.getItem(CART_KEY) || "[]");
 }
 
-function writeCart(cart) {
+function saveCart(cart) {
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  updateCartCount();
 }
 
-function makeCartId(item) {
-  return `${item.type || "item"}-${item.id}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
-}
-
-async function getCart() {
-  return readCart();
-}
-
-async function addToCart(item) {
-  const cart = readCart();
-  const existing = cart.find(i => i.id === item.id && i.type === item.type);
+function addToCart(item) {
+  const cart = getCart();
+  const existing = cart.find(i => i.id === item.id);
   if (existing) {
-    existing.qty = (existing.qty || 1) + (item.qty || 1);
-    existing.selected = true;
+    existing.qty += item.qty || 1;
   } else {
-    cart.push({
-      cartId: makeCartId(item),
-      id: item.id,
-      type: item.type,
-      name: item.name,
-      price: Number(item.price) || 0,
-      qty: Math.max(1, Number(item.qty) || 1),
-      meta: item.meta || null,
-      selected: true
-    });
+    cart.push({ qty: 1, ...item });
   }
-  writeCart(cart);
-  if (typeof updateCartCount === "function") await updateCartCount();
-  if (typeof showToast === "function") showToast(`${item.name} ditambahkan ke keranjang.`);
-  return cart;
+  saveCart(cart);
+  showToast(`${item.name} ditambahkan ke keranjang`);
 }
 
-async function removeFromCart(cartId) {
-  writeCart(readCart().filter(i => i.cartId !== cartId));
-  if (typeof updateCartCount === "function") await updateCartCount();
-  if (typeof renderCartPage === "function") await renderCartPage();
+function removeFromCart(id) {
+  saveCart(getCart().filter(i => i.id !== id));
+  if (typeof renderCartPage === "function") renderCartPage();
 }
 
-async function updateQty(cartId, currentQty, delta) {
-  const cart = readCart();
-  const item = cart.find(i => i.cartId === cartId);
+function updateQty(id, delta) {
+  const cart = getCart();
+  const item = cart.find(i => i.id === id);
   if (!item) return;
-  item.qty = Math.max(1, Number(currentQty || item.qty || 1) + Number(delta || 0));
-  writeCart(cart);
-  if (typeof updateCartCount === "function") await updateCartCount();
-  if (typeof renderCartPage === "function") await renderCartPage();
+  item.qty = Math.max(1, (item.qty || 1) + delta);
+  saveCart(cart);
+  if (typeof renderCartPage === "function") renderCartPage();
 }
 
-async function toggleCartSelection(cartId, checked) {
-  const cart = readCart();
-  const item = cart.find(i => i.cartId === cartId);
-  if (!item) return;
-  item.selected = Boolean(checked);
-  writeCart(cart);
-  if (typeof renderCartPage === "function") await renderCartPage();
-}
-
-async function removeSelectedFromCart() {
-  writeCart(readCart().filter(i => i.selected === false));
-  if (typeof updateCartCount === "function") await updateCartCount();
-}
-
-async function clearCart() {
+function clearCart() {
   localStorage.removeItem(CART_KEY);
-  if (typeof updateCartCount === "function") await updateCartCount();
+  updateCartCount();
 }
 
-async function calculateCartTotals(selectedOnly = false) {
-  const cart = readCart();
-  const activeCart = selectedOnly ? cart.filter(i => i.selected !== false) : cart;
-  const breakdown = activeCart.map(i => ({
-    ...i,
-    lineTotal: Number(i.price) * (i.qty || 1)
-  }));
-  const base = breakdown.reduce((sum, i) => sum + i.lineTotal, 0);
-  return { cart: activeCart, breakdown, base, percentExtra: 0, total: base };
+function formatIDR(num) {
+  return "Rp" + Math.round(num).toLocaleString("id-ID");
 }
 
-function formatIDR(value) {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(value) || 0);
+/* Menghitung total keseluruhan cart.
+   Item "percent" (Express/Priority +20%) dihitung dari subtotal
+   item non-percent, lalu ditambahkan terpisah — sesuai aturan
+   "jangan mengubah harga paket utama, tampilkan add-on terpisah". */
+function calculateCartTotals() {
+  const cart = getCart();
+  let base = 0;
+  let percentExtra = 0;
+  const breakdown = [];
+
+  cart.forEach(item => {
+    if (item.percent) {
+      // dihitung belakangan setelah base diketahui
+      return;
+    }
+    const lineTotal = item.price * item.qty;
+    base += lineTotal;
+    breakdown.push({ ...item, lineTotal });
+  });
+
+  cart.forEach(item => {
+    if (item.percent) {
+      const extra = (base * item.percent) / 100 * item.qty;
+      percentExtra += extra;
+      breakdown.push({ ...item, lineTotal: extra });
+    }
+  });
+
+  const total = base + percentExtra;
+  return { cart, breakdown, base, percentExtra, total };
 }
 
-function showToast(message) {
-  let toast = document.getElementById("nusaeastToast");
+function showToast(msg) {
+  let toast = document.getElementById("ne-toast");
   if (!toast) {
     toast = document.createElement("div");
-    toast.id = "nusaeastToast";
-    toast.className = "toast";
+    toast.id = "ne-toast";
+    toast.style.cssText = `
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #1E3B2C; color: #fff; padding: 14px 24px; border-radius: 999px;
+      font-size: 0.9rem; font-weight: 600; z-index: 999; opacity: 0; transition: all 0.25s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    `;
     document.body.appendChild(toast);
   }
-  toast.textContent = message;
-  toast.classList.add("show");
-  clearTimeout(window.__nusaeastToastTimer);
-  window.__nusaeastToastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+  toast.textContent = msg;
+  requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(-50%) translateY(0)";
+  });
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(-50%) translateY(20px)";
+  }, 2200);
 }

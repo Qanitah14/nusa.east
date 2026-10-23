@@ -4,18 +4,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paket Lengkap — Nusa East</title>
+<title>Paket — Nusa East</title>
+<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<!-- Vercel Web Analytics -->
-<script>
-  window.va = window.va || function () {
-    (window.vaq = window.vaq || []).push(arguments);
-  };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
 <body>
 
 <section class="page-hero">
@@ -34,7 +28,6 @@
 </section>
 
 <script src="js/data.js"></script>
-
 <script src="js/cart.js"></script>
 <script src="js/layout.js"></script>
 <script>
@@ -76,7 +69,7 @@
       <div class="pricing-card ${tier.highlight ? 'highlight' : ''}">
         ${tier.highlight ? '<span class="badge badge-popular">Paling Populer</span>' : ''}
         <span class="tier-name">${tier.name}</span>
-        <div class="tier-price">${formatIDR(tier.price)}<span>${s.type === 'subscription' ? '/project' : '/project'}</span></div>
+        <div class="tier-price">${formatIDR(tier.price)}<span>${s.type === 'subscription' ? '/bulan' : '/project'}</span></div>
         ${tier.eta ? `<div class="tier-eta">⏱ Estimasi: ${tier.eta}</div>` : ''}
         <p class="tier-fit">${tier.fit}</p>
         <ul class="tier-rows">

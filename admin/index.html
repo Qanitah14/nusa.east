@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Dashboard — Admin Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-body">
+<div class="admin-app" id="adminApp">
+  <main class="admin-main">
+    <div class="admin-content">
+      <div class="a-page-head">
+        <div>
+          <span class="eyebrow">Ringkasan</span>
+          <h1 style="font-size:clamp(1.8rem,3.4vw,2.6rem);">Selamat datang, <span id="who">Admin</span></h1>
+          <p>Pantau katalog layanan dan pesanan terbaru Nusa East.</p>
+        </div>
+        <div class="a-actions">
+          <a href="services.html" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Tambah Layanan</a>
+        </div>
+      </div>
+
+      <div id="stats"></div>
+
+      <div class="a-card">
+        <div class="a-card-head"><h3>Pesanan Terbaru</h3></div>
+        <div id="recent"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/admin.js"></script>
+<script>
+  if (Admin.init("dashboard")) {
+    document.getElementById("who").textContent = (Admin.getUser().name || "Admin").split(" ")[0];
+    load();
+  }
+
+  async function load() {
+    const stats = document.getElementById("stats");
+    const recent = document.getElementById("recent");
+    stats.innerHTML = Admin.loading();
+    recent.innerHTML = "";
+    try {
+      const d = await Admin.api.get("/services/admin/stats");
+      const card = (icon, num, label, sub) => `
+        <div class="a-stat"><div class="ico"><i class="fas ${icon}"></i></div>
+          <div class="num">${num}</div><div class="lbl">${label}</div>${sub ? `<div class="sub">${sub}</div>` : ""}</div>`;
+      stats.innerHTML = `<div class="a-stats">
+        ${card("fa-layer-group", d.services.total, "Layanan", `${d.services.active} aktif`)}
+        ${card("fa-box-open", d.packages.total, "Paket", `${d.packages.active} aktif`)}
+        ${card("fa-tags", d.singles.total, "Layanan Satuan", `${d.singles.active} aktif`)}
+        ${card("fa-receipt", d.orders.total, "Total Pesanan", "")}
+        ${card("fa-wallet", Admin.idr(d.orders.revenue), "Pendapatan (lunas)", "")}
+        ${card("fa-users", d.clients, "Pelanggan", "")}
+      </div>`;
+
+      recent.innerHTML = d.recentOrders.length ? `
+        <div class="a-table-wrap" style="border:none;">
+          <table class="a-table">
+            <thead><tr><th>ID Pesanan</th><th>Pelanggan</th><th>Status</th><th>Tanggal</th><th class="num">Total</th></tr></thead>
+            <tbody>${d.recentOrders.map((o) => `
+              <tr>
+                <td class="main"><span class="name">${Admin.esc(o.id)}</span></td>
+                <td data-label="Pelanggan">${Admin.esc(o.customer || "-")}</td>
+                <td data-label="Status"><span class="badge badge-orange">${Admin.esc(o.status)}</span></td>
+                <td data-label="Tanggal">${Admin.dateID(o.created_at)}</td>
+                <td class="num" data-label="Total">${Admin.idr(o.total)}</td>
+              </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>` : Admin.empty("fa-inbox", "Belum ada pesanan", "Pesanan pelanggan akan muncul di sini.");
+    } catch (err) {
+      stats.innerHTML = Admin.errorBox(err.message);
+      document.getElementById("retryBtn")?.addEventListener("click", load);
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id">
+<link rel="icon" type="image/png" href="img/logo.png">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nusa East — Digital Marketing untuk Brand Lokal</title>
+<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Jalur Pemesanan 3</span>
+    <h1>Add-On untuk Project Aktif</h1>
+    <p>Sedang dalam masa pengerjaan tapi butuh tambahan konten? Tambahkan add-on di sini. Harga paket utama tidak akan berubah — add-on selalu ditampilkan terpisah dari paket.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top:10px;">
+  <div class="container">
+    <div class="form-card mb-40" style="max-width:520px;">
+      <div class="form-group">
+        <label>Nomor Order / Project ID</label>
+        <input type="text" class="form-control" id="projectId" placeholder="Contoh: NE-2026-0091">
+        <p class="hint">Bisa dilihat di halaman <a href="tracking.html" style="color:var(--color-accent-dark);">Tracking Project</a> kamu.</p>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--color-cream-card); border:none; margin-bottom:32px;">
+      <strong>Contoh ilustrasi:</strong>
+      <p class="mt-8">Klien membeli Social Media Growth Rp2.500.000/bulan (12 feed + 4 Reels). Di tengah pengerjaan klien meminta 2 Reels tambahan.</p>
+      <div class="summary-row"><span>Paket Utama: Growth</span><span>Rp2.500.000</span></div>
+      <div class="summary-row"><span>Add-On: 2 Reels</span><span>Rp400.000</span></div>
+      <div class="summary-row total"><span>Total Keseluruhan</span><span>Rp2.900.000</span></div>
+    </div>
+
+    <div id="addonList" class="grid-2"></div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/layout.js"></script>
+<script>
+  renderHeader('services');
+  renderFooter();
+
+  const wrap = document.getElementById("addonList");
+  NUSAEAST_DATA.addons.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "card addon-item-card";
+    const priceLabel = item.percent ? `+${item.percent}%` : formatIDR(item.price);
+    card.innerHTML = `
+      <div>
+        <div class="item-name">${item.name}</div>
+        ${item.note ? `<div class="item-note">${item.note}</div>` : ""}
+        <div class="item-price mt-8">${priceLabel}</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick='addAddonToCart("${item.id}")'>+ Keranjang</button>
+    `;
+    wrap.appendChild(card);
+  });
+
+  window.addAddonToCart = function(itemId) {
+    const projectId = document.getElementById("projectId").value.trim();
+    if (!projectId) {
+      showToast("Isi Nomor Order / Project ID terlebih dahulu");
+      document.getElementById("projectId").focus();
+      return;
+    }
+    const item = NUSAEAST_DATA.addons.find(i => i.id === itemId);
+    addToCart({
+      id: item.id + "-" + projectId,
+      type: "addon",
+      name: item.name,
+      price: item.price || 0,
+      percent: item.percent || null,
+      qty: 1,
+      meta: "Project " + projectId
+    });
+  };
+</script>
+</body>
+</html>

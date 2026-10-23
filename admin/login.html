@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Masuk Admin — Admin Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-body">
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="text-center mb-24">
+      <img src="img/logo.png" alt="Nusa East" style="width:64px;height:64px;margin:0 auto 14px;object-fit:contain;" onerror="this.style.display='none'">
+      <span class="eyebrow">Admin Panel</span>
+      <h2>Masuk sebagai Admin</h2>
+      <p class="mt-8">Kelola layanan, paket, dan harga Nusa East.</p>
+    </div>
+
+    <div class="form-error" id="loginError" hidden></div>
+
+    <form id="adminLoginForm" novalidate>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" class="form-control" name="email" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="a-pw">
+          <input type="password" id="password" class="form-control" name="password" autocomplete="current-password" required>
+          <button type="button" id="togglePw" aria-label="Tampilkan password"><i class="fas fa-eye"></i></button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Masuk</button>
+    </form>
+
+    <p class="auth-switch"><a href="register.html">Belum punya akun admin? Daftar admin</a></p>
+    <p class="auth-switch"><a href="../login.html">Masuk sebagai pengguna</a> · <a href="../index.html">Kembali ke situs</a></p>
+    <p class="a-login-note">Halaman ini hanya untuk admin. Akun pelanggan tidak dapat masuk di sini.</p>
+  </div>
+</div>
+
+<script src="../js/admin.js"></script>
+<script>
+  if (Admin.getToken() && Admin.getUser()) location.replace("index.html");
+
+  const errBox = document.getElementById("loginError");
+  const showErr = (m) => { errBox.textContent = m; errBox.hidden = !m; };
+  if (new URLSearchParams(location.search).get("expired")) showErr("Sesi admin berakhir. Silakan masuk kembali.");
+
+  document.getElementById("togglePw").addEventListener("click", (e) => {
+    const input = document.getElementById("password");
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    e.currentTarget.innerHTML = `<i class="fas ${show ? "fa-eye-slash" : "fa-eye"}"></i>`;
+    e.currentTarget.setAttribute("aria-label", show ? "Sembunyikan password" : "Tampilkan password");
+  });
+
+  document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showErr("");
+    const btn = document.getElementById("loginBtn");
+    const { email, password } = Object.fromEntries(new FormData(e.target).entries());
+    if (!email.trim() || !password) return showErr("Email dan password wajib diisi.");
+    btn.disabled = true; btn.textContent = "Memeriksa…";
+    try {
+      await Admin.login(email.trim(), password);
+      location.href = "index.html";
+    } catch (err) {
+      showErr(err.message);
+      btn.disabled = false; btn.textContent = "Masuk";
+    }
+  });
+</script>
+</body>
+</html>

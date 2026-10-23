@@ -42,8 +42,24 @@ CREATE TABLE single_services (
   service_id VARCHAR(30) REFERENCES services(id),
   name VARCHAR(150) NOT NULL,
   unit_label VARCHAR(100),
-  price NUMERIC(14,2) NOT NULL
+  price NUMERIC(14,2) NOT NULL,
+  image_url TEXT,
+  description TEXT NOT NULL DEFAULT '',
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
+
+-- ---------- ULASAN LAYANAN SATUAN ----------
+CREATE TABLE IF NOT EXISTS single_service_reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  single_service_id VARCHAR(50) NOT NULL REFERENCES single_services(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  comment TEXT NOT NULL CHECK (char_length(comment) BETWEEN 3 AND 1200),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  UNIQUE(single_service_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_single_reviews_product_date ON single_service_reviews(single_service_id, created_at DESC);
 
 -- ---------- ADD-ONS ----------
 CREATE TABLE addons (
@@ -52,23 +68,6 @@ CREATE TABLE addons (
   price NUMERIC(14,2),               -- NULL jika berbasis persen
   percent NUMERIC(5,2),              -- misal 20.00 untuk Express +20%
   note VARCHAR(150)
-);
-
-
--- ---------- CART (tersimpan per akun/user) ----------
-CREATE TABLE cart_items (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  item_type VARCHAR(20) NOT NULL,
-  item_ref_id VARCHAR(50) NOT NULL,
-  name VARCHAR(150) NOT NULL,
-  price NUMERIC(14,2) NOT NULL,
-  qty INT NOT NULL DEFAULT 1 CHECK (qty >= 1),
-  meta TEXT,
-  selected BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMP DEFAULT now(),
-  updated_at TIMESTAMP DEFAULT now(),
-  UNIQUE(user_id, item_type, item_ref_id)
 );
 
 -- ---------- ORDERS ----------
@@ -142,12 +141,7 @@ CREATE TABLE payments (
   created_at TIMESTAMP DEFAULT now()
 );
 
-CREATE INDEX idx_cart_user ON cart_items(user_id);
 CREATE INDEX idx_orders_user ON orders(user_id);
 CREATE INDEX idx_order_items_order ON order_items(order_id);
 CREATE INDEX idx_status_log_order ON project_status_log(order_id);
 CREATE INDEX idx_payments_order ON payments(order_id);
-
--- CATATAN MIGRASI untuk database yang SUDAH pernah dibuat:
--- Jalankan blok CREATE TABLE cart_items + CREATE INDEX idx_cart_user secara manual
--- bila schema lama sudah terpasang. Jangan perlu menghapus data order/user lama.
