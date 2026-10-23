@@ -1,4 +1,3 @@
-// Koneksi PostgreSQL — dipakai oleh semua routes/controllers
 const { Pool } = require("pg");
 require("dotenv").config();
 

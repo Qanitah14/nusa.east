@@ -103,8 +103,17 @@ router.get("/admin/stats", ...admin, handle("Gagal mengambil ringkasan.", async 
     q("SELECT COUNT(*)::int AS total FROM users WHERE role = 'client'")
   ]);
   const recent = await pool.query(
-    `SELECT o.id, o.total, o.status, o.created_at, COALESCE(o.customer_name, u.name) AS customer
-       FROM orders o LEFT JOIN users u ON u.id = o.user_id ORDER BY o.created_at DESC LIMIT 5`);
+  `SELECT
+      o.id,
+      o.total,
+      o.status,
+      o.created_at,
+      u.name AS customer
+   FROM orders o
+   LEFT JOIN users u ON u.id = o.user_id
+   ORDER BY o.created_at DESC
+   LIMIT 5`
+);
   return { services: svc, packages: pkg, singles: sng, orders: ord, clients: usr.total, recentOrders: recent.rows };
 }));
 

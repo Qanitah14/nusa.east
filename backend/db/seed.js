@@ -1,9 +1,4 @@
-// Seed data awal + akun admin.
-//   npm run seed
-// - Menjalankan migrasi 003 (kolom tambahan layanan)
-// - Mengisi tabel layanan dari js/data.js — HANYA bila belum ada (data hasil edit admin tidak ditimpa)
-// - Membuat akun admin dari ADMIN_EMAIL / ADMIN_PASSWORD di .env
-//   (bila ADMIN_PASSWORD kosong, dibuatkan password acak dan ditampilkan SEKALI di terminal)
+
 require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
