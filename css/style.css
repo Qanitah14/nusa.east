@@ -2137,3 +2137,69 @@ body:has(#cartLayout) .cart-layout .btn {
     padding: 14px 0;
   }
 }
+
+
+/* CHECKOUT: judul dan deskripsi sejajar */
+.checkout-hero {
+  padding: 28px 0 12px;
+  text-align: left;
+}
+
+.checkout-hero .container {
+  width: 100%;
+}
+
+
+/* Judul dan deskripsi tersusun vertikal */
+.checkout-hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.checkout-hero-title .eyebrow {
+  margin-bottom: 8px;
+}
+
+.checkout-hero h1 {
+  margin-bottom: 0;
+}
+
+.checkout-hero p {
+  max-width: 720px;
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+/* Kurangi ruang kosong di area checkout */
+.checkout-hero {
+  padding: 28px 0 8px;
+  text-align: left;
+}
+
+.checkout-hero + .section {
+  padding-top: 20px;
+}
+
+/* Tampilan ponsel */
+@media (max-width: 700px) {
+  .checkout-hero {
+    padding: 24px 0 8px;
+  }
+
+  .checkout-hero-content {
+    gap: 10px;
+  }
+
+  .checkout-hero h1 {
+    font-size: 2rem;
+  }
+
+  .checkout-hero + .section {
+    padding-top: 16px;
+  }
+
+}
