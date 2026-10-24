@@ -21,6 +21,18 @@ function renderHeader(activePage) {
     { href: "about.html", label: "About", key: "about" }
   ];
 
+  let session = null;
+
+try {
+  session = JSON.parse(
+    localStorage.getItem("nusaeast_session") || "null"
+  );
+} catch (error) {
+  session = null;
+}
+
+const accountHref = session ? "profile.html" : "login.html";
+
   const navHTML = links.map(l =>
     `<a href="${l.href}" class="${activePage === l.key ? 'active' : ''}">${l.label}</a>`
   ).join("");
