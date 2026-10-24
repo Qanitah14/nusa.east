@@ -45,29 +45,58 @@ async function seedCatalog(client) {
   return added;
 }
 
+
 async function seedAdmin(client) {
-  const email = String(process.env.ADMIN_EMAIL || "admin@nusaeast.id").trim().toLowerCase();
+  const email = String(
+    process.env.ADMIN_EMAIL || "admin@nusaeast.id"
+  ).trim().toLowerCase();
+
   const name = process.env.ADMIN_NAME || "Admin Nusa East";
-  const exists = await client.query("SELECT id, role FROM users WHERE LOWER(email) = $1", [email]);
+
+  // Periksa apakah akun sudah ada di tabel admins
+  const exists = await client.query(
+    "SELECT id FROM admins WHERE LOWER(email) = $1",
+    [email]
+  );
 
   if (exists.rows[0]) {
-    if (exists.rows[0].role !== "admin") {
-      await client.query("UPDATE users SET role = 'admin' WHERE id = $1", [exists.rows[0].id]);
-      return { email, note: "Akun sudah ada, role dinaikkan menjadi admin (password tidak diubah)." };
-    }
-    return { email, note: "Akun admin sudah ada, tidak diubah." };
+    return {
+      email,
+      note: "Akun admin sudah ada, tidak diubah."
+    };
   }
 
+  // Ambil password dari environment atau buat password sementara
   let password = process.env.ADMIN_PASSWORD;
   let generated = false;
-  if (!password) { password = crypto.randomBytes(9).toString("base64url"); generated = true; }
-  if (password.length < 8) throw new Error("ADMIN_PASSWORD minimal 8 karakter.");
 
+  if (!password) {
+    password = crypto.randomBytes(9).toString("base64url");
+    generated = true;
+  }
+
+  if (password.length < 8) {
+    throw new Error("ADMIN_PASSWORD minimal 8 karakter.");
+  }
+
+  // Simpan admin ke tabel admins
   await client.query(
-    "INSERT INTO users (name, email, password_hash, role) VALUES ($1,$2,$3,'admin')",
-    [name, email, await bcrypt.hash(password, 10)]);
-  return { email, password: generated ? password : null, note: "Akun admin dibuat." };
+    `INSERT INTO admins (name, email, password_hash)
+     VALUES ($1, $2, $3)`,
+    [
+      name,
+      email,
+      await bcrypt.hash(password, 12)
+    ]
+  );
+
+  return {
+    email,
+    password: generated ? password : null,
+    note: "Akun admin berhasil dibuat di tabel admins."
+  };
 }
+
 
 (async () => {
   const client = await pool.connect();

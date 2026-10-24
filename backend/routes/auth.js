@@ -77,37 +77,87 @@ function noteFail(key) {
 
 // POST /api/auth/admin-register — pendaftaran admin dibatasi dengan kunci bootstrap di server.
 // Jangan pernah membuka pembuatan role admin tanpa ADMIN_REGISTRATION_KEY.
+
 router.post("/admin-register", async (req, res) => {
   try {
     const name = String(req.body.name || "").trim();
     const email = String(req.body.email || "").trim().toLowerCase();
-    const phone = String(req.body.phone || "").trim();
     const password = String(req.body.password || "");
     const registrationKey = String(req.body.registrationKey || "");
     const configuredKey = String(process.env.ADMIN_REGISTRATION_KEY || "");
 
-    if (!configuredKey) return res.status(503).json({ error: "Pendaftaran admin belum diaktifkan. Atur ADMIN_REGISTRATION_KEY di file .env backend." });
-    if (!name || !email || !password || !registrationKey) return res.status(400).json({ error: "Nama, email, password, dan kunci registrasi wajib diisi." });
-    if (registrationKey !== configuredKey) return res.status(403).json({ error: "Kunci registrasi admin tidak valid." });
-    if (password.length < 8) return res.status(400).json({ error: "Password minimal 8 karakter." });
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Format email tidak valid." });
+    if (!configuredKey) {
+      return res.status(503).json({
+        error: "Pendaftaran admin belum diaktifkan."
+      });
+    }
 
-    const existing = await pool.query("SELECT id FROM users WHERE LOWER(email) = $1", [email]);
-    if (existing.rows.length) return res.status(409).json({ error: "Email sudah terdaftar." });
+    if (!name || !email || !password || !registrationKey) {
+      return res.status(400).json({
+        error: "Nama, email, password, dan kunci registrasi wajib diisi."
+      });
+    }
+
+    if (registrationKey !== configuredKey) {
+      return res.status(403).json({
+        error: "Kunci registrasi admin tidak valid."
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        error: "Password minimal 8 karakter."
+      });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({
+        error: "Format email tidak valid."
+      });
+    }
+
+    const existing = await pool.query(
+      `SELECT id FROM admins WHERE LOWER(email) = $1`,
+      [email]
+    );
+
+    if (existing.rows.length) {
+      return res.status(409).json({
+        error: "Email sudah terdaftar sebagai admin."
+      });
+    }
 
     const passwordHash = await bcrypt.hash(password, 12);
+
     const result = await pool.query(
-      `INSERT INTO users (name, email, phone, password_hash, role)
-       VALUES ($1, $2, $3, $4, 'admin') RETURNING id, name, email, role`,
-      [name, email, phone || null, passwordHash]
+      `INSERT INTO admins (name, email, password_hash)
+       VALUES ($1, $2, $3)
+       RETURNING id, name, email`,
+      [name, email, passwordHash]
     );
-    return res.status(201).json({ message: "Akun admin berhasil dibuat. Silakan masuk.", user: result.rows[0] });
+
+    return res.status(201).json({
+      message: "Akun admin berhasil dibuat. Silakan masuk.",
+      user: {
+        ...result.rows[0],
+        role: "admin"
+      }
+    });
   } catch (err) {
-    if (err.code === "23505") return res.status(409).json({ error: "Email sudah terdaftar." });
-    console.error("Admin registration error:", err);
-    return res.status(500).json({ error: "Terjadi kesalahan pada server." });
+    if (err.code === "23505") {
+      return res.status(409).json({
+        error: "Email sudah terdaftar sebagai admin."
+      });
+    }
+
+    console.error("Admin registration error:", err.code || err.message);
+
+    return res.status(500).json({
+      error: "Terjadi kesalahan pada server."
+    });
   }
 });
+
 
 // POST /api/auth/admin-login — hanya untuk akun ber-role admin
 router.post("/admin-login", async (req, res) => {
@@ -121,18 +171,41 @@ router.post("/admin-login", async (req, res) => {
       return res.status(429).json({ error: "Terlalu banyak percobaan. Coba lagi dalam 15 menit." });
     }
 
-    const result = await pool.query("SELECT * FROM users WHERE LOWER(email) = $1", [email]);
-    const user = result.rows[0];
-    const valid = user && (await bcrypt.compare(password, user.password_hash));
-    // Pesan sama untuk email salah / password salah / bukan admin supaya tidak membocorkan akun
-    if (!valid || user.role !== "admin") {
-      noteFail(key);
-      return res.status(401).json({ error: "Email atau password admin salah." });
-    }
+   const result = await pool.query(
+  "SELECT * FROM admins WHERE LOWER(email) = $1",
+  [email]
+);
 
-    attempts.delete(key);
-    const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "12h" });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+const admin = result.rows[0];
+const valid =
+  admin && (await bcrypt.compare(password, admin.password_hash));
+
+// Pesan sama untuk email salah atau password salah
+if (!valid) {
+  noteFail(key);
+  return res.status(401).json({
+    error: "Email atau password admin salah."
+  });
+}
+
+attempts.delete(key);
+
+const token = jwt.sign(
+  { userId: admin.id, role: "admin" },
+  process.env.JWT_SECRET,
+  { expiresIn: "12h" }
+);
+
+res.json({
+  token,
+  user: {
+    id: admin.id,
+    name: admin.name,
+    email: admin.email,
+    role: "admin"
+  }
+});
+
   } catch (err) {
     console.error("Auth endpoint error:", err.code || err.message);
     const dbUnavailable = ["ECONNREFUSED", "ENOTFOUND", "28P01", "3D000", "ECONNRESET"].includes(err.code);
@@ -155,17 +228,48 @@ function requireAuth(req, res, next) {
 
 // Khusus admin — pasang SETELAH requireAuth: router.post("/x", requireAuth, requireAdmin, handler)
 // Role dicek ulang ke database, jadi akun yang dicabut hak adminnya langsung ditolak.
+
 async function requireAdmin(req, res, next) {
   try {
-    if (req.user?.role !== "admin") return res.status(403).json({ error: "Hanya admin yang boleh mengakses ini." });
-    const r = await pool.query("SELECT role FROM users WHERE id = $1", [req.user.userId]);
-    if (r.rows[0]?.role !== "admin") return res.status(403).json({ error: "Hanya admin yang boleh mengakses ini." });
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({
+        error: "Hanya admin yang boleh mengakses ini."
+      });
+    }
+
+    const r = await pool.query(
+      "SELECT id FROM admins WHERE id = $1",
+      [req.user.userId]
+    );
+
+    if (!r.rows.length) {
+      return res.status(403).json({
+        error: "Hanya admin yang boleh mengakses ini."
+      });
+    }
+
     next();
   } catch (err) {
-    console.error("Auth endpoint error:", err.code || err.message);
-    const dbUnavailable = ["ECONNREFUSED", "ENOTFOUND", "28P01", "3D000", "ECONNRESET"].includes(err.code);
-    res.status(500).json({ error: dbUnavailable ? "Database belum terhubung. Periksa PostgreSQL dan DATABASE_URL pada backend/.env." : "Terjadi kesalahan pada server. Periksa terminal backend untuk detailnya." });
+    console.error(
+      "Admin authorization error:",
+      err.code || err.message
+    );
+
+    const dbUnavailable = [
+      "ECONNREFUSED",
+      "ENOTFOUND",
+      "28P01",
+      "3D000",
+      "ECONNRESET"
+    ].includes(err.code);
+
+    return res.status(500).json({
+      error: dbUnavailable
+        ? "Database belum terhubung. Periksa konfigurasi database backend."
+        : "Terjadi kesalahan pada server."
+    });
   }
 }
+
 
 module.exports = { router, requireAuth, requireAdmin };

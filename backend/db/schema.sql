@@ -16,6 +16,15 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT now()
 );
 
+-- ---------- ADMINS ----------
+CREATE TABLE IF NOT EXISTS admins (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(150) NOT NULL,
+  email VARCHAR(150) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT now()
+);
+
 -- ---------- SERVICES (4 layanan utama) ----------
 CREATE TABLE services (
   id VARCHAR(30) PRIMARY KEY,        -- 'smm' | 'content' | 'ecommerce' | 'brand'
