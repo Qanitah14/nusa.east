@@ -7,7 +7,7 @@
    ========================================================= */
 
 function nusaeastApiBase() {
-  return window.NUSAEAST_API_BASE || "http://localhost:4000/api";
+  return window.NUSAEAST_API_BASE || "https://nusa-east-vsxf.vercel.app/api";
 }
 
 // "/uploads/x.jpg" -> "http://localhost:4000/uploads/x.jpg"

@@ -9,7 +9,7 @@ const Admin = (() => {
   const TOKEN_KEY = "nusaeast_admin_token";
   const USER_KEY = "nusaeast_admin_user";
 
-  const apiBase = () => window.NUSAEAST_API_BASE || "http://localhost:4000/api";
+  const apiBase = () => window.NUSAEAST_API_BASE || "https://nusa-east-vsxf.vercel.app/api";
   const getToken = () => sessionStorage.getItem(TOKEN_KEY);
   const getUser = () => { try { return JSON.parse(sessionStorage.getItem(USER_KEY) || "null"); } catch (_) { return null; } };
 

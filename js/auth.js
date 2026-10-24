@@ -1,5 +1,5 @@
 /* NUSA EAST — autentikasi frontend. Tidak menggunakan fallback demo diam-diam. */
-const API_BASE = (window.NUSAEAST_API_BASE || "http://localhost:4000/api").replace(/\/$/, "");
+const API_BASE = (window.NUSAEAST_API_BASE || "https://nusa-east-vsxf.vercel.app/api").replace(/\/$/, "");
 
 async function authRequest(path, payload) {
   let response;

@@ -4,7 +4,7 @@
 <body><main class="single-detail-page"><section class="section"><div class="container"><a href="singles.html" class="detail-back">← Kembali ke Layanan Satuan</a><div id="detailRoot"><p>Memuat detail produk…</p></div></div></section></main>
 <script src="js/data.js"></script><script src="js/cart.js"></script><script src="js/layout.js"></script><script>
 renderHeader('services'); renderFooter();
-const API=(window.NUSAEAST_API_BASE||"http://localhost:4000/api").replace(/\/$/,"");
+const API=(window.NUSAEAST_API_BASE||"https://nusa-east-vsxf.vercel.app/api").replace(/\/$/,"");
 const root=document.getElementById('detailRoot'); const id=new URLSearchParams(location.search).get('id');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const imageFor=item=>item.image||NUSAEAST_DATA.singles.find(x=>x.id===item.id)?.image||'images/service-content.jpg';

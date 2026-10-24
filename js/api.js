@@ -1,5 +1,5 @@
 /* NUSA EAST — API helper */
-const NUSAEAST_API_BASE = window.NUSAEAST_API_BASE || "http://localhost:4000/api";
+const NUSAEAST_API_BASE = window.NUSAEAST_API_BASE || "https://nusa-east-vsxf.vercel.app/api";
 
 function getAuthToken() {
   return localStorage.getItem("nusaeast_token");
