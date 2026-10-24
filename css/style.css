@@ -271,6 +271,7 @@ p {
   align-items: center;
   gap: 14px;
 }
+
 .icon-btn {
   width: 40px;
   height: 40px;
@@ -278,11 +279,24 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg-alt);
-  border: 1px solid var(--color-border);
+
+  /* Menyamakan latar tombol dengan header */
+  background: transparent;
+  border: 1px solid transparent;
+
+  color: var(--color-primary);
   position: relative;
   font-size: 1.1rem;
+  transition: background var(--transition),
+              border-color var(--transition);
 }
+
+/* Efek saat kursor diarahkan ke ikon */
+.icon-btn:hover {
+  background: rgba(30, 59, 44, 0.07);
+  border-color: var(--color-border);
+}
+
 .cart-count {
   position: absolute;
   top: -4px;
@@ -431,10 +445,12 @@ p {
   object-fit: cover;
   height: 82%;
 }
+
 .page-hero {
-  padding: 56px 0 40px;
+  padding: 40px 0 24px;
   text-align: center;
 }
+
 /* Tulisan kecil: LAYANAN KAMI */
 .page-hero .eyebrow {
   margin-bottom: 16px;
@@ -2041,5 +2057,83 @@ textarea.form-control {
   .cart-line > button {
     grid-column: 2;
     justify-self: start;
+  }
+}
+
+
+/* =========================================
+   CART PAGE — RAPATKAN NEGATIVE SPACE
+   ========================================= */
+
+/* Area judul keranjang */
+body:has(#cartLayout) .page-hero {
+  padding-top: 32px;
+  padding-bottom: 0;
+}
+
+body:has(#cartLayout) .page-hero h1 {
+  margin-bottom: 0;
+}
+
+/* Area kartu keranjang */
+body:has(#cartLayout) .section:has(#cartLayout) {
+  padding-top: 24px;
+  padding-bottom: 40px;
+}
+
+/* Daftar item lebih ringkas */
+body:has(#cartLayout) .cart-line {
+  padding: 14px 0;
+  gap: 12px;
+}
+
+/* Kartu daftar item */
+body:has(#cartLayout) .card {
+  padding: 22px;
+}
+
+/* Ringkasan pesanan */
+body:has(#cartLayout) .summary-box {
+  position: sticky;
+  top: 94px;
+  align-self: start;
+}
+
+/* Tombol tambah item tidak terlalu jauh */
+body:has(#cartLayout) .cart-layout + .btn,
+body:has(#cartLayout) .cart-layout .btn {
+  margin-top: 18px;
+}
+
+/* Tablet dan layar kecil */
+@media (max-width: 1024px) {
+  body:has(#cartLayout) .cart-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  body:has(#cartLayout) .summary-box {
+    position: static;
+  }
+}
+
+/* Ponsel */
+@media (max-width: 600px) {
+  body:has(#cartLayout) .page-hero {
+    padding-top: 24px;
+  }
+
+  body:has(#cartLayout) .section:has(#cartLayout) {
+    padding-top: 16px;
+    padding-bottom: 28px;
+  }
+
+  body:has(#cartLayout) .card {
+    padding: 16px;
+  }
+
+  body:has(#cartLayout) .cart-line {
+    gap: 10px;
+    padding: 14px 0;
   }
 }

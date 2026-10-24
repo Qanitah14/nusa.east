@@ -71,9 +71,13 @@ function renderHeader(activePage) {
           <input id="headerSearchInput" name="q" type="search" placeholder="Cari layanan atau paket…" autocomplete="off">
           <button class="icon-btn search-toggle" type="button" id="searchToggle" aria-label="Buka pencarian" aria-expanded="false"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span class="search-fallback" aria-hidden="true">⌕</span></button>
         </form>
-        <a href="cart.html" class="icon-btn" title="Keranjang" aria-label="Keranjang">
-          <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i><span class="cart-fallback" aria-hidden="true">🛒</span><span class="cart-count" id="cartCount">0</span>
+        
+        <a href="cart.html" class="icon-btn cart-icon-btn" title="Keranjang" aria-label="Keranjang belanja">
+          <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+          <span class="cart-fallback" aria-hidden="true">🛒</span>
+          <span class="cart-count" id="cartCount">0</span>
         </a>
+
         <a href="${accountHref}" class="icon-btn" title="Akun" aria-label="Profil pengguna atau login"><i class="fa-regular fa-user" aria-hidden="true"></i><span class="user-fallback" aria-hidden="true">👤</span></a>
         <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">☰</button>
       </div>
