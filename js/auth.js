@@ -18,6 +18,16 @@ async function authRequest(path, payload) {
 }
 
 
+function getPostLoginDestination() {
+  const params = new URLSearchParams(window.location.search);
+  const requested = params.get("redirect");
+  // Hanya izinkan halaman relatif lokal; cegah redirect ke situs luar.
+  if (requested && !requested.startsWith("/") && !requested.startsWith("\\") && !requested.includes("://")) {
+    return requested;
+  }
+  return "profile.html";
+}
+
 async function nusaeastLogin(email, password) {
   const data = await authRequest("/auth/login", { email, password });
   if (!data.user) throw new Error("Data akun tidak ditemukan dari respons server.");
@@ -25,8 +35,8 @@ async function nusaeastLogin(email, password) {
   localStorage.setItem("nusaeast_session", JSON.stringify(data.user));
   if (data.token) localStorage.setItem("nusaeast_token", data.token);
 
-  // Setelah login berhasil, buka profil pengguna.
-  location.href = "profile.html";
+  // Kembali ke halaman lokal yang diminta sebelum login, jika ada.
+  location.href = getPostLoginDestination();
 }
 
 async function nusaeastRegister(payload) {
@@ -42,8 +52,8 @@ async function nusaeastRegister(payload) {
   localStorage.setItem("nusaeast_session", JSON.stringify(data.user));
   if (data.token) localStorage.setItem("nusaeast_token", data.token);
 
-  // Setelah daftar berhasil, langsung masuk ke profil akun baru.
-  location.href = "profile.html";
+  // Kembali ke halaman lokal yang diminta sebelum daftar, jika ada.
+  location.href = getPostLoginDestination();
 }
 
 function nusaeastLogout() {

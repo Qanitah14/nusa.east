@@ -9,6 +9,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<script>
+  // Halaman paket hanya untuk pengguna yang sudah login.
+  (function () {
+    let session = null;
+    try { session = JSON.parse(localStorage.getItem("nusaeast_session") || "null"); } catch (_) {}
+    const token = localStorage.getItem("nusaeast_token");
+    if (!session || !token) {
+      const target = window.location.pathname.split("/").pop() + window.location.search + window.location.hash;
+      window.location.replace("login.html?redirect=" + encodeURIComponent(target || "packages.html"));
+    }
+  })();
+</script>
 <script defer src="js/icons.js"></script>
 </head>
 <body>

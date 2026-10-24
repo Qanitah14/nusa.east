@@ -1,16 +1,4 @@
-/* 
-   NUSA EAST — MODELS (versi PostgreSQL)
-   Isi file ini: Category, Product, Order, OrderItem, Customer, Page
 
-   Buat/update tabel (setelah db/schema.sql dijalankan sekali):
-       node models.js          (atau: npm run migrate)
-   Aman dijalankan berulang — tidak menghapus data.
-
-   Pemetaan ke tabel yang sudah ada di schema.sql:
-     Customer  -> users        (+ kolom address)
-     Order     -> orders       (+ customer_name, phone_number, address; total_price = total)
-     OrderItem -> order_items  (+ product_id; quantity = qty; subtotal = line_total)
-   */
 const pool = require("./db/pool");
 const { removeUploadedFile } = require("./middleware/upload");
 
