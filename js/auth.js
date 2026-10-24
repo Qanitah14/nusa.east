@@ -20,25 +20,30 @@ async function authRequest(path, payload) {
 
 async function nusaeastLogin(email, password) {
   const data = await authRequest("/auth/login", { email, password });
-
-  if (!data.user) {
-    throw new Error("Data akun tidak ditemukan dari respons server.");
-  }
+  if (!data.user) throw new Error("Data akun tidak ditemukan dari respons server.");
 
   localStorage.setItem("nusaeast_session", JSON.stringify(data.user));
+  if (data.token) localStorage.setItem("nusaeast_token", data.token);
 
-  if (data.token) {
-    localStorage.setItem("nusaeast_token", data.token);
-  }
-
+  // Setelah login berhasil, buka profil pengguna.
   location.href = "profile.html";
 }
 
-async function nusaeastLogin(email, password) {
-  const data = await authRequest("/auth/login", { email, password });
+async function nusaeastRegister(payload) {
+  const data = await authRequest("/auth/register", {
+    name: String(payload.name || "").trim(),
+    email: String(payload.email || "").trim().toLowerCase(),
+    phone: String(payload.phone || "").trim(),
+    password: String(payload.password || "")
+  });
+
+  if (!data.user) throw new Error("Pendaftaran berhasil diproses, tetapi data akun tidak diterima.");
+
   localStorage.setItem("nusaeast_session", JSON.stringify(data.user));
   if (data.token) localStorage.setItem("nusaeast_token", data.token);
-  location.href = "index.html";
+
+  // Setelah daftar berhasil, langsung masuk ke profil akun baru.
+  location.href = "profile.html";
 }
 
 function nusaeastLogout() {

@@ -21,17 +21,32 @@ function renderHeader(activePage) {
     { href: "about.html", label: "About", key: "about" }
   ];
 
-    let session = null;
+  let userSession = null;
+  let adminSession = null;
 
   try {
-    session = JSON.parse(
-      localStorage.getItem("nusaeast_session") || "null"
-    );
-  } catch (error) {
-    session = null;
+    userSession = JSON.parse(localStorage.getItem("nusaeast_session") || "null");
+  } catch (_) {
+    userSession = null;
   }
 
-  const accountHref = session ? "profile.html" : "login.html";
+  try {
+    adminSession = JSON.parse(sessionStorage.getItem("nusaeast_admin_user") || "null");
+  } catch (_) {
+    adminSession = null;
+  }
+
+  const hasAdminSession =
+    Boolean(sessionStorage.getItem("nusaeast_admin_token")) && Boolean(adminSession);
+  const hasUserSession =
+    Boolean(localStorage.getItem("nusaeast_token")) && Boolean(userSession);
+
+  // Jika admin kembali ke situs publik, ikon akun tetap membuka profil admin.
+  const accountHref = hasAdminSession
+    ? "admin/profile.html"
+    : hasUserSession
+      ? "profile.html"
+      : "login.html";
 
   const navHTML = links.map(l =>
     `<a href="${l.href}" class="${activePage === l.key ? 'active' : ''}">${l.label}</a>`

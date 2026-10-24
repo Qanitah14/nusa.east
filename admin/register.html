@@ -50,7 +50,7 @@ form.addEventListener('submit', async (event) => {
   if (data.password.length < 8) return showError('Password minimal 8 karakter.');
   btn.disabled = true; btn.textContent = 'Membuat akun…';
   try {
-    const apiBase = (window.NUSAEAST_API_BASE || '"https://nusa-east-vsxf.vercel.app/api"').replace(/\/$/, '');
+    const apiBase = (window.NUSAEAST_API_BASE || "https://nusa-east-vsxf.vercel.app/api").replace(/\/$/, '');
     const response = await fetch(`${apiBase}/auth/admin-register`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
     });
