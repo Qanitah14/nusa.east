@@ -17,11 +17,21 @@ async function authRequest(path, payload) {
   return data;
 }
 
-async function nusaeastRegister(payload) {
-  const data = await authRequest("/auth/register", payload);
+
+async function nusaeastLogin(email, password) {
+  const data = await authRequest("/auth/login", { email, password });
+
+  if (!data.user) {
+    throw new Error("Data akun tidak ditemukan dari respons server.");
+  }
+
   localStorage.setItem("nusaeast_session", JSON.stringify(data.user));
-  if (data.token) localStorage.setItem("nusaeast_token", data.token);
-  location.href = "index.html";
+
+  if (data.token) {
+    localStorage.setItem("nusaeast_token", data.token);
+  }
+
+  location.href = "profile.html";
 }
 
 async function nusaeastLogin(email, password) {

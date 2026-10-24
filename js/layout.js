@@ -21,17 +21,17 @@ function renderHeader(activePage) {
     { href: "about.html", label: "About", key: "about" }
   ];
 
-  let session = null;
+    let session = null;
 
-try {
-  session = JSON.parse(
-    localStorage.getItem("nusaeast_session") || "null"
-  );
-} catch (error) {
-  session = null;
-}
+  try {
+    session = JSON.parse(
+      localStorage.getItem("nusaeast_session") || "null"
+    );
+  } catch (error) {
+    session = null;
+  }
 
-const accountHref = session ? "profile.html" : "login.html";
+  const accountHref = session ? "profile.html" : "login.html";
 
   const navHTML = links.map(l =>
     `<a href="${l.href}" class="${activePage === l.key ? 'active' : ''}">${l.label}</a>`
@@ -59,7 +59,7 @@ const accountHref = session ? "profile.html" : "login.html";
         <a href="cart.html" class="icon-btn" title="Keranjang" aria-label="Keranjang">
           <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i><span class="cart-fallback" aria-hidden="true">🛒</span><span class="cart-count" id="cartCount">0</span>
         </a>
-        <a href="login.html" class="icon-btn" title="Akun" aria-label="Login pengguna atau admin"><i class="fa-regular fa-user" aria-hidden="true"></i><span class="user-fallback" aria-hidden="true">👤</span></a>
+        <a href="${accountHref}" class="icon-btn" title="Akun" aria-label="Profil pengguna atau login"><i class="fa-regular fa-user" aria-hidden="true"></i><span class="user-fallback" aria-hidden="true">👤</span></a>
         <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">☰</button>
       </div>
     </div>
