@@ -62,9 +62,25 @@
         <div class="card mb-24">
           <h3 class="mb-16">Metode Pembayaran</h3>
           <div class="payment-methods" id="paymentMethods">
-            <label class="payment-method selected"><input type="radio" name="pm" value="va" checked>🏦 Virtual Account</label>
-            <label class="payment-method"><input type="radio" name="pm" value="ewallet">📱 E-Wallet</label>
-            <label class="payment-method"><input type="radio" name="pm" value="qris">🔳 QRIS</label>
+
+            <label class="payment-method selected">
+              <input type="radio" name="pm" value="va" checked>
+              <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+              <span>Virtual Account</span>
+            </label>
+
+            <label class="payment-method">
+              <input type="radio" name="pm" value="ewallet">
+              <i class="fa-regular fa-credit-card" aria-hidden="true"></i>
+              <span>E-Wallet</span>
+            </label>
+
+            <label class="payment-method">
+              <input type="radio" name="pm" value="qris">
+              <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+              <span>QRIS</span>
+            </label>
+
           </div>
         </div>
         <div class="card" id="paymentDetail"></div>
