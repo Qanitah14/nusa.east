@@ -33,6 +33,15 @@ CREATE TABLE services (
   description TEXT
 );
 
+-- ---------- FOTO LAYANAN ADMIN (persisten di PostgreSQL) ----------
+CREATE TABLE IF NOT EXISTS service_images (
+  service_id VARCHAR(30) PRIMARY KEY REFERENCES services(id) ON DELETE CASCADE,
+  file_name VARCHAR(255) NOT NULL,
+  mime_type VARCHAR(50) NOT NULL CHECK (mime_type IN ('image/jpeg', 'image/png', 'image/webp', 'image/gif')),
+  image_data BYTEA NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- ---------- PACKAGES (paket lengkap, tier per layanan) ----------
 CREATE TABLE packages (
   id VARCHAR(50) PRIMARY KEY,        -- e.g. 'smm-growth'

@@ -35,7 +35,8 @@
   renderHeader('services');
   renderFooter();
 
-  const { cart, breakdown, base, percentExtra, total } = calculateCartTotals();
+  const checkoutItems = getSelectedCart();
+  const { cart, breakdown, base, percentExtra, total } = calculateCartTotals(checkoutItems);
   const layout = document.getElementById("checkoutLayout");
 
   if (cart.length === 0) {
@@ -114,8 +115,9 @@
 
     document.getElementById("payBtn").addEventListener("click", () => {
       const method = document.querySelector('input[name="pm"]:checked').value;
+      if (!checkoutItems.length) { alert("Pilih item yang ingin dibayar dari keranjang."); location.href = "cart.html"; return; }
       const order = createOrder({ items: breakdown, total, paymentMethod: method });
-      clearCart();
+      removeCartItems(checkoutItems.map(item => item.id));
       location.href = "confirmation.html?order=" + order.id;
     });
   }

@@ -10,6 +10,35 @@
    ========================================================= */
 
 const CART_KEY = "nusaeast_cart";
+const CART_SELECTED_KEY = "nusaeast_cart_selected";
+
+function getSelectedCartIds() {
+  const cart = getCart();
+  try {
+    const saved = JSON.parse(localStorage.getItem(CART_SELECTED_KEY) || "null");
+    if (Array.isArray(saved)) return saved.filter(id => cart.some(item => item.id === id));
+  } catch (_) {}
+  return cart.map(item => item.id); // default: semua item dipilih
+}
+function setCartItemSelected(id, selected) {
+  const ids = new Set(getSelectedCartIds());
+  if (selected) ids.add(id); else ids.delete(id);
+  localStorage.setItem(CART_SELECTED_KEY, JSON.stringify([...ids]));
+  if (typeof renderCartPage === "function") renderCartPage();
+}
+function selectAllCartItems(selected) {
+  localStorage.setItem(CART_SELECTED_KEY, JSON.stringify(selected ? getCart().map(item => item.id) : []));
+  if (typeof renderCartPage === "function") renderCartPage();
+}
+function getSelectedCart() {
+  const ids = new Set(getSelectedCartIds());
+  return getCart().filter(item => ids.has(item.id));
+}
+function removeCartItems(idsToRemove) {
+  const removeIds = new Set(idsToRemove);
+  saveCart(getCart().filter(item => !removeIds.has(item.id)));
+  localStorage.setItem(CART_SELECTED_KEY, JSON.stringify(getSelectedCartIds().filter(id => !removeIds.has(id))));
+}
 
 function getCart() {
   return JSON.parse(localStorage.getItem(CART_KEY) || "[]");
@@ -59,8 +88,8 @@ function formatIDR(num) {
    Item "percent" (Express/Priority +20%) dihitung dari subtotal
    item non-percent, lalu ditambahkan terpisah — sesuai aturan
    "jangan mengubah harga paket utama, tampilkan add-on terpisah". */
-function calculateCartTotals() {
-  const cart = getCart();
+function calculateCartTotals(items = getCart()) {
+  const cart = items;
   let base = 0;
   let percentExtra = 0;
   const breakdown = [];

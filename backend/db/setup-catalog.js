@@ -9,7 +9,7 @@ async function main() {
     throw new Error("DATABASE_URL belum diatur. Isi backend/.env terlebih dahulu.");
   }
 
-  for (const migrationFile of ["001_catalog_admin_columns.sql", "002_single_product_details_reviews.sql"]) {
+  for (const migrationFile of ["001_catalog_admin_columns.sql", "002_single_product_details_reviews.sql", "003_admin_services.sql", "004_service_images.sql"]) {
     const migration = fs.readFileSync(path.join(__dirname, "migrations", migrationFile), "utf8");
     await pool.query(migration);
   }

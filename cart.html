@@ -34,7 +34,11 @@
   renderFooter();
 
   function renderCartPage() {
-    const { cart, breakdown, base, percentExtra, total } = calculateCartTotals();
+    const allCart = getCart();
+    const selectedIds = getSelectedCartIds();
+    const cart = allCart;
+    const { breakdown: displayBreakdown } = calculateCartTotals(cart);
+    const { base, percentExtra, total } = calculateCartTotals(getSelectedCart());
     const layout = document.getElementById("cartLayout");
 
     if (cart.length === 0) {
@@ -50,8 +54,11 @@
 
     const typeLabel = { package: "Paket Lengkap", single: "Layanan Satuan", addon: "Add-On" };
 
-    const linesHTML = breakdown.map(item => `
+    const linesHTML = displayBreakdown.map(item => `
       <div class="cart-line">
+        <label class="cart-select-item" style="display:flex;align-items:flex-start;gap:8px;">
+          <input type="checkbox" ${selectedIds.includes(item.id) ? "checked" : ""} onchange="setCartItemSelected('${item.id}', this.checked)" aria-label="Pilih ${item.name}">
+        </label>
         <div>
           <div class="line-title">${item.name}</div>
           <div class="line-meta">
@@ -75,15 +82,21 @@
 
     layout.innerHTML = `
       <div>
-        <div class="card">${linesHTML}</div>
+        <div class="card">
+          <label style="display:flex;gap:8px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--color-border);font-weight:600;">
+            <input type="checkbox" ${cart.length && selectedIds.length === cart.length ? "checked" : ""} onchange="selectAllCartItems(this.checked)"> Pilih semua item (${selectedIds.length} dipilih)
+          </label>
+          ${linesHTML}
+        </div>
         <a href="packages.html" class="btn btn-outline mt-24">+ Tambah Item Lain</a>
       </div>
       <div class="card summary-box">
         <h3 class="mb-16">Ringkasan Pesanan</h3>
+        ${selectedIds.length === 0 ? `<p class="hint">Pilih minimal satu item untuk melanjutkan checkout.</p>` : ""}
         <div class="summary-row"><span>Subtotal Paket & Satuan</span><span>${formatIDR(base)}</span></div>
         ${percentExtra > 0 ? `<div class="summary-row"><span>Biaya Express/Priority</span><span>${formatIDR(percentExtra)}</span></div>` : ""}
         <div class="summary-row total"><span>Total Keseluruhan</span><span>${formatIDR(total)}</span></div>
-        <a href="checkout.html" class="btn btn-primary btn-block mt-24">Lanjut ke Pembayaran</a>
+        <a href="checkout.html" class="btn btn-primary btn-block mt-24 ${selectedIds.length ? "" : "disabled"}" ${selectedIds.length ? "" : "aria-disabled='true' onclick='return false;'"}>Checkout ${selectedIds.length} Item</a>
       </div>
     `;
   }

@@ -3,12 +3,22 @@
 const express = require("express");
 const pool = require("../db/pool");
 const { requireAuth, requireAdmin } = require("./auth");
-const { uploadImage, removeUploadedFile } = require("../middleware/upload");
+const multer = require("multer");
 const { slugify } = require("../utils/slugify");
+
+// Gambar layanan disimpan di PostgreSQL agar tetap persisten di Vercel Functions.
+const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const serviceImage = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  fileFilter(req, file, cb) {
+    if (!allowedImageTypes.has(file.mimetype)) return cb(new Error("Format gambar harus JPG, PNG, WEBP, atau GIF."));
+    cb(null, true);
+  }
+}).single("image");
 
 const router = express.Router();
 const admin = [requireAuth, requireAdmin];
-const serviceImage = uploadImage("service_images", "image");
 
 class HttpError extends Error {
   constructor(message, status = 400) { super(message); this.status = status; }
@@ -66,6 +76,24 @@ async function ensureService(id) {
   const r = await pool.query("SELECT 1 FROM services WHERE id = $1", [id]);
   if (!r.rowCount) throw new HttpError("Layanan tidak ditemukan.", 404);
 }
+
+/* ======================= FOTO LAYANAN ======================= */
+// Foto dibaca publik melalui URL yang disimpan di services.image_url.
+router.get("/images/:id", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT mime_type, image_data FROM service_images WHERE service_id = $1",
+      [req.params.id]
+    );
+    if (!result.rowCount) return res.status(404).json({ error: "Foto layanan tidak ditemukan." });
+    res.set("Content-Type", result.rows[0].mime_type);
+    res.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=86400");
+    return res.send(result.rows[0].image_data);
+  } catch (err) {
+    console.error("Gagal mengambil foto layanan:", err);
+    return res.status(500).json({ error: "Gagal mengambil foto layanan." });
+  }
+});
 
 /* ======================= PUBLIK ======================= */
 // GET /api/services/catalog — satu payload lengkap untuk halaman pengguna
@@ -129,31 +157,46 @@ router.get("/admin/services", ...admin, handle("Gagal mengambil layanan.", async
 }));
 
 router.post("/admin/services", ...admin, serviceImage, handle("Gagal menambah layanan.", async (req) => {
-  const image = req.file?.publicUrl || null;
+  const b = req.body;
+  const name = String(b.name || "").trim();
+  if (!name || name.length > 150) throw new HttpError("Nama layanan wajib diisi (maks 150 karakter).");
+  const type = b.type || "project";
+  if (!BILLING.includes(type)) throw new HttpError("Jenis penagihan harus subscription atau project.");
+  const id = slugify(b.id || name).slice(0, 30);
+  if (!id) throw new HttpError("ID layanan tidak valid.");
+  const dup = await pool.query("SELECT 1 FROM services WHERE id = $1", [id]);
+  if (dup.rowCount) throw new HttpError("ID layanan sudah dipakai. Ganti nama atau ID-nya.", 409);
+  const max = await pool.query("SELECT COALESCE(MAX(sort_order), 0) + 1 AS n FROM services");
+  const imageUrl = req.file ? `/api/services/images/${encodeURIComponent(id)}` : null;
+  const client = await pool.connect();
   try {
-    const b = req.body;
-    const name = String(b.name || "").trim();
-    if (!name || name.length > 150) throw new HttpError("Nama layanan wajib diisi (maks 150 karakter).");
-    const type = b.type || "project";
-    if (!BILLING.includes(type)) throw new HttpError("Jenis penagihan harus subscription atau project.");
-    const id = slugify(b.id || name).slice(0, 30);
-    if (!id) throw new HttpError("ID layanan tidak valid.");
-    const dup = await pool.query("SELECT 1 FROM services WHERE id = $1", [id]);
-    if (dup.rowCount) throw new HttpError("ID layanan sudah dipakai. Ganti nama atau ID-nya.", 409);
-    const max = await pool.query("SELECT COALESCE(MAX(sort_order), 0) + 1 AS n FROM services");
-    const r = await pool.query(
+    await client.query("BEGIN");
+    const r = await client.query(
       `INSERT INTO services (id, name, billing_type, description, tag, icon, image_url, duration_label, sort_order, is_active)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
-      [id, name, type, b.short || "", b.tag || "", b.icon || "", image, b.durationLabel || "",
+      [id, name, type, b.short || "", b.tag || "", b.icon || "", imageUrl, b.durationLabel || "",
        b.sortOrder !== undefined ? toInt(b.sortOrder) : max.rows[0].n, toBool(b.isActive)]);
+    if (req.file) {
+      await client.query(
+        `INSERT INTO service_images (service_id, file_name, mime_type, image_data, updated_at)
+         VALUES ($1,$2,$3,$4,NOW())`,
+        [id, req.file.originalname.slice(0, 255), req.file.mimetype, req.file.buffer]
+      );
+    }
+    await client.query("COMMIT");
     return mapService(r.rows[0]);
-  } catch (e) { removeUploadedFile(image); throw e; }
+  } catch (e) {
+    await client.query("ROLLBACK");
+    if (e.code === "23505") throw new HttpError("ID layanan sudah dipakai. Ganti nama atau ID-nya.", 409);
+    throw e;
+  } finally { client.release(); }
 }, 201));
 
 router.put("/admin/services/:id", ...admin, serviceImage, handle("Gagal memperbarui layanan.", async (req) => {
-  const image = req.file?.publicUrl || null;
+  const client = await pool.connect();
   try {
-    const cur = (await pool.query("SELECT * FROM services WHERE id = $1", [req.params.id])).rows[0];
+    await client.query("BEGIN");
+    const cur = (await client.query("SELECT * FROM services WHERE id = $1 FOR UPDATE", [req.params.id])).rows[0];
     if (!cur) throw new HttpError("Layanan tidak ditemukan.", 404);
     const b = req.body;
     const name = b.name !== undefined ? String(b.name).trim() : cur.name;
@@ -161,16 +204,30 @@ router.put("/admin/services/:id", ...admin, serviceImage, handle("Gagal memperba
     const type = b.type ?? cur.billing_type;
     if (!BILLING.includes(type)) throw new HttpError("Jenis penagihan tidak valid.");
     const removeImg = toBool(b.removeImage, false);
-    const nextImage = image || (removeImg ? null : cur.image_url);
-    const r = await pool.query(
+    const imageUrl = req.file ? `/api/services/images/${encodeURIComponent(cur.id)}` : (removeImg ? null : cur.image_url);
+    const r = await client.query(
       `UPDATE services SET name=$1, billing_type=$2, description=$3, tag=$4, icon=$5, image_url=$6,
          duration_label=$7, sort_order=$8, is_active=$9 WHERE id=$10 RETURNING *`,
-      [name, type, b.short ?? cur.description, b.tag ?? cur.tag, b.icon ?? cur.icon, nextImage,
+      [name, type, b.short ?? cur.description, b.tag ?? cur.tag, b.icon ?? cur.icon, imageUrl,
        b.durationLabel ?? cur.duration_label, b.sortOrder !== undefined ? toInt(b.sortOrder) : cur.sort_order,
        toBool(b.isActive, cur.is_active), cur.id]);
-    if (nextImage !== cur.image_url) removeUploadedFile(cur.image_url);
+    if (req.file) {
+      await client.query(
+        `INSERT INTO service_images (service_id, file_name, mime_type, image_data, updated_at)
+         VALUES ($1,$2,$3,$4,NOW())
+         ON CONFLICT (service_id) DO UPDATE SET file_name=EXCLUDED.file_name, mime_type=EXCLUDED.mime_type,
+           image_data=EXCLUDED.image_data, updated_at=NOW()`,
+        [cur.id, req.file.originalname.slice(0, 255), req.file.mimetype, req.file.buffer]
+      );
+    } else if (removeImg) {
+      await client.query("DELETE FROM service_images WHERE service_id = $1", [cur.id]);
+    }
+    await client.query("COMMIT");
     return mapService(r.rows[0]);
-  } catch (e) { removeUploadedFile(image); throw e; }
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally { client.release(); }
 }));
 
 router.delete("/admin/services/:id", ...admin, handle("Gagal menghapus layanan.", async (req) => {
@@ -180,9 +237,9 @@ router.delete("/admin/services/:id", ...admin, handle("Gagal menghapus layanan."
   if (Number(used.rows[0].n) > 0) {
     throw new HttpError("Layanan masih punya paket/layanan satuan. Hapus itu dulu, atau nonaktifkan layanan ini.", 409);
   }
-  const r = await pool.query("DELETE FROM services WHERE id = $1 RETURNING image_url", [req.params.id]);
+  const r = await pool.query("DELETE FROM services WHERE id = $1 RETURNING id", [req.params.id]);
   if (!r.rows[0]) throw new HttpError("Layanan tidak ditemukan.", 404);
-  removeUploadedFile(r.rows[0].image_url);
+  await pool.query("DELETE FROM service_images WHERE service_id = $1", [r.rows[0].id]);
   return { success: true };
 }));
 

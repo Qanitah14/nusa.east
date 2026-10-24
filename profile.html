@@ -28,7 +28,10 @@
 
     <div class="profile-shell">
       <aside class="profile-sidebar">
-        <div class="profile-avatar" aria-hidden="true"><i class="fas fa-user"></i></div>
+        <div class="profile-avatar" id="profileAvatarPreview" aria-label="Foto profil"><i class="fas fa-user"></i></div>
+        <label class="profile-photo-upload" for="profilePhotoInput">Ubah foto profil</label>
+        <input type="file" id="profilePhotoInput" accept="image/png,image/jpeg,image/webp" hidden>
+        <p id="profilePhotoMessage" class="hint" style="margin:6px 0 14px;">JPG, PNG, atau WebP · maks. 1,5 MB</p>
         <h3 id="profileName">Pengguna Nusa East</h3>
         <p id="profileEmail">email@example.com</p>
 

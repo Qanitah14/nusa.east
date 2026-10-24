@@ -17,6 +17,25 @@
   })();
 
   const $ = id => document.getElementById(id);
+  const AVATAR_KEY = `${PROFILE_KEY}_avatar`;
+  const avatarBox = $("profileAvatarPreview");
+  const photoInput = $("profilePhotoInput");
+  const photoMessage = $("profilePhotoMessage");
+  function renderAvatar(src) {
+    if (!avatarBox) return;
+    if (src) { avatarBox.innerHTML = ""; const img = document.createElement("img"); img.src = src; img.alt = "Foto profil"; img.style.cssText = "width:100%;height:100%;object-fit:cover;border-radius:50%;transform:none"; avatarBox.style.transform = "none"; avatarBox.appendChild(img); }
+    else avatarBox.innerHTML = '<i class="fas fa-user"></i>';
+  }
+  try { renderAvatar(localStorage.getItem(AVATAR_KEY)); } catch (_) {}
+  if (photoInput) photoInput.addEventListener("change", () => {
+    const file = photoInput.files && photoInput.files[0];
+    if (!file) return;
+    if (!/^image\/(png|jpeg|webp)$/.test(file.type)) { photoMessage.textContent = "Gunakan file JPG, PNG, atau WebP."; photoInput.value = ""; return; }
+    if (file.size > 1.5 * 1024 * 1024) { photoMessage.textContent = "Ukuran foto maksimal 1,5 MB."; photoInput.value = ""; return; }
+    const reader = new FileReader();
+    reader.onload = () => { try { localStorage.setItem(AVATAR_KEY, reader.result); renderAvatar(reader.result); photoMessage.textContent = "Foto profil tersimpan di browser ini."; } catch (_) { photoMessage.textContent = "Penyimpanan penuh. Gunakan foto yang lebih kecil."; } };
+    reader.readAsDataURL(file);
+  });
   $("profileName").textContent = session.name || "Pengguna Nusa East";
   $("profileEmail").textContent = session.email || "-";
   $("accountName").textContent = session.name || "-";
