@@ -4,7 +4,13 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
-const uploadRoot = path.join(__dirname, "..", "uploads");
+const os = require("os");
+
+const uploadRoot = path.join(
+  os.tmpdir(),
+  "nusaeast-uploads"
+);
+
 fs.mkdirSync(uploadRoot, { recursive: true });
 const allowedMime = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
