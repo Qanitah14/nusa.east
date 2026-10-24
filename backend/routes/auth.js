@@ -272,4 +272,49 @@ async function requireAdmin(req, res, next) {
 }
 
 
+// ---------- Profil admin ----------
+// GET /api/auth/admin-me — data admin yang sedang masuk
+router.get("/admin-me", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const r = await pool.query("SELECT id, name, email, created_at FROM admins WHERE id = $1", [req.user.userId]);
+    if (!r.rows.length) return res.status(404).json({ error: "Akun admin tidak ditemukan." });
+    res.json({ ...r.rows[0], role: "admin" });
+  } catch (err) {
+    console.error("Admin profile error:", err.code || err.message);
+    res.status(500).json({ error: "Terjadi kesalahan pada server." });
+  }
+});
+
+// PUT /api/auth/admin-profile — ubah nama tampilan admin
+router.put("/admin-profile", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const name = String(req.body.name || "").trim();
+    if (name.length < 2 || name.length > 150) return res.status(400).json({ error: "Nama harus 2–150 karakter." });
+    const r = await pool.query("UPDATE admins SET name = $1 WHERE id = $2 RETURNING id, name, email", [name, req.user.userId]);
+    res.json({ ...r.rows[0], role: "admin" });
+  } catch (err) {
+    console.error("Admin profile error:", err.code || err.message);
+    res.status(500).json({ error: "Gagal menyimpan profil." });
+  }
+});
+
+// PUT /api/auth/admin-password — ganti password (wajib password lama)
+router.put("/admin-password", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ error: "Password lama dan baru wajib diisi." });
+    if (String(newPassword).length < 8) return res.status(400).json({ error: "Password baru minimal 8 karakter." });
+    const r = await pool.query("SELECT password_hash FROM admins WHERE id = $1", [req.user.userId]);
+    if (!r.rows.length || !(await bcrypt.compare(currentPassword, r.rows[0].password_hash))) {
+      return res.status(400).json({ error: "Password lama salah." });
+    }
+    const hash = await bcrypt.hash(newPassword, 10);
+    await pool.query("UPDATE admins SET password_hash = $1 WHERE id = $2", [hash, req.user.userId]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Admin password error:", err.code || err.message);
+    res.status(500).json({ error: "Gagal mengganti password." });
+  }
+});
+
 module.exports = { router, requireAuth, requireAdmin };

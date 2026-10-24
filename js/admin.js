@@ -56,6 +56,7 @@ const Admin = (() => {
     sessionStorage.setItem(USER_KEY, JSON.stringify(out.user));
     return out.user;
   }
+  function setUser(u) { sessionStorage.setItem(USER_KEY, JSON.stringify(u)); }
   function logout(expired = false) {
     sessionStorage.removeItem(TOKEN_KEY);
     sessionStorage.removeItem(USER_KEY);
@@ -75,17 +76,23 @@ const Admin = (() => {
   /* ---------- Kerangka halaman ---------- */
   const NAV = [
     { key: "dashboard", href: "index.html", label: "Dashboard", icon: "fa-chart-pie" },
+    { key: "orders", href: "orders.html", label: "Pesanan", icon: "fa-clipboard-list" },
     { key: "services", href: "services.html", label: "Layanan", icon: "fa-layer-group" },
     { key: "packages", href: "packages.html", label: "Paket", icon: "fa-box-open" },
-    { key: "singles", href: "singles.html", label: "Layanan Satuan", icon: "fa-tags" }
+    { key: "singles", href: "singles.html", label: "Layanan Satuan", icon: "fa-tags" },
+    { key: "profile", href: "profile.html", label: "Profil Admin", icon: "fa-user-circle" }
   ];
+  // halaman yang tidak ada di menu tetapi termasuk bagian dari menu lain
+  const PARENT = { tracking: "orders" };
+  const initials = (name) => String(name || "A").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "A";
 
   function init(activeKey) {
     if (!getToken() || !getUser()) { location.replace("login.html"); return false; }
     const user = getUser();
     const app = document.getElementById("adminApp");
     const main = app.querySelector(".admin-main");
-    const current = NAV.find((n) => n.key === activeKey);
+    const navKey = PARENT[activeKey] || activeKey;
+    const current = NAV.find((n) => n.key === navKey) || (activeKey === "tracking" ? { label: "Tracking Project" } : null);
 
     const side = document.createElement("aside");
     side.className = "admin-sidebar";
@@ -96,10 +103,13 @@ const Admin = (() => {
         <div><strong>NUSA EAST</strong><small>Admin Panel</small></div>
       </div>
       <nav class="a-nav" aria-label="Menu admin">
-        ${NAV.map((n) => `<a href="${n.href}" class="${n.key === activeKey ? "active" : ""}"><i class="fas ${n.icon}" aria-hidden="true"></i>${n.label}</a>`).join("")}
+        ${NAV.map((n) => `<a href="${n.href}" class="${n.key === navKey ? "active" : ""}"><i class="fas ${n.icon}" aria-hidden="true"></i>${n.label}</a>`).join("")}
       </nav>
       <div class="a-side-foot">
-        <div class="a-user"><b>${esc(user.name)}</b><span>${esc(user.email)}</span></div>
+        <a class="a-user" href="profile.html" title="Buka profil admin">
+          <span class="a-avatar sm" aria-hidden="true">${esc(initials(user.name))}</span>
+          <span class="a-user-txt"><b>${esc(user.name)}</b><span>${esc(user.email)}</span></span>
+        </a>
         <a class="btn btn-ghost btn-sm" href="../index.html" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i> Lihat Situs</a>
         <button class="btn btn-accent btn-sm" id="adminLogout"><i class="fas fa-sign-out-alt"></i> Keluar</button>
       </div>`;
@@ -200,5 +210,5 @@ const Admin = (() => {
   const statusBadge = (active) => active ? `<span class="badge badge-green">Aktif</span>` : `<span class="badge badge-gray">Nonaktif</span>`;
   const switchHTML = (name, label, checked) => `<label class="a-switch"><input type="checkbox" name="${name}" ${checked ? "checked" : ""}><span class="track"></span>${esc(label)}</label>`;
 
-  return { api, login, logout, init, getUser, getToken, toast, openModal, confirmDialog, esc, idr, dateID, assetUrl, loading, empty, errorBox, statusBadge, switchHTML };
+  return { api, login, logout, init, getUser, setUser, initials, getToken, toast, openModal, confirmDialog, esc, idr, dateID, assetUrl, loading, empty, errorBox, statusBadge, switchHTML };
 })();

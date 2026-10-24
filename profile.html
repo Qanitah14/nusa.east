@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<script defer src="js/icons.js"></script>
 </head>
 <!-- Vercel Web Analytics -->
 <script>
@@ -27,23 +28,23 @@
 
     <div class="profile-shell">
       <aside class="profile-sidebar">
-        <div class="profile-avatar" aria-hidden="true">♙</div>
+        <div class="profile-avatar" aria-hidden="true"><i class="fas fa-user"></i></div>
         <h3 id="profileName">Pengguna Nusa East</h3>
         <p id="profileEmail">email@example.com</p>
 
         <nav class="profile-menu" aria-label="Menu profil">
-          <button class="profile-menu-item active" data-tab="business"><span>▦</span> Informasi Bisnis</button>
-          <button class="profile-menu-item" data-tab="contact"><span>♙</span> Kontak Utama</button>
-          <button class="profile-menu-item" data-tab="orders"><span>▧</span> Riwayat Pesanan</button>
-          <button class="profile-menu-item" data-tab="account"><span>◉</span> Akun Terdaftar</button>
-          <button class="profile-menu-item logout-item" id="profileLogout"><span>↪</span> Keluar</button>
+          <button class="profile-menu-item active" data-tab="business"><span><i class="fas fa-store"></i></span> Informasi Bisnis</button>
+          <button class="profile-menu-item" data-tab="contact"><span><i class="fas fa-address-card"></i></span> Kontak Utama</button>
+          <button class="profile-menu-item" data-tab="orders"><span><i class="fas fa-clipboard-list"></i></span> Riwayat Pesanan</button>
+          <button class="profile-menu-item" data-tab="account"><span><i class="fas fa-shield-halved"></i></span> Akun Terdaftar</button>
+          <button class="profile-menu-item logout-item" id="profileLogout"><span><i class="fas fa-sign-out-alt"></i></span> Keluar</button>
         </nav>
       </aside>
 
       <section class="profile-content-card">
         <div class="profile-panel active" id="panel-business">
           <div class="profile-panel-title">
-            <div class="profile-title-icon">▦</div>
+            <div class="profile-title-icon"><i class="fas fa-store"></i></div>
             <div>
               <h2>Informasi Bisnis</h2>
               <p>Data ini digunakan untuk keperluan proyek dan komunikasi dengan tim Nusa East</p>
@@ -79,7 +80,7 @@
 
         <div class="profile-panel" id="panel-contact">
           <div class="profile-panel-title">
-            <div class="profile-title-icon">♙</div>
+            <div class="profile-title-icon"><i class="fas fa-address-card"></i></div>
             <div>
               <h2>Kontak Utama</h2>
               <p>Kelola Informasi dan Kontak Anda di sini</p>
@@ -113,7 +114,7 @@
 
         <div class="profile-panel" id="panel-orders">
           <div class="profile-panel-title">
-            <div class="profile-title-icon">▧</div>
+            <div class="profile-title-icon"><i class="fas fa-clipboard-list"></i></div>
             <div><h2>Riwayat Pesanan</h2><p>Lihat pesanan dan status project Anda</p></div>
           </div>
           <div id="profileOrders" class="profile-orders-list"></div>
@@ -121,7 +122,7 @@
 
         <div class="profile-panel" id="panel-account">
           <div class="profile-panel-title">
-            <div class="profile-title-icon">◉</div>
+            <div class="profile-title-icon"><i class="fas fa-shield-halved"></i></div>
             <div><h2>Akun Terdaftar</h2><p>Informasi akun Nusa East yang sedang digunakan</p></div>
           </div>
           <div class="profile-account-box">

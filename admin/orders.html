@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Pesanan — Admin Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<script defer src="../js/icons.js"></script>
+</head>
+<body class="admin-body">
+<div class="admin-app" id="adminApp">
+  <main class="admin-main">
+    <div class="admin-content">
+      <div class="a-page-head">
+        <div>
+          <span class="eyebrow">Pesanan</span>
+          <h1 style="font-size:clamp(1.8rem,3.4vw,2.6rem);">Daftar Pesanan</h1>
+          <p>Pantau semua pesanan pelanggan. Tombol <b>Tracking Project</b> aktif setelah pembayaran pesanan berhasil.</p>
+        </div>
+        <div class="a-actions">
+          <button class="btn btn-outline btn-sm" id="reloadBtn"><i class="fas fa-refresh"></i> Muat ulang</button>
+        </div>
+      </div>
+
+      <div id="notice"></div>
+
+      <div class="a-toolbar">
+        <div class="a-search">
+          <i class="fas fa-search" aria-hidden="true"></i>
+          <input type="search" id="q" class="form-control" placeholder="Cari ID pesanan atau nama pelanggan…" autocomplete="off" aria-label="Cari pesanan">
+        </div>
+        <div class="a-tabs" id="tabs" role="tablist" aria-label="Filter status pesanan"></div>
+      </div>
+
+      <div id="list"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/orders.js"></script>
+<script src="../js/admin.js"></script>
+<script src="../js/admin-orders.js"></script>
+<script>
+  const FILTERS = [
+    { key: "all", label: "Semua" },
+    { key: "pending", label: "Menunggu pembayaran" },
+    { key: "running", label: "Project berjalan" },
+    { key: "done", label: "Selesai" }
+  ];
+  let ALL = [], filter = "all", query = "";
+
+  const groupOf = (o) => !AdminOrders.isPaid(o) ? "pending" : AdminOrders.isDone(o) ? "done" : "running";
+  const keyOf = (o) => o.source + "|" + o.id;
+
+  if (Admin.init("orders")) {
+    document.getElementById("reloadBtn").addEventListener("click", load);
+    document.getElementById("q").addEventListener("input", (e) => { query = e.target.value.trim().toLowerCase(); render(); });
+    load();
+  }
+
+  async function load() {
+    document.getElementById("list").innerHTML = Admin.loading("Memuat pesanan…");
+    const { orders, apiError } = await AdminOrders.loadAll();
+    ALL = orders;
+    document.getElementById("notice").innerHTML = apiError
+      ? `<div class="form-error" style="margin-bottom:18px;">Pesanan dari database tidak dapat dimuat: ${Admin.esc(apiError)} Menampilkan pesanan simulasi dari browser ini saja.</div>`
+      : "";
+    render();
+  }
+
+  function render() {
+    const counts = { all: ALL.length, pending: 0, running: 0, done: 0 };
+    ALL.forEach((o) => counts[groupOf(o)]++);
+    const tabs = document.getElementById("tabs");
+    tabs.innerHTML = FILTERS.map((f) => `<button type="button" role="tab" aria-selected="${f.key === filter}" class="${f.key === filter ? "active" : ""}" data-f="${f.key}">${f.label} (${counts[f.key]})</button>`).join("");
+    tabs.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { filter = b.dataset.f; render(); }));
+
+    const rows = ALL.filter((o) => (filter === "all" || groupOf(o) === filter) &&
+      (!query || o.id.toLowerCase().includes(query) || String(o.customer).toLowerCase().includes(query)));
+
+    const list = document.getElementById("list");
+    if (!ALL.length) { list.innerHTML = Admin.empty("fa-inbox", "Belum ada pesanan", "Pesanan pelanggan akan muncul di sini setelah checkout."); return; }
+    if (!rows.length) { list.innerHTML = Admin.empty("fa-search", "Tidak ada pesanan yang cocok", "Ubah kata kunci atau filter status."); return; }
+
+    list.innerHTML = `
+      <div class="a-table-wrap">
+        <table class="a-table compact">
+          <thead><tr><th>ID Pesanan</th><th>Pelanggan</th><th>Pembayaran</th><th>Tahap Project</th><th class="num">Total</th><th class="acts">Aksi</th></tr></thead>
+          <tbody>${rows.map((o) => `
+            <tr>
+              <td class="main"><span class="name">${Admin.esc(o.id)}</span>${AdminOrders.sourceTag(o)}<span class="sub">${Admin.dateID(o.createdAt)} · ${o.itemCount} item</span></td>
+              <td data-label="Pelanggan">${Admin.esc(o.customer)}${o.email ? `<span class="sub">${Admin.esc(o.email)}</span>` : ""}</td>
+              <td data-label="Pembayaran">${AdminOrders.payBadge(o)}</td>
+              <td data-label="Tahap">${AdminOrders.statusBadge(o)}</td>
+              <td class="num" data-label="Total">${Admin.idr(o.total)}</td>
+              <td class="acts">
+                <div class="a-row-acts">
+                  <button type="button" class="a-row-btn" data-detail="${Admin.esc(keyOf(o))}" title="Lihat detail pesanan" aria-label="Lihat detail pesanan ${Admin.esc(o.id)}"><i class="fas fa-eye"></i></button>
+                  ${AdminOrders.trackingBtn(o)}
+                </div>
+              </td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>`;
+    list.querySelectorAll("[data-detail]").forEach((b) => b.addEventListener("click", () => openDetail(b.dataset.detail)));
+  }
+
+  async function openDetail(key) {
+    const [source, ...rest] = key.split("|");
+    const id = rest.join("|");
+    let o;
+    try { o = await AdminOrders.loadOne(id, source); }
+    catch (err) { Admin.toast(err.message); return; }
+
+    const kv = (k, v) => `<div class="a-kv"><span>${k}</span><b>${v}</b></div>`;
+    const logHTML = o.log.length
+      ? `<ul class="a-log">${o.log.slice().reverse().map((l) => `<li><b>${Admin.esc(l.step)}</b><span>${AdminOrders.fmtDateTime(l.date)}${l.note ? " · " + Admin.esc(l.note) : ""}</span></li>`).join("")}</ul>`
+      : `<p class="hint">Belum ada riwayat.</p>`;
+
+    Admin.openModal({
+      title: "Pesanan " + o.id, size: "lg", hideFooter: true,
+      body: `
+        <div class="a-kv-grid">
+          ${kv("Pelanggan", Admin.esc(o.customer))}
+          ${kv("Email", Admin.esc(o.email || "-"))}
+          ${kv("Tanggal pesan", AdminOrders.fmtDate(o.createdAt))}
+          ${kv("Metode bayar", Admin.esc(String(o.paymentMethod).toUpperCase()))}
+          ${kv("Pembayaran", AdminOrders.payBadge(o))}
+          ${kv("Tahap project", AdminOrders.statusBadge(o))}
+        </div>
+        <h4 class="a-sub-h">Item pesanan</h4>
+        <div class="a-items">
+          ${o.items.length ? o.items.map((i) => `<div><span>${Admin.esc(i.name)}${i.qty > 1 ? " × " + i.qty : ""}</span><b>${Admin.idr(i.lineTotal)}</b></div>`).join("") : `<p class="hint">Rincian item tidak tersedia.</p>`}
+          <div class="tot"><span>Total</span><b>${Admin.idr(o.total)}</b></div>
+        </div>
+        <h4 class="a-sub-h">Riwayat status</h4>
+        ${logHTML}
+        <div class="a-modal-actions">${AdminOrders.trackingBtn(o)}</div>`
+    });
+  }
+</script>
+</body>
+</html>

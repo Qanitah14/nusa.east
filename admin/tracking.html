@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Tracking Project — Admin Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<script defer src="../js/icons.js"></script>
+</head>
+<body class="admin-body">
+<div class="admin-app" id="adminApp">
+  <main class="admin-main">
+    <div class="admin-content">
+      <a href="orders.html" class="a-back"><i class="fas fa-arrow-left"></i> Kembali ke daftar pesanan</a>
+      <div id="view"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/orders.js"></script>
+<script src="../js/admin.js"></script>
+<script src="../js/admin-orders.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const orderId = params.get("order");
+  const source = params.get("src") === "local" ? "local" : "api";
+  const view = document.getElementById("view");
+  let current = null;
+
+  if (Admin.init("tracking")) load();
+
+  async function load() {
+    if (!orderId) { view.innerHTML = Admin.empty("fa-route", "Pilih pesanan dulu", "Buka tracking dari tombol “Tracking Project” di daftar pesanan."); return; }
+    view.innerHTML = Admin.loading("Memuat tracking…");
+    try { current = await AdminOrders.loadOne(orderId, source); render(); }
+    catch (err) {
+      view.innerHTML = Admin.errorBox(err.message);
+      document.getElementById("retryBtn")?.addEventListener("click", load);
+    }
+  }
+
+  function render() {
+    const o = current;
+    const paid = AdminOrders.isPaid(o);
+    const done = AdminOrders.isDone(o);
+    const steps = AdminOrders.STEPS;
+
+    // Tracking hanya untuk pesanan yang pembayarannya sudah berhasil
+    if (!paid) {
+      view.innerHTML = `
+        <div class="a-card a-locked">
+          <i class="fas fa-lock"></i>
+          <h3>Tracking belum tersedia</h3>
+          <p>Pesanan <b>${Admin.esc(o.id)}</b> belum berstatus pembayaran berhasil. Tracking project bisa dijalankan setelah pembayaran lunas.</p>
+          <a class="btn btn-primary btn-sm mt-16" href="orders.html">Kembali ke pesanan</a>
+        </div>`;
+      return;
+    }
+
+    const timeline = steps.map((step, idx) => {
+      const entry = o.log.slice().reverse().find((l) => l.step === step);
+      const cls = idx < o.statusIndex ? "done" : idx === o.statusIndex ? "active" : "";
+      return `<div class="timeline-item ${cls}"><div class="t-date">${entry ? AdminOrders.fmtDate(entry.date) : "Menunggu"}</div><div class="t-title">${step}</div>${entry && entry.note ? `<div class="hint">${Admin.esc(entry.note)}</div>` : ""}</div>`;
+    }).join("");
+
+    const next = AdminOrders.nextStep(o);
+    const action = done
+      ? `<div class="a-done"><i class="fas fa-check-circle"></i><div><strong>Project selesai</strong><p>Semua tahap sudah dilalui untuk pesanan ini.</p></div></div>`
+      : `<div class="a-advance">
+          <strong>Update tahap project</strong>
+          <p class="hint mt-8">Tahap berikutnya: <b>${Admin.esc(next)}</b>. Pelanggan akan melihat perubahan ini di halaman tracking mereka.</p>
+          <div class="form-group mt-16" style="margin-bottom:0;">
+            <label for="note">Catatan untuk pelanggan (opsional)</label>
+            <input type="text" id="note" class="form-control" maxlength="200" placeholder="Contoh: Draf pertama sudah selesai">
+          </div>
+          <button class="btn btn-primary btn-sm mt-16" id="advanceBtn">Lanjutkan ke Tahap Berikutnya <i class="fas fa-arrow-right"></i></button>
+        </div>`;
+
+    view.innerHTML = `
+      <div class="a-page-head">
+        <div>
+          <span class="eyebrow">Tracking Project</span>
+          <h1 style="font-size:clamp(1.6rem,3vw,2.3rem);">${Admin.esc(o.id)} ${AdminOrders.sourceTag(o)}</h1>
+          <p>${Admin.esc(o.customer)} · dipesan ${AdminOrders.fmtDate(o.createdAt)}</p>
+        </div>
+        <span class="status-pill"><span class="dot"></span>${Admin.esc(o.status)}</span>
+      </div>
+
+      <div class="a-track-grid">
+        <div class="a-card">
+          <div class="a-card-head"><h3>Alur project</h3>${AdminOrders.payBadge(o)}</div>
+          <div class="timeline">${timeline}</div>
+          <div class="a-action-box">${action}</div>
+        </div>
+        <div class="a-card">
+          <div class="a-card-head"><h3>Detail pesanan</h3></div>
+          <div class="a-items">
+            ${o.items.length ? o.items.map((i) => `<div><span>${Admin.esc(i.name)}${i.qty > 1 ? " × " + i.qty : ""}</span><b>${Admin.idr(i.lineTotal)}</b></div>`).join("") : `<p class="hint">Rincian item tidak tersedia.</p>`}
+            <div class="tot"><span>Total</span><b>${Admin.idr(o.total)}</b></div>
+          </div>
+          <div class="a-kv-grid" style="margin-top:20px;">
+            <div class="a-kv"><span>Pelanggan</span><b>${Admin.esc(o.customer)}</b></div>
+            <div class="a-kv"><span>Email</span><b>${Admin.esc(o.email || "-")}</b></div>
+            <div class="a-kv"><span>Metode bayar</span><b>${Admin.esc(String(o.paymentMethod).toUpperCase())}</b></div>
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById("advanceBtn")?.addEventListener("click", onAdvance);
+  }
+
+  async function onAdvance(e) {
+    const btn = e.currentTarget;
+    const note = (document.getElementById("note")?.value || "").trim();
+    btn.disabled = true;
+    try {
+      const step = await AdminOrders.advance(current, note);
+      Admin.toast("Tahap diperbarui: " + step);
+      current = await AdminOrders.loadOne(orderId, source);
+      render();
+    } catch (err) {
+      Admin.toast(err.message);
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

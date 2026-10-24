@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<script defer src="js/icons.js"></script>
 </head>
 <body>
 
@@ -43,6 +44,7 @@
   renderHeader('tracking');
   renderFooter();
 
+  const DEMO_MODE = new URLSearchParams(location.search).get("demo") === "1";
   const resultBox = document.getElementById("trackingResult");
 
   function fmtDate(iso) {
@@ -78,12 +80,16 @@
           </div>
           <div class="timeline">${timelineHTML}</div>
 
-          ${!isDone ? `
+          ${!isDone ? (DEMO_MODE ? `
           <div class="card mt-24" style="background:var(--color-cream-card); border:none;">
             <strong>Simulasi Admin (Demo)</strong>
-            <p class="hint mt-8">Tombol ini mensimulasikan update status oleh tim Nusa East, karena prototype ini tidak terhubung ke backend real-time.</p>
+            <p class="hint mt-8">Tombol ini mensimulasikan update status oleh tim Nusa East. Pada penggunaan normal, status diperbarui oleh admin lewat panel admin.</p>
             <button class="btn btn-primary btn-sm mt-16" onclick="simulateAdvance('${order.id}')">Lanjutkan ke Tahap Berikutnya →</button>
           </div>` : `
+          <div class="card mt-24" style="background:var(--color-cream-card); border:none;">
+            <strong>Status diperbarui oleh tim Nusa East</strong>
+            <p class="hint mt-8">Setiap tahap project akan diperbarui oleh tim kami. Halaman ini otomatis menampilkan status terbaru saat kamu membukanya kembali.</p>
+          </div>`) : `
           <div class="card mt-24" style="background:#DCEAE0; border:none;">
             <strong>🎉 Project Selesai!</strong>
             <p class="mt-8">Terima kasih sudah menggunakan layanan Nusa East.</p>
@@ -111,7 +117,7 @@
       resultBox.innerHTML = `<div class="empty-state"><h3>Order tidak ditemukan</h3><p class="mt-8">Periksa kembali nomor order kamu.</p></div>`;
       return;
     }
-    history.replaceState(null, "", "tracking.html?order=" + order.id);
+    history.replaceState(null, "", "tracking.html?order=" + order.id + (DEMO_MODE ? "&demo=1" : ""));
     renderOrder(order);
   }
 

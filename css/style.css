@@ -895,3 +895,17 @@ textarea.form-control { resize: vertical; min-height: 110px; }
 
 .account-icon-btn.active-account { background: var(--color-primary); color:#fff; border-color:var(--color-primary); }
 .account-user-glyph { font-size: 1rem; line-height: 1; }
+/* ---------- ICONS (SVG inline, js/icons.js) ---------- */
+.ne-ico { width: 1em; height: 1em; flex: 0 0 auto; display: inline-block; vertical-align: -0.14em; overflow: visible; }
+.icon-btn .ne-ico { width: 1.1rem; height: 1.1rem; color: var(--color-primary); }
+.footer-contact .ne-ico { width: 1rem; height: 1rem; color: #C9D6CE; }
+.footer-social .ne-ico { width: 1.25rem; height: 1.25rem; }
+
+/* Profil pengguna: ikon jelas (bukan lagi simbol teks dalam bulatan pucat) */
+.profile-avatar { background: var(--color-primary); color: #fff; transform: none; font-size: 2.6rem; box-shadow: 0 0 0 5px rgba(30,59,44,.12); }
+.profile-avatar .ne-ico { width: 2.5rem; height: 2.5rem; }
+.profile-menu-item span { display: inline-flex; align-items: center; justify-content: center; }
+.profile-menu-item .ne-ico { width: 1.05rem; height: 1.05rem; }
+.profile-title-icon { background: var(--color-primary); color: #fff; }
+.profile-title-icon .ne-ico { width: 1.5rem; height: 1.5rem; }
+@media (max-width: 860px) { .profile-avatar { font-size: 2.2rem; } .profile-avatar .ne-ico { width: 2rem; height: 2rem; } }

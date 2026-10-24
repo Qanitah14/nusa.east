@@ -107,6 +107,7 @@ router.get("/admin/stats", ...admin, handle("Gagal mengambil ringkasan.", async 
       o.id,
       o.total,
       o.status,
+      o.payment_status,
       o.created_at,
       u.name AS customer
    FROM orders o

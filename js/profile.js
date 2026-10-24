@@ -72,7 +72,7 @@
     orderBox.innerHTML = orders.map(order => `
       <article class="profile-order-card">
         <div><small>ID Pesanan</small><strong>${order.id}</strong></div>
-        <div><small>Status</small><span class="profile-order-status">${order.status || "Pesanan Dibuat"}</span></div>
+        <div><small>Status</small><span class="profile-order-status">${order.status || (typeof STATUS_STEPS !== "undefined" && STATUS_STEPS[order.statusIndex]) || "Pesanan Dibuat"}</span></div>
         <div><small>Total</small><strong>${typeof formatIDR === "function" ? formatIDR(order.total) : order.total}</strong></div>
         <a href="tracking.html?order=${encodeURIComponent(order.id)}">Lihat Tracking →</a>
       </article>

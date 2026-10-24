@@ -1,6 +1,6 @@
 const express = require("express");
 const pool = require("../db/pool");
-const { requireAuth } = require("./auth");
+const { requireAuth, requireAdmin } = require("./auth");
 
 const router = express.Router();
 
@@ -9,6 +9,47 @@ function generateOrderId() {
   const rand = Math.floor(1000 + Math.random() * 9000);
   return `NE-${year}-${rand}`;
 }
+
+// Urutan tahap project — harus sama dengan STATUS_STEPS di frontend (js/orders.js)
+const STATUS_STEPS = [
+  "Pesanan Dibuat", "Pembayaran Berhasil", "Brief Diisi", "Brief & Bahan Lengkap",
+  "Project Dimulai", "Produksi", "Preview Dikirim", "Revisi", "Finalisasi", "Project Selesai"
+];
+
+// ---------- ADMIN: daftar & detail pesanan ----------
+// GET /api/orders/admin/all — semua pesanan (terbaru dulu)
+router.get("/admin/all", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT o.id, o.total, o.payment_method, o.payment_status, o.status, o.created_at,
+              u.name AS customer, u.email,
+              (SELECT COUNT(*)::int FROM order_items i WHERE i.order_id = o.id) AS item_count
+         FROM orders o LEFT JOIN users u ON u.id = o.user_id
+        ORDER BY o.created_at DESC LIMIT 500`
+    );
+    res.json(r.rows.map((o) => ({ ...o, total: Number(o.total) })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Gagal mengambil daftar pesanan." });
+  }
+});
+
+// GET /api/orders/admin/:id — detail pesanan + item + timeline + brief
+router.get("/admin/:id", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const o = await pool.query(
+      `SELECT o.*, u.name AS customer, u.email, u.phone
+         FROM orders o LEFT JOIN users u ON u.id = o.user_id WHERE o.id = $1`, [req.params.id]);
+    if (!o.rows.length) return res.status(404).json({ error: "Order tidak ditemukan." });
+    const items = await pool.query("SELECT name, price, qty, line_total FROM order_items WHERE order_id = $1", [req.params.id]);
+    const log = await pool.query("SELECT step, note, created_at FROM project_status_log WHERE order_id = $1 ORDER BY created_at ASC", [req.params.id]);
+    const brief = await pool.query("SELECT * FROM project_briefs WHERE order_id = $1 LIMIT 1", [req.params.id]);
+    res.json({ ...o.rows[0], total: Number(o.rows[0].total), items: items.rows, log: log.rows, brief: brief.rows[0] || null });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Terjadi kesalahan pada server." });
+  }
+});
 
 // POST /api/orders — buat order baru dari isi keranjang
 router.post("/", requireAuth, async (req, res) => {
@@ -83,10 +124,19 @@ router.post("/:id/brief", requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/orders/:id/status — update status (dipakai tim internal/admin)
-router.post("/:id/status", requireAuth, async (req, res) => {
+// POST /api/orders/:id/status — update tahap project (HANYA admin).
+// Tracking project baru bisa dijalankan setelah pembayaran berhasil (payment_status = 'paid').
+router.post("/:id/status", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { step, note } = req.body;
+    if (!STATUS_STEPS.includes(step)) return res.status(400).json({ error: "Tahap project tidak valid." });
+
+    const found = await pool.query("SELECT payment_status FROM orders WHERE id = $1", [req.params.id]);
+    if (!found.rows.length) return res.status(404).json({ error: "Order tidak ditemukan." });
+    if (found.rows[0].payment_status !== "paid") {
+      return res.status(409).json({ error: "Pembayaran belum berhasil, tracking project belum bisa dijalankan." });
+    }
+
     await pool.query(`UPDATE orders SET status = $1 WHERE id = $2`, [step, req.params.id]);
     await pool.query(`INSERT INTO project_status_log (order_id, step, note) VALUES ($1, $2, $3)`, [req.params.id, step, note || null]);
     res.json({ success: true });
