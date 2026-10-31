@@ -18,13 +18,8 @@ body.operator-body .a-brand small { color: #F3D9CE; }
 
 .op-toolbar { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px; }
 .op-toolbar .a-search { flex: 1 1 260px; max-width: 420px; }
-.op-toolbar .op-filter { width: auto; min-width: 150px; padding: 10px 14px; }
-.op-toolbar select {
-  min-width: 165px;
-}
-.op-toolbar select option {
-  white-space: normal;
-}
+.op-toolbar .op-filter { width: auto; min-width: 165px; padding: 10px 14px; }
+
 
 .op-date { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--color-text-muted); }
 .op-date .op-filter { min-width: 0; }
