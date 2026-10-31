@@ -293,6 +293,7 @@ body.admin-body {
 }
 
 /* Ukuran tombol agar memenuhi container */
+
 .admin-body .admin-login-buttons .btn {
   display: flex;
   align-items: center;
@@ -305,6 +306,8 @@ body.admin-body {
   margin: 0;
   padding: 14px 20px;
 
+  background: #fff;
+  color: #1d3c2d;
   border: 1px solid #1d3c2d;
   border-radius: 50px;
 
@@ -314,32 +317,31 @@ body.admin-body {
   line-height: 1.4;
   text-align: center;
   text-decoration: none;
+
+  transition: background 0.3s ease, color 0.3s ease,
+              border-color 0.3s ease;
 }
 
 /* Tombol Masuk */
 .admin-body .admin-login-buttons #loginBtn {
-  background: #1d3c2d;
-  color: #fff;
-  border-color: #1d3c2d;
+  background: #fff;
+  color: #1d3c2d;
+  border: 1px solid #1d3c2d;
 }
 
 /* Tombol Masuk sebagai Pengguna */
 .admin-body .admin-login-buttons .btn-admin-user {
   background: #fff;
   color: #1d3c2d;
+  border: 1px solid #1d3c2d;
 }
 
-/* Efek hover tombol Masuk */
-.admin-body .admin-login-buttons #loginBtn:hover {
-  background: #294f3c;
-  border-color: #294f3c;
-}
-
-/* Efek hover tombol pengguna */
+/* Hover kedua tombol */
+.admin-body .admin-login-buttons #loginBtn:hover,
 .admin-body .admin-login-buttons .btn-admin-user:hover {
   background: #1d3c2d;
   color: #fff;
-  border-color: #1d3c2d;
+  border: 1px solid #1d3c2d;
 }
 
 /* Tampilan ponsel */

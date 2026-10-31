@@ -204,3 +204,24 @@ a.op-stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
     min-height: auto;
   }
 }
+
+/* Warna ikon sidebar Operator Nusa East */
+.operator-body .admin-sidebar .nav-link i,
+.operator-body .admin-sidebar .admin-nav a i {
+  color: #e9a08a;
+  width: 22px;
+  min-width: 22px;
+  text-align: center;
+  font-size: 17px;
+}
+
+/* Ikon menu aktif */
+.operator-body .admin-sidebar .nav-link.active i,
+.operator-body .admin-sidebar .admin-nav a.active i {
+  color: #1d3c2d;
+}
+
+/* Warna hijau sidebar */
+.operator-body .admin-sidebar {
+  background-color: #1d3c2d;
+}
