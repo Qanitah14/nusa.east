@@ -1,0 +1,360 @@
+
+/* =========================================
+   ADMIN LOGIN — NUSA EAST
+   Mengikuti tampilan login pengguna
+   ========================================= */
+
+/* Latar halaman */
+body.admin-body {
+  min-height: 100vh;
+  background: var(--color-cream, #faf0e4);
+}
+
+/* Posisi kartu di tengah halaman */
+.admin-body .auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+/* Kartu login admin */
+.admin-body .admin-auth-card {
+  width: 100%;
+  max-width: 536px;
+  margin: 0 auto;
+  padding: 40px;
+  background: #fff;
+  border: 1px solid #e8d9c9;
+  border-radius: 30px;
+  box-shadow: none;
+}
+
+/* Bagian logo dan judul */
+.admin-auth-header {
+  text-align: center;
+  margin-bottom: 34px;
+}
+
+/* Logo Nusa East */
+.admin-auth-logo {
+  display: block;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin: 0 auto 22px;
+}
+
+/* Label Admin Panel */
+.admin-auth-header .eyebrow {
+  display: block;
+  margin-bottom: 10px;
+  color: #d47b5e;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+/* Judul */
+.admin-auth-header h2 {
+  margin: 0;
+  color: #1d3c2d;
+  font-family: "Fraunces", serif;
+  font-size: clamp(1.7rem, 4vw, 2rem);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Deskripsi */
+.admin-auth-header p {
+  margin-top: 10px;
+  color: #6d6d6d;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Form */
+.admin-auth-card form {
+  width: 100%;
+  margin: 0;
+}
+
+/* Jarak setiap input */
+.admin-auth-card .form-group {
+  margin-bottom: 24px;
+}
+
+/* Label input */
+.admin-auth-card .form-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Input email dan password */
+.admin-auth-card .form-control {
+  width: 100%;
+  min-height: 50px;
+  padding: 13px 18px;
+  background: #e9f0fd;
+  border: 1px solid #e7d8c8;
+  border-radius: 12px;
+  color: #172c22;
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+/* Efek fokus input */
+.admin-auth-card .form-control:focus {
+  outline: none;
+  border-color: #1d3c2d;
+  box-shadow: 0 0 0 3px rgba(29, 60, 45, 0.08);
+}
+
+/* Pembungkus password */
+.admin-auth-card .a-pw {
+  position: relative;
+  width: 100%;
+}
+
+/* Ruang untuk ikon mata */
+.admin-auth-card .a-pw .form-control {
+  padding-right: 48px;
+}
+
+/* Tombol tampilkan password */
+.admin-auth-card #togglePw {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border: none;
+  background: transparent;
+  color: #6d756f;
+  cursor: pointer;
+}
+
+/* Tombol masuk */
+.admin-auth-card #loginBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 56px;
+  margin-top: 2px;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 50px;
+  background: #1d3c2d;
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+/* Hover tombol */
+.admin-auth-card #loginBtn:hover {
+  background: #294f3c;
+}
+
+/* Tombol saat proses login */
+.admin-auth-card #loginBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Tautan pendaftaran dan navigasi */
+.admin-auth-card .auth-switch {
+  margin: 24px 0 0;
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* Warna tautan */
+.admin-auth-card .auth-switch a {
+  color: #d47759;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.admin-auth-card .auth-switch a:hover {
+  text-decoration: underline;
+}
+
+/* Tautan pengguna dan kembali ke situs */
+.admin-auth-card .admin-auth-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+/* Catatan keamanan */
+.admin-auth-card .a-login-note {
+  margin: 22px 0 0;
+  color: #737373;
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+/* Pesan kesalahan */
+.admin-auth-card .form-error:not([hidden]) {
+  margin-bottom: 18px;
+}
+
+/* =========================================
+   RESPONSIVE — TABLET DAN HP
+   ========================================= */
+
+@media (max-width: 600px) {
+  .admin-body .auth-wrap {
+    padding: 24px 16px;
+  }
+
+  .admin-body .admin-auth-card {
+    max-width: 100%;
+    padding: 32px 24px;
+    border-radius: 24px;
+  }
+
+  .admin-auth-header {
+    margin-bottom: 28px;
+  }
+
+  .admin-auth-logo {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 18px;
+  }
+
+  .admin-auth-header h2 {
+    font-size: 1.65rem;
+  }
+
+  .admin-auth-header p {
+    font-size: 0.92rem;
+  }
+
+  .admin-auth-card .form-group {
+    margin-bottom: 21px;
+  }
+
+  .admin-auth-card #loginBtn {
+    min-height: 52px;
+  }
+
+  .admin-auth-card .auth-switch {
+    font-size: 0.88rem;
+  }
+}
+
+/* HP dengan layar kecil */
+@media (max-width: 360px) {
+  .admin-body .admin-auth-card {
+    padding: 28px 18px;
+  }
+
+  .admin-auth-header h2 {
+    font-size: 1.45rem;
+  }
+
+  .admin-auth-card .admin-auth-links {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .admin-auth-card .admin-auth-links span {
+    display: none;
+  }
+}
+
+
+/* Container dua tombol login */
+.admin-body .admin-login-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* Samakan ukuran kedua tombol */
+.admin-body .admin-login-buttons .btn {
+  width: 100%;
+  min-width: 0;
+  min-height: 54px;
+  margin: 0;
+  padding: 12px 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  box-sizing: border-box;
+  border-radius: 30px;
+
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* Tombol Masuk */
+.admin-body .admin-login-buttons #loginBtn {
+  background: #fff;
+  color: #1d3b2d;
+  border: 1px solid #1d3b2d;
+}
+
+/* Tombol Masuk sebagai Pengguna */
+.admin-body .admin-login-buttons .btn-admin-user {
+  background: #fff;
+  color: #1d3b2d;
+  border: 1px solid #1d3b2d;
+}
+
+/* Hover tombol Masuk sebagai Pengguna */
+.admin-body .admin-login-buttons .btn-admin-user:hover {
+  background: #1d3b2d;
+  color: #fff;
+  border-color: #1d3b2d;
+}
+
+/* Hover tombol Masuk */
+.admin-body .admin-login-buttons #loginBtn:hover {
+  background: #1d3b2d;
+  color: #fff;
+  border-color: #1d3b2d;
+}
+
+/* Tampilan ponsel */
+@media (max-width: 420px) {
+  .admin-body .admin-login-buttons {
+    gap: 8px;
+  }
+
+  .admin-body .admin-login-buttons .btn {
+    min-height: 50px;
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+}
+

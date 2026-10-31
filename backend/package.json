@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "midtrans-client": "^1.4.3",
+    "multer": "^2.5.0",
+    "pg": "^8.23.1"
+  },
+  "name": "nusaeast-backend",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "migrate": "node db/migrate.js",
+    "create-staff": "node scripts/create-staff.js",
+    "migrate-avatars": "node scripts/migrate-avatars.js",
+    "test": "node --test tests/rbac.test.js",
+    "seed": "node db/seed.js"
+  }
+}

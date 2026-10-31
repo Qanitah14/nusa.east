@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Layanan — Admin Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<script defer src="../js/icons.js"></script>
+</head>
+<body class="admin-body">
+<div class="admin-app" id="adminApp">
+  <main class="admin-main">
+    <div class="admin-content">
+      <div class="a-page-head">
+        <div>
+          <span class="eyebrow">Katalog</span>
+          <h1 style="font-size:clamp(1.8rem,3.4vw,2.6rem);">Layanan</h1>
+          <p>Layanan utama yang tampil di halaman Layanan dan menjadi kategori Paket serta Layanan Satuan.</p>
+        </div>
+        <div class="a-actions"><button class="btn btn-primary btn-sm" id="addBtn"><i class="fas fa-plus"></i> Tambah Layanan</button></div>
+      </div>
+      <div id="list"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/admin.js"></script>
+<script>
+  let services = [];
+  const TYPES = { project: "Per Project (ada deadline)", subscription: "Langganan Bulanan" };
+
+  if (Admin.init("services")) { load(); document.getElementById("addBtn").addEventListener("click", () => openForm()); }
+
+  async function load() {
+    const box = document.getElementById("list");
+    box.innerHTML = Admin.loading();
+    try { services = await Admin.api.get("/services/admin/services"); render(); }
+    catch (err) { box.innerHTML = Admin.errorBox(err.message); document.getElementById("retryBtn")?.addEventListener("click", load); }
+  }
+
+  function render() {
+    const box = document.getElementById("list");
+    if (!services.length) { box.innerHTML = Admin.empty("fa-layer-group", "Belum ada layanan", "Klik “Tambah Layanan” untuk membuat layanan pertama."); return; }
+    box.innerHTML = `<div class="a-table-wrap"><table class="a-table">
+      <thead><tr><th>Layanan</th><th>Jenis</th><th>Paket</th><th>Satuan</th><th>Urutan</th><th>Status</th><th></th></tr></thead>
+      <tbody>${services.map((s) => `
+        <tr>
+          <td class="main"><div class="a-cell-main">
+            <div class="a-thumb">${s.image ? `<img src="${Admin.esc(Admin.assetUrl(s.image))}" alt="">` : Admin.esc(s.icon || "🗂️")}</div>
+            <div><span class="name">${Admin.esc(s.name)}</span><span class="sub">${Admin.esc(s.tag || s.id)}</span></div>
+          </div></td>
+          <td data-label="Jenis"><span class="badge ${s.type === "subscription" ? "badge-green" : "badge-orange"}">${s.type === "subscription" ? "Langganan" : "Project"}</span></td>
+          <td data-label="Paket">${s.packageCount}</td>
+          <td data-label="Satuan">${s.singleCount}</td>
+          <td data-label="Urutan">${s.sortOrder}</td>
+          <td data-label="Status">${Admin.statusBadge(s.isActive)}</td>
+          <td class="acts">
+            <button class="a-row-btn" data-edit="${Admin.esc(s.id)}" aria-label="Ubah ${Admin.esc(s.name)}"><i class="fas fa-pen"></i></button>
+            <button class="a-row-btn danger" data-del="${Admin.esc(s.id)}" aria-label="Hapus ${Admin.esc(s.name)}"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`).join("")}
+      </tbody></table></div>`;
+    box.querySelectorAll("[data-edit]").forEach((b) => b.addEventListener("click", () => openForm(services.find((s) => s.id === b.dataset.edit))));
+    box.querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => askDelete(services.find((s) => s.id === b.dataset.del))));
+  }
+
+  function openForm(s) {
+    const edit = !!s;
+    const v = s || { name: "", tag: "", type: "project", short: "", icon: "", durationLabel: "", sortOrder: services.length + 1, isActive: true, image: null };
+    const ctx = Admin.openModal({
+      title: edit ? "Ubah Layanan" : "Tambah Layanan",
+      submitLabel: edit ? "Simpan Perubahan" : "Tambah Layanan",
+      body: `
+        <div class="form-group"><label>Nama layanan <span class="req">*</span></label>
+          <input class="form-control" name="name" maxlength="150" value="${Admin.esc(v.name)}" required></div>
+        <div class="form-row">
+          <div class="form-group"><label>Label / tag</label>
+            <input class="form-control" name="tag" maxlength="50" placeholder="05 / MARKETING" value="${Admin.esc(v.tag)}"></div>
+          <div class="form-group"><label>Jenis penagihan</label>
+            <select class="form-control" name="type">${Object.entries(TYPES).map(([k, l]) => `<option value="${k}" ${v.type === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+        </div>
+        <div class="form-group"><label>Deskripsi singkat</label>
+          <textarea class="form-control" name="short" rows="3" placeholder="Ditampilkan di halaman Layanan.">${Admin.esc(v.short)}</textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>Ikon (emoji)</label>
+            <input class="form-control" name="icon" maxlength="8" placeholder="📱" value="${Admin.esc(v.icon)}"></div>
+          <div class="form-group"><label>Urutan tampil</label>
+            <input class="form-control" type="number" name="sortOrder" min="0" step="1" value="${Admin.esc(v.sortOrder)}"></div>
+        </div>
+        <div class="form-group"><label>Keterangan estimasi di halaman Paket</label>
+          <input class="form-control" name="durationLabel" maxlength="150" placeholder="Estimasi Pengerjaan per Project" value="${Admin.esc(v.durationLabel)}"></div>
+        ${edit ? `<div class="form-group"><label>ID layanan</label><input class="form-control" value="${Admin.esc(s.id)}" disabled><div class="hint">ID dipakai sebagai tautan dan tidak bisa diubah.</div></div>`
+               : `<div class="form-group"><label>ID layanan (opsional)</label><input class="form-control" name="id" maxlength="30" placeholder="otomatis dari nama"><div class="hint">Huruf kecil, angka, tanda minus. Tidak bisa diubah setelah dibuat.</div></div>`}
+        <div class="form-group"><label>Gambar layanan</label>
+          <div class="a-upload">
+            <div class="preview" id="imgPrev">${v.image ? `<img src="${Admin.esc(Admin.assetUrl(v.image))}" alt="">` : `<i class="far fa-image"></i>`}</div>
+            <div><input type="file" name="image" id="imgInput" accept="image/jpeg,image/png,image/webp,image/gif">
+              <div class="hint">JPG, PNG, WEBP, GIF · maks 5 MB. Kosongkan untuk memakai gambar bawaan.</div>
+              ${edit && v.image ? `<label class="checkbox-row mt-8"><input type="checkbox" name="removeImage"> Hapus gambar saat ini</label>` : ""}
+            </div>
+          </div>
+        </div>
+        <div class="a-switch-group">${Admin.switchHTML("isActive", "Tampilkan di situs", v.isActive)}</div>`,
+      onSubmit: async (form) => {
+        const f = new FormData(form);
+        if (!String(f.get("name")).trim()) throw new Error("Nama layanan wajib diisi.");
+        const file = form.image.files[0];
+        if (file && file.size > 5 * 1024 * 1024) throw new Error("Ukuran gambar maksimal 5 MB.");
+        if (!file) f.delete("image");
+        f.set("isActive", form.isActive.checked ? "true" : "false");
+        if (form.removeImage) f.set("removeImage", form.removeImage.checked ? "true" : "false");
+        if (edit) await Admin.api.put(`/services/admin/services/${encodeURIComponent(s.id)}`, f);
+        else await Admin.api.post("/services/admin/services", f);
+        ctx.close(); Admin.toast(edit ? "Layanan diperbarui." : "Layanan ditambahkan."); load();
+      }
+    });
+    document.getElementById("imgInput").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) document.getElementById("imgPrev").innerHTML = `<img src="${URL.createObjectURL(file)}" alt="">`;
+    });
+  }
+
+  function askDelete(s) {
+    Admin.confirmDialog({
+      title: "Hapus layanan?",
+      message: `Layanan <b>${Admin.esc(s.name)}</b> akan dihapus permanen. Jika hanya ingin menyembunyikannya, matikan “Tampilkan di situs”.`,
+      onConfirm: async () => { await Admin.api.del(`/services/admin/services/${encodeURIComponent(s.id)}`); Admin.toast("Layanan dihapus."); load(); }
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Riwayat Aktivitas — Operator Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<link rel="stylesheet" href="../css/operator.css">
+<script defer src="../js/icons.js"></script>
+</head>
+<body class="admin-body operator-body">
+<div class="admin-app" id="adminApp">
+  <main class="admin-main">
+    <div class="admin-content">
+      <div class="a-page-head">
+        <div>
+          <span class="eyebrow">Audit</span>
+          <h1 style="font-size:clamp(1.7rem,3.2vw,2.4rem);">Riwayat Aktivitas</h1>
+          <p>Catatan login, logout, dan tindakan penting Super User / Admin Penjualan.</p>
+        </div>
+        
+      </div>
+      <div id="tbl"></div>
+    </div>
+  </main>
+</div>
+<script src="../js/operator-config.js"></script>
+<script src="../js/admin.js"></script>
+<script src="../js/operator.js"></script>
+<script>
+if (Admin.init("activity")) {
+  const detailText = (a) => {
+    const d = a.detail || {};
+    if (a.action === "account_status_changed") return `${d.from} → ${d.to}${d.reason ? " (" + d.reason + ")" : ""}`;
+    if (a.action === "role_changed") return `${d.from} → ${d.to}`;
+    if (a.action === "order_status_updated") return `${d.order_id} → ${d.step}`;
+    if (a.action === "login_failed") return d.email || "";
+    if (a.action === "sessions_revoked") return `${d.count} sesi`;
+    return d.role || (d.identity_verified === false ? "identitas tidak cocok" : "");
+  };
+  Op.table({ mount: "#tbl", endpoint: "/operator/activity", pageSize: 20, searchPlaceholder: "Cari nama / email…",
+    filters: [{ name: "action", label: "Jenis aktivitas", options: [["","Semua aktivitas"],["login","Login"],["logout","Logout"],["login_failed","Login gagal"],["session_timeout","Sesi berakhir (tidak aktif)"],["register","Registrasi"],["password_reset_requested","Permintaan reset"],["account_status_changed","Perubahan status akun"],["role_changed","Perubahan role"],["staff_created","Akun internal dibuat"],["order_status_updated","Update status pesanan"]] }, { type: "date", name: "from", label: "Dari" }, { type: "date", name: "to", label: "Sampai" }],
+    columns: [
+      { label: "Waktu", render: (a) => Op.dt(a.created_at) },
+      { label: "Aktivitas", render: (a) => `<b>${Op.esc(Op.actionLabel(a.action))}</b>` },
+      { label: "Pelaku", render: (a) => a.actor_name ? `<span class="name">${Op.esc(a.actor_name)}</span><span class="sub">${Op.esc(a.actor_email || "")}</span>` : `<span class="sub">${Op.esc((a.detail && a.detail.email) || "Sistem")}</span>` },
+      { label: "Target", render: (a) => a.target_name && a.target_name !== a.actor_name ? `<span class="name">${Op.esc(a.target_name)}</span><span class="sub">${Op.esc(a.target_email || "")}</span>` : "-" },
+      { label: "Keterangan", render: (a) => Op.esc(detailText(a)) || "-" },
+      { label: "IP", render: (a) => Op.esc(a.ip || "-") }
+    ],
+    empty: ["fa-clock-rotate-left", "Belum ada aktivitas", "Tidak ada aktivitas yang cocok dengan filter."] });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<link rel="icon" type="image/png" href="img/logo.png">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review — Nusa East</title>
+<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script defer src="js/icons.js"></script>
+</head>
+<body>
+
+<section class="page-hero" style="text-align:left; padding-bottom:0;">
+  <div class="container">
+    <span class="eyebrow">Preview Hasil Kerja</span>
+    <h1>Review & Revisi</h1>
+    <p>Cek hasil pekerjaan tim kami. Jika ada yang perlu diubah, ajukan revisi sesuai batas revisi paketmu.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" id="reviewBox"></div>
+</section>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/layout.js"></script>
+<script>
+  renderHeader('tracking');
+  renderFooter();
+
+  const params = new URLSearchParams(location.search);
+  const orderId = params.get("order");
+  const order = orderId ? getOrder(orderId) : null;
+  const box = document.getElementById("reviewBox");
+  const MAX_REVISION = 3; // batas ilustrasi — idealnya diambil dari detail paket yang dibeli
+
+  function render() {
+    if (!order) {
+      box.innerHTML = `<div class="empty-state"><h3>Order tidak ditemukan</h3></div>`;
+      return;
+    }
+    box.innerHTML = `
+      <div class="grid-2" style="align-items:start;">
+        <div>
+          <div class="card mb-16">
+            <!-- GANTI: preview hasil kerja (mockup, gambar, atau link Drive) -->
+            <img src="images/service-content.jpg" alt="Preview hasil pekerjaan" style="border-radius:var(--radius-sm);">
+            <p class="hint mt-16">Preview dikirim tim Nusa East untuk Order ${order.id}.</p>
+          </div>
+        </div>
+        <div>
+          <div class="revision-counter">
+            <span>Revisi Terpakai</span>
+            <strong>${order.revisionsUsed} / ${MAX_REVISION}</strong>
+          </div>
+
+          <div class="form-card mb-16">
+            <div class="form-group">
+              <label>Catatan Revisi</label>
+              <textarea class="form-control" id="revisionNote" placeholder="Jelaskan bagian yang ingin direvisi..."></textarea>
+            </div>
+            <button class="btn btn-outline btn-block" id="requestRevisionBtn" ${order.revisionsUsed >= MAX_REVISION ? "disabled" : ""}>
+              Ajukan Revisi
+            </button>
+          </div>
+
+          <button class="btn btn-primary btn-block" id="approveBtn">✓ Setujui, Lanjut ke Finalisasi</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("requestRevisionBtn").addEventListener("click", () => {
+      const note = document.getElementById("revisionNote").value.trim();
+      if (!note) { showToast("Isi catatan revisi terlebih dahulu"); return; }
+      const orders = getOrders();
+      const o = orders.find(x => x.id === order.id);
+      o.revisionsUsed++;
+      o.log.push({ step: "Revisi", date: new Date().toISOString(), note });
+      if (o.statusIndex < STATUS_STEPS.indexOf("Revisi")) o.statusIndex = STATUS_STEPS.indexOf("Revisi");
+      saveOrders(orders);
+      showToast("Permintaan revisi terkirim");
+      setTimeout(() => location.href = "tracking.html?order=" + order.id, 900);
+    });
+
+    document.getElementById("approveBtn").addEventListener("click", () => {
+      const orders = getOrders();
+      const o = orders.find(x => x.id === order.id);
+      o.statusIndex = STATUS_STEPS.indexOf("Finalisasi");
+      o.log.push({ step: "Finalisasi", date: new Date().toISOString() });
+      saveOrders(orders);
+      location.href = "finalize.html?order=" + order.id;
+    });
+  }
+
+  render();
+</script>
+</body>
+</html>

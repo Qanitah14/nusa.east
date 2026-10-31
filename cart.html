@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<link rel="icon" type="image/png" href="img/logo.png">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cart — Nusa East</title>
+<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script defer src="js/icons.js"></script>
+</head>
+<body>
+
+<section class="page-hero" style="text-align:left; padding-bottom:0;">
+  <div class="container">
+    <span class="eyebrow">Langkah 1</span>
+    <h1>Keranjang Kamu</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cart-layout" id="cartLayout"></div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/layout.js"></script>
+<script>
+  renderHeader('services');
+  renderFooter();
+
+  function renderCartPage() {
+    const allCart = getCart();
+    const selectedIds = getSelectedCartIds();
+    const cart = allCart;
+    const { breakdown: displayBreakdown } = calculateCartTotals(cart);
+    const { base, percentExtra, total } = calculateCartTotals(getSelectedCart());
+    const layout = document.getElementById("cartLayout");
+
+    if (cart.length === 0) {
+      layout.innerHTML = `
+        <div class="empty-state" style="grid-column: 1 / -1;">
+          <h3>Keranjang kamu masih kosong</h3>
+          <p class="mt-8">Yuk mulai pilih paket, layanan satuan, atau add-on.</p>
+          <a href="packages.html" class="btn btn-primary mt-24">Lihat Paket</a>
+        </div>
+      `;
+      return;
+    }
+
+    const typeLabel = { package: "Paket Lengkap", single: "Layanan Satuan", addon: "Add-On" };
+
+    const linesHTML = displayBreakdown.map(item => `
+      <div class="cart-line">
+        <label class="cart-select-item" style="display:flex;align-items:flex-start;gap:8px;">
+          <input type="checkbox" ${selectedIds.includes(item.id) ? "checked" : ""} onchange="setCartItemSelected('${item.id}', this.checked)" aria-label="Pilih ${item.name}">
+        </label>
+        <div>
+          <div class="line-title">${item.name}</div>
+          <div class="line-meta">
+            <span class="badge badge-gray">${typeLabel[item.type]}</span>
+            ${item.meta ? ` · ${item.meta}` : ""}
+            ${item.percent ? ` · dihitung dari subtotal paket` : ""}
+          </div>
+        </div>
+        <div>
+          ${item.percent ? "—" : `
+          <div class="qty-control">
+            <button onclick="updateQty('${item.id}', -1)">−</button>
+            <input type="text" value="${item.qty}" readonly>
+            <button onclick="updateQty('${item.id}', 1)">+</button>
+          </div>`}
+        </div>
+        <div style="font-weight:700; color:var(--color-primary);">${formatIDR(item.lineTotal)}</div>
+        <button class="line-remove" onclick="removeFromCart('${item.id}')">Hapus</button>
+      </div>
+    `).join("");
+
+    layout.innerHTML = `
+      <div>
+        <div class="card">
+          <label style="display:flex;gap:8px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--color-border);font-weight:600;">
+            <input type="checkbox" ${cart.length && selectedIds.length === cart.length ? "checked" : ""} onchange="selectAllCartItems(this.checked)"> Pilih semua item (${selectedIds.length} dipilih)
+          </label>
+          ${linesHTML}
+        </div>
+        <a href="packages.html" class="btn btn-outline mt-24">+ Tambah Item Lain</a>
+      </div>
+      <div class="card summary-box">
+        <h3 class="mb-16">Ringkasan Pesanan</h3>
+        ${selectedIds.length === 0 ? `<p class="hint">Pilih minimal satu item untuk melanjutkan checkout.</p>` : ""}
+        <div class="summary-row"><span>Subtotal Paket & Satuan</span><span>${formatIDR(base)}</span></div>
+        ${percentExtra > 0 ? `<div class="summary-row"><span>Biaya Express/Priority</span><span>${formatIDR(percentExtra)}</span></div>` : ""}
+        <div class="summary-row total"><span>Total Keseluruhan</span><span>${formatIDR(total)}</span></div>
+        <a href="checkout.html" class="btn btn-primary btn-block mt-24 ${selectedIds.length ? "" : "disabled"}" ${selectedIds.length ? "" : "aria-disabled='true' onclick='return false;'"}>Checkout ${selectedIds.length} Item</a>
+      </div>
+    `;
+  }
+
+  renderCartPage();
+</script>
+</body>
+</html>

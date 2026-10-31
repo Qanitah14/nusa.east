@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Permintaan Reset Password — Operator Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<link rel="stylesheet" href="../css/operator.css">
+<script defer src="../js/icons.js"></script>
+</head>
+<body class="admin-body operator-body">
+<div class="admin-app" id="adminApp">
+  <main class="admin-main">
+    <div class="admin-content">
+      <div class="a-page-head">
+        <div>
+          <span class="eyebrow">Bantuan akun</span>
+          <h1 style="font-size:clamp(1.7rem,3.2vw,2.4rem);">Permintaan Reset Password</h1>
+          <p>Verifikasi pemohon, setujui untuk menerbitkan tautan sekali pakai, atau tolak. Password pengguna tidak pernah ditampilkan.</p>
+        </div>
+        
+      </div>
+      <div id="tbl"></div>
+    </div>
+  </main>
+</div>
+<script src="../js/operator-config.js"></script>
+<script src="../js/admin.js"></script>
+<script src="../js/operator.js"></script>
+<script>
+if (Admin.init("resets")) {
+  let tbl;
+  const ask = (title, label, fn, opts = {}) => Admin.openModal({ title, size: "sm", submitLabel: label,
+    body: `${opts.warn ? `<div class="form-error" style="display:block">${opts.warn}</div>` : ""}<div class="form-group"><label>Catatan (opsional)</label><input class="form-control" name="note" maxlength="500"></div>`,
+    onSubmit: async (f, ctx) => { await fn(f.note.value, ctx); } });
+  const call = (r, action, note, force) => Op.patch("/operator/reset-requests/" + r.id, { action, note, force });
+  const approve = (r, force) => ask("Setujui permintaan", "Setujui & buat tautan", async (note, ctx) => {
+      const out = await call(r, "approve", note, force || undefined);
+      ctx.close(); tbl.reload(); Op.showResetLink(out, r.name);
+    }, force ? { warn: "Nomor telepon yang diisi pemohon tidak cocok dengan data akun. Pastikan identitas sudah diverifikasi secara manual sebelum melanjutkan." } : {});
+  tbl = Op.table({ mount: "#tbl", endpoint: "/operator/reset-requests", searchPlaceholder: "Cari nama / email pemohon…",
+    filters: [{ name: "status", label: "Status", value: "", options: [["","Semua status"],["pending","Pending"],["processing","Processing"],["approved","Disetujui (menunggu dipakai)"],["completed","Completed"],["rejected","Ditolak"],["expired","Kedaluwarsa"]] }],
+    columns: [
+      { label: "Pemohon", render: Op.person },
+      { label: "Telepon", render: (r) => Op.esc(r.phone || "-") },
+      { label: "Verifikasi", render: (r) => r.source === "operator" ? `<span class="badge badge-gray">Dibuat operator</span>` : r.identity_verified ? `<span class="badge badge-green">Telepon cocok</span>` : `<span class="badge badge-red">Telepon TIDAK cocok</span>` },
+      { label: "Status", render: (r) => Op.resetBadge(r.status) + (r.status === "approved" && r.token_expires_at ? `<span class="sub">berlaku s.d. ${Op.dt(r.token_expires_at)}</span>` : "") },
+      { label: "Diajukan", render: (r) => Op.dt(r.created_at) },
+      { label: "Ditangani", render: (r) => Op.esc(r.handled_by_name || "-") }
+    ],
+    rowActions: (r) => {
+      const open = ["pending", "processing", "approved"].includes(r.status);
+      if (!open) return Op.btn("detail", "fa-eye", "Lihat pengguna");
+      return Op.btn("detail", "fa-eye", "Lihat pengguna")
+        + (r.status === "pending" ? Op.btn("process", "fa-hourglass-half", "Proses") : "")
+        + Op.btn("approve", r.status === "approved" ? "fa-rotate" : "fa-check", r.status === "approved" ? "Buat tautan baru" : "Setujui")
+        + (r.status === "approved" ? Op.btn("complete", "fa-flag-checkered", "Tandai selesai") : "")
+        + Op.btn("reject", "fa-xmark", "Tolak", "danger");
+    },
+    actions: {
+      detail: (r) => Op.showUser(r.user_id),
+      process: (r, c) => ask("Proses permintaan", "Mulai proses", async (note, ctx) => { await call(r, "process", note); ctx.close(); c.reload(); Admin.toast("Permintaan diproses."); }),
+      approve: (r) => approve(r, !r.identity_verified && r.source !== "operator"),
+      reject: (r, c) => ask("Tolak permintaan", "Tolak", async (note, ctx) => { await call(r, "reject", note); ctx.close(); c.reload(); Admin.toast("Permintaan ditolak."); }),
+      complete: (r, c) => ask("Tandai selesai", "Tandai selesai", async (note, ctx) => { await call(r, "complete", note); ctx.close(); c.reload(); Admin.toast("Permintaan diselesaikan dan tautan dinonaktifkan."); })
+    },
+    empty: ["fa-key", "Tidak ada permintaan", "Belum ada permintaan reset password yang cocok."] });
+}
+</script>
+</body>
+</html>

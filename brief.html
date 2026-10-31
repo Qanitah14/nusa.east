@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<link rel="icon" type="image/png" href="img/logo.png">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brief Project — Nusa East</title>
+<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script defer src="js/icons.js"></script>
+</head>
+<body>
+
+<section class="page-hero" style="text-align:left; padding-bottom:0;">
+  <div class="container">
+    <span class="eyebrow">Langkah 3</span>
+    <h1>Form Brief Project</h1>
+    <p>Semakin lengkap brief, semakin cepat tim kami mulai bekerja. Tenggat pengerjaan mulai dihitung setelah brief & bahan lengkap diterima.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <form class="form-card" style="max-width:680px; margin:0 auto;" id="briefForm">
+      <div id="orderInfo" class="mb-24"></div>
+
+      <div class="form-group">
+        <label>Nama Brand / Bisnis</label>
+        <input type="text" class="form-control" name="brandName" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nama Penanggung Jawab</label>
+          <input type="text" class="form-control" name="contactName" required>
+        </div>
+        <div class="form-group">
+          <label>No. WhatsApp</label>
+          <input type="tel" class="form-control" name="whatsapp" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Target Audiens</label>
+        <input type="text" class="form-control" name="audience" placeholder="Contoh: perempuan 20-35 tahun, pecinta fashion modest">
+      </div>
+
+      <div class="form-group">
+        <label>Tone / Gaya Komunikasi</label>
+        <select class="form-control" name="tone">
+          <option>Hangat & Ramah</option>
+          <option>Elegan & Minimal</option>
+          <option>Berani & Playful</option>
+          <option>Natural & Earthy</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Brief / Kebutuhan Detail</label>
+        <textarea class="form-control" name="briefDetail" placeholder="Jelaskan kebutuhan project, referensi, hal yang disuka/tidak disuka, dll." required></textarea>
+      </div>
+
+      <div class="checkbox-row mb-24">
+        <input type="checkbox" required>
+        <span>Saya menyetujui bahwa tenggat pengerjaan dihitung sejak brief & bahan pendukung ini diterima lengkap oleh tim Nusa East.</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">Kirim Brief</button>
+    </form>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/api.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/layout.js"></script>
+<script>
+  renderHeader('services');
+  renderFooter();
+
+  const params = new URLSearchParams(location.search);
+  const orderId = params.get("order");
+  const orderInfo = document.getElementById("orderInfo");
+  const briefForm = document.getElementById("briefForm");
+  const submitButton = briefForm.querySelector('button[type="submit"]');
+  let serverOrder = null;
+
+  async function initializeBrief() {
+    if (!orderId) {
+      orderInfo.innerHTML = `<p style="color:var(--color-danger)">Nomor order tidak ditemukan. <a href="packages.html">Kembali ke Paket</a></p>`;
+      briefForm.style.display = "none";
+      return;
+    }
+    if (!localStorage.getItem("nusaeast_token")) {
+      orderInfo.innerHTML = `<p style="color:var(--color-danger)">Silakan <a href="login.html">login</a> untuk mengisi brief pesanan ini.</p>`;
+      briefForm.style.display = "none";
+      return;
+    }
+
+    try {
+      serverOrder = await apiFetch("/orders/" + encodeURIComponent(orderId));
+      orderInfo.innerHTML = `<span class="badge badge-green">Order ${serverOrder.id || orderId}</span>`;
+    } catch (error) {
+      console.error("Gagal memuat order untuk brief:", error);
+      orderInfo.innerHTML = `<p style="color:var(--color-danger)">${escapeBriefText(error.message || "Pesanan tidak dapat dimuat.")} <a href="login.html">Login kembali</a></p>`;
+      briefForm.style.display = "none";
+    }
+  }
+
+  function escapeBriefText(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[char]));
+  }
+
+  briefForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!serverOrder) {
+      alert("Data pesanan belum berhasil dimuat. Muat ulang halaman lalu coba lagi.");
+      return;
+    }
+
+    const formData = new FormData(briefForm);
+    const briefData = {
+      brandName: String(formData.get("brandName") || "").trim(),
+      contactName: String(formData.get("contactName") || "").trim(),
+      whatsapp: String(formData.get("whatsapp") || "").trim(),
+      audience: String(formData.get("audience") || "").trim(),
+      tone: String(formData.get("tone") || "").trim(),
+      briefDetail: String(formData.get("briefDetail") || "").trim()
+    };
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Mengirim brief...";
+    try {
+      await apiFetch("/orders/" + encodeURIComponent(orderId) + "/brief", {
+        method: "POST",
+        body: JSON.stringify(briefData)
+      });
+
+      // Perbarui cache lokal untuk kompatibilitas dengan halaman tracking yang lama.
+      const localOrders = getOrders();
+      const localOrder = localOrders.find(item => item.id === orderId);
+      if (localOrder) {
+        localOrder.brief = briefData;
+        const now = new Date().toISOString();
+        localOrder.statusIndex = Math.max(Number(localOrder.statusIndex || 0), 4);
+        localOrder.log = Array.isArray(localOrder.log) ? localOrder.log : [];
+        ["Brief Diisi", "Brief & Bahan Lengkap", "Project Dimulai"].forEach(step => {
+          if (!localOrder.log.some(entry => entry.step === step)) localOrder.log.push({ step, date: now });
+        });
+        saveOrders(localOrders);
+      }
+      location.href = "tracking.html?order=" + encodeURIComponent(orderId);
+    } catch (error) {
+      console.error("Gagal mengirim brief:", error);
+      alert(error.message || "Gagal menyimpan brief. Silakan coba lagi.");
+      submitButton.disabled = false;
+      submitButton.textContent = "Kirim Brief";
+    }
+  });
+
+  initializeBrief();
+  
+</script>
+</body>
+</html>

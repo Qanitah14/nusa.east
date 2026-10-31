@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<link rel="icon" type="image/png" href="img/logo.png">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — Nusa East</title>
+<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script defer src="js/icons.js"></script>
+</head>
+<body>
+
+
+<section class="page-hero checkout-hero">
+  <div class="container">
+    <div class="checkout-hero-content">
+      <div class="checkout-hero-title">
+        <span class="eyebrow">LANGKAH 2</span>
+        <h1>Simulasi Pembayaran</h1>
+      </div>
+
+      <p>
+        Selesaikan pembayaran pesananmu dengan memilih metode yang paling nyaman.
+        Periksa kembali total biaya sebelum melanjutkan ke tahap berikutnya.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container">
+    <div class="cart-layout" id="checkoutLayout"></div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/api.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/layout.js"></script>
+<script>
+  renderHeader('services');
+  renderFooter();
+
+  const checkoutItems = getSelectedCart();
+  const { cart, breakdown, base, percentExtra, total } = calculateCartTotals(checkoutItems);
+  const layout = document.getElementById("checkoutLayout");
+
+  if (cart.length === 0) {
+    layout.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <h3>Keranjang kosong</h3>
+        <p class="mt-8">Tidak ada item untuk dibayar.</p>
+        <a href="packages.html" class="btn btn-primary mt-24">Lihat Paket</a>
+      </div>`;
+  } else {
+    layout.innerHTML = `
+      <div>
+        <div class="card mb-24">
+          <h3 class="mb-16">Metode Pembayaran</h3>
+          <div class="payment-methods" id="paymentMethods">
+
+            <label class="payment-method selected">
+              <input type="radio" name="pm" value="va" checked>
+              <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+              <span>Virtual Account</span>
+            </label>
+
+            <label class="payment-method">
+              <input type="radio" name="pm" value="ewallet">
+              <i class="fa-regular fa-credit-card" aria-hidden="true"></i>
+              <span>E-Wallet</span>
+            </label>
+
+            <label class="payment-method">
+              <input type="radio" name="pm" value="qris">
+              <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+              <span>QRIS</span>
+            </label>
+
+          </div>
+        </div>
+        <div class="card" id="paymentDetail"></div>
+      </div>
+      <div class="card summary-box">
+        <h3 class="mb-16">Ringkasan Pembayaran</h3>
+        <div class="summary-row"><span>Subtotal</span><span>${formatIDR(base)}</span></div>
+        ${percentExtra > 0 ? `<div class="summary-row"><span>Express/Priority</span><span>${formatIDR(percentExtra)}</span></div>` : ""}
+        <div class="summary-row total"><span>Total Bayar</span><span>${formatIDR(total)}</span></div>
+        <button class="btn btn-primary btn-block mt-24" id="payBtn">Bayar Sekarang</button>
+        <p class="hint mt-16">Dengan klik "Bayar Sekarang", pesanan akan dibuat dan kamu lanjut ke pengisian brief project.</p>
+      </div>
+    `;
+
+    const detailBox = document.getElementById("paymentDetail");
+    function renderDetail(method) {
+      if (method === "va") {
+        detailBox.innerHTML = `
+          <h3 class="mb-16">Transfer Virtual Account</h3>
+          <div class="va-box">
+            <div>
+              <div class="line-meta">Bank Nusa Digital (Simulasi)</div>
+              <div class="va-number">8807 2026 1029 33</div>
+            </div>
+            <span class="badge badge-orange">Menunggu Pembayaran</span>
+          </div>
+          <p class="hint mt-16">Transfer sesuai nominal total secara tepat agar terverifikasi otomatis.</p>
+        `;
+      } else if (method === "ewallet") {
+        detailBox.innerHTML = `
+          <h3 class="mb-16">Bayar dengan E-Wallet</h3>
+          <div class="grid-3">
+            <button class="btn btn-outline btn-block">GoPay</button>
+            <button class="btn btn-outline btn-block">OVO</button>
+            <button class="btn btn-outline btn-block">DANA</button>
+          </div>
+          <p class="hint mt-16">Kamu akan diarahkan ke aplikasi e-wallet untuk konfirmasi (simulasi).</p>
+        `;
+      } else {
+        detailBox.innerHTML = `
+          <h3 class="mb-16">Scan QRIS</h3>
+          <div class="qris-box">
+            <img src="img/qris.jpg" alt="QRIS Nusa East">
+          </div>
+        `;
+      }
+    }
+    renderDetail("va");
+
+    document.querySelectorAll('input[name="pm"]').forEach(radio => {
+      radio.addEventListener("change", () => {
+        document.querySelectorAll(".payment-method").forEach(l => l.classList.remove("selected"));
+        radio.closest(".payment-method").classList.add("selected");
+        renderDetail(radio.value);
+      });
+    });
+
+    document.getElementById("payBtn").addEventListener("click", async () => {
+      const button = document.getElementById("payBtn");
+      const method = document.querySelector('input[name="pm"]:checked')?.value;
+      if (!checkoutItems.length) {
+        alert("Pilih item yang ingin dibayar dari keranjang.");
+        location.href = "cart.html";
+        return;
+      }
+      if (!localStorage.getItem("nusaeast_token")) {
+        alert("Silakan login terlebih dahulu sebelum membuat pesanan.");
+        location.href = "login.html";
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Membuat pesanan...";
+      try {
+        const payload = {
+          items: breakdown.map(item => ({
+            id: String(item.id),
+            type: String(item.type || ""),
+            name: String(item.name || ""),
+            price: Number(item.price),
+            qty: Number(item.qty || 1),
+            lineTotal: Number(item.lineTotal)
+          })),
+          total: Number(total),
+          paymentMethod: method
+        };
+        const result = await apiFetch("/orders", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        const orderId = result.orderId || result.id;
+        if (!orderId) throw new Error("Backend tidak mengembalikan nomor pesanan.");
+
+        // Cache lokal hanya untuk menjaga halaman konfirmasi lama tetap kompatibel.
+        // Sumber utama pesanan tetap backend/Neon.
+        const now = new Date().toISOString();
+        const localOrders = getOrders().filter(order => order.id !== orderId);
+        localOrders.push({
+          id: orderId,
+          items: breakdown.map(item => ({ ...item, lineTotal: Number(item.lineTotal) })),
+          total: Number(total),
+          paymentMethod: method,
+          paymentStatus: "pending",
+          createdAt: now,
+          statusIndex: 1,
+          revisionsUsed: 0,
+          log: [
+            { step: "Pesanan Dibuat", date: now },
+            { step: "Pembayaran Berhasil", date: now, note: "Status tampilan simulasi checkout" }
+          ],
+          brief: null
+        });
+        saveOrders(localOrders);
+        removeCartItems(checkoutItems.map(item => item.id));
+        location.href = "confirmation.html?order=" + encodeURIComponent(orderId);
+      } catch (error) {
+        console.error("Gagal membuat pesanan:", error);
+        alert(error.message || "Gagal membuat pesanan. Periksa koneksi backend lalu coba lagi.");
+        button.disabled = false;
+        button.textContent = "Bayar Sekarang";
+      }
+    });
+  }
+</script>
+</body>
+</html>

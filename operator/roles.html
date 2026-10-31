@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Manajemen Role — Operator Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<link rel="stylesheet" href="../css/operator.css">
+<script defer src="../js/icons.js"></script>
+</head>
+<body class="admin-body operator-body">
+<div class="admin-app" id="adminApp">
+  <main class="admin-main">
+    <div class="admin-content">
+      <div class="a-page-head">
+        <div>
+          <span class="eyebrow">Hak akses</span>
+          <h1 style="font-size:clamp(1.7rem,3.2vw,2.4rem);">Manajemen Role</h1>
+          <p>Kelola akun internal (Admin Penjualan & Super User) dan hak aksesnya. Tidak ada pendaftaran publik untuk role ini.</p>
+        </div>
+        <div class="a-actions"><button class="btn btn-primary btn-sm" id="addStaff"><i class="fas fa-plus"></i> Tambah akun internal</button></div>
+      </div>
+      <div id="tbl"></div>
+    </div>
+  </main>
+</div>
+<script src="../js/operator-config.js"></script>
+<script src="../js/admin.js"></script>
+<script src="../js/operator.js"></script>
+<script>
+if (Admin.init("roles")) {
+  const me = Admin.getUser().id;
+  let tbl;
+  const ROLE_OPTS = [["sales_admin","Admin Penjualan"],["super_user","Super User"]];
+  document.getElementById("addStaff").addEventListener("click", () => Admin.openModal({
+    title: "Tambah akun internal", submitLabel: "Buat akun",
+    body: `<div class="form-group"><label>Role</label><select class="form-control" name="role">${ROLE_OPTS.map(([v,l]) => `<option value="${v}">${l}</option>`).join("")}</select></div>
+      <div class="form-group"><label>Nama</label><input class="form-control" name="name" maxlength="150" required></div>
+      <div class="form-group"><label>Email</label><input class="form-control" type="email" name="email" required></div>
+      <div class="form-group"><label>Password awal</label><input class="form-control" type="password" name="password" minlength="8" autocomplete="new-password" required><p class="hint">Minimal 8 karakter. Minta pemilik akun menggantinya setelah login pertama.</p></div>`,
+    onSubmit: async (f, ctx) => {
+      await Admin.api.post("/operator/staff", { role: f.role.value, name: f.name.value, email: f.email.value, password: f.password.value });
+      ctx.close(); Admin.toast("Akun internal dibuat."); tbl.reload();
+    } }));
+  tbl = Op.table({ mount: "#tbl", endpoint: "/operator/users", searchPlaceholder: "Cari nama atau email…",
+    filters: [{ name: "role", label: "Role", value: "sales_admin", options: [["sales_admin","Admin Penjualan"],["super_user","Super User"],["user","Pelanggan (untuk dipromosikan)"]] }],
+    columns: [
+      { label: "Akun", render: Op.person },
+      { label: "Role", render: (u) => Op.roleBadge(u.role) },
+      { label: "Status akun", render: (u) => Op.statusBadge(u.status) },
+      { label: "Login", render: (u) => Op.onlineDot(u.online) }
+    ],
+    rowActions: (u) => u.id === me ? `<span class="hint">Akun Anda</span>` :
+      Op.btn("detail", "fa-eye", "Lihat detail") + Op.btn("role", "fa-id-badge", "Ubah role") + (u.role !== "super_user" ? Op.btn("link", "fa-key", "Buat tautan reset password") : ""),
+    actions: {
+      detail: (u) => Op.showUser(u.id),
+      link: (u) => Admin.confirmDialog({ title: "Buat tautan reset password?", confirmLabel: "Buat tautan",
+        message: `Tautan sekali pakai untuk <b>${Op.esc(u.name)}</b> akan dibuat. Tautan lama (jika ada) menjadi tidak berlaku.`,
+        onConfirm: async () => { const out = await Admin.api.post("/operator/users/" + u.id + "/reset-link", {}); setTimeout(() => Op.showResetLink(out, u.name), 50); } }),
+      role: (u, c) => Admin.openModal({ title: "Ubah role", size: "sm", submitLabel: "Terapkan",
+        body: `<p style="margin-bottom:12px"><b>${Op.esc(u.name)}</b><br><span class="hint">Role saat ini: ${Op.esc(Op.ROLE[u.role])}</span></p>
+          <div class="form-group"><label>Role baru</label><select class="form-control" name="role">
+            ${[["user","Pelanggan"],["sales_admin","Admin Penjualan"],["super_user","Super User"]].map(([v,l]) => `<option value="${v}" ${v === u.role ? "disabled" : ""}>${l}</option>`).join("")}</select></div>
+          <p class="hint">Semua sesi akun ini diakhiri agar hak akses baru langsung berlaku.</p>`,
+        onSubmit: async (f, ctx) => { await Op.patch("/operator/users/" + u.id + "/role", { role: f.role.value }); ctx.close(); Admin.toast("Role diperbarui."); c.reload(); } })
+    },
+    empty: ["fa-id-badge", "Tidak ada akun", "Belum ada akun dengan role ini."] });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Status Login — Operator Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<link rel="stylesheet" href="../css/operator.css">
+<script defer src="../js/icons.js"></script>
+</head>
+<body class="admin-body operator-body">
+<div class="admin-app" id="adminApp">
+  <main class="admin-main">
+    <div class="admin-content">
+      <div class="a-page-head">
+        <div>
+          <span class="eyebrow">Keamanan</span>
+          <h1 style="font-size:clamp(1.7rem,3.2vw,2.4rem);">Status Login</h1>
+          <p>Siapa yang sedang online, kapan terakhir masuk dan keluar. Online = ada aktivitas dalam 5 menit terakhir.</p>
+        </div>
+        
+      </div>
+      <div id="tbl"></div>
+    </div>
+  </main>
+</div>
+<script src="../js/operator-config.js"></script>
+<script src="../js/admin.js"></script>
+<script src="../js/operator.js"></script>
+<script>
+if (Admin.init("sessions")) {
+  const me = Admin.getUser().id;
+  const q = new URLSearchParams(location.search);
+  Op.table({ mount: "#tbl", endpoint: "/operator/users", searchPlaceholder: "Cari pengguna…", extra: { sort: "last_seen" },
+    filters: [{ name: "online", label: "Status login", value: q.get("online") || "", options: [["","Online & offline"],["1","Hanya online"],["0","Hanya offline"]] }, { name: "role", label: "Role", options: [["","Semua role"],["user","Pelanggan"],["sales_admin","Admin Penjualan"],["super_user","Super User"]] }],
+    columns: [
+      { label: "Pengguna", render: Op.person },
+      { label: "Role", render: (u) => Op.roleBadge(u.role) },
+      { label: "Status login", render: (u) => Op.onlineDot(u.online) },
+      { label: "Login terakhir", render: (u) => Op.dt(u.last_login_at) },
+      { label: "Logout terakhir", render: (u) => Op.dt(u.last_logout_at) },
+      { label: "Aktivitas terakhir", render: (u) => u.last_seen_at ? Op.ago(u.last_seen_at) : "-" }
+    ],
+    rowActions: (u) => Op.btn("detail", "fa-eye", "Lihat detail") + (u.online && u.role !== "super_user" && u.id !== me ? Op.btn("revoke", "fa-power-off", "Akhiri sesi", "danger") : ""),
+    actions: { detail: (u) => Op.showUser(u.id), revoke: (u, c) => Op.revokeSessions(u, c.reload) } });
+}
+</script>
+</body>
+</html>

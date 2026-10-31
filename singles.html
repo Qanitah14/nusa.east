@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<link rel="icon" type="image/png" href="img/logo.png">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layanan Satuan - Nusa East</title>
+<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/single-products.css">
+<script defer src="js/icons.js"></script>
+</head>
+<body>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Jalur Pemesanan 2</span>
+    <h1>Layanan Satuan</h1>
+    <p>Pilih layanan yang kamu butuhkan satu per satu. Buka detail untuk melihat deskripsi, rekomendasi, rating, dan ulasan pelanggan.</p>
+  </div>
+</section>
+<section class="section single-catalog-section" style="padding-top:10px;">
+  <div class="container">
+    <div class="package-tabs" id="filterTabs"></div>
+    <div id="singleList" class="single-product-grid"></div>
+    <p id="catalogStatus" class="catalog-status" aria-live="polite"></p>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/layout.js"></script>
+<script>
+  renderHeader('services'); renderFooter();
+  const filterTabs = document.getElementById("filterTabs");
+  const listWrap = document.getElementById("singleList");
+  const statusEl = document.getElementById("catalogStatus");
+  let services = NUSAEAST_DATA.services;
+  let singles = NUSAEAST_DATA.singles;
+  const API = "https://nusa-east-vsxf.vercel.app/api".replace(/\/$/, "");
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const productImage = item => item.image || (NUSAEAST_DATA.singles.find(x=>x.id===item.id)?.image) || "images/service-content.jpg";
+  function renderTabs() {
+    filterTabs.innerHTML = `<button class="active" data-filter="all">Semua</button>` + services.map(s => `<button data-filter="${esc(s.id)}">${esc(s.name)}</button>`).join("");
+  }
+  function renderList(filter="all") {
+    const rows = singles.filter(item => filter === "all" || item.service === filter);
+    if (!rows.length) { listWrap.innerHTML = `<div class="single-catalog-empty">Belum ada layanan satuan yang tersedia.</div>`; return; }
+    listWrap.innerHTML = rows.map(item => {
+      const service = services.find(s=>s.id===item.service);
+      const rating = Number(item.rating || 0), count = Number(item.reviewCount || 0);
+      return `<article class="single-product-card">
+        <a class="single-product-image-link" href="single-detail.html?id=${encodeURIComponent(item.id)}" aria-label="Lihat detail ${esc(item.name)}">
+          <img class="single-product-image" src="${esc(productImage(item))}" alt="Foto ${esc(item.name)}" loading="lazy" onerror="this.onerror=null;this.src='images/service-content.jpg'">
+          <span class="single-product-tag">${esc(service?.name || "Layanan Nusa East")}</span>
+        </a>
+        <div class="single-product-body">
+          <a class="single-product-title" href="single-detail.html?id=${encodeURIComponent(item.id)}">${esc(item.name)}</a>
+          <p class="single-product-unit">${esc(item.unit || "Layanan satuan")}</p>
+          <div class="single-product-rating"><span aria-label="Rating ${rating.toFixed(1)} dari 5">${rating ? "★".repeat(Math.round(rating))+"☆".repeat(5-Math.round(rating)) : "☆☆☆☆☆"}</span><small>${rating ? rating.toFixed(1) : "Belum ada rating"}${count ? ` · ${count} ulasan` : ""}</small></div>
+          <div class="single-product-bottom"><strong>${formatIDR(item.price)}</strong><button class="btn btn-primary btn-sm" data-add="${esc(item.id)}">+ Keranjang</button></div>
+          <a class="single-product-detail-link" href="single-detail.html?id=${encodeURIComponent(item.id)}">Lihat detail produk <span aria-hidden="true">→</span></a>
+        </div>
+      </article>`;
+    }).join("");
+    listWrap.querySelectorAll("[data-add]").forEach(button => button.addEventListener("click", () => {
+      const item = singles.find(x=>x.id===button.dataset.add); if (!item) return;
+      addToCart({ id:item.id, type:"single", name:item.name, price:Number(item.price), qty:1, meta:item.unit || "Layanan satuan" });
+    }));
+  }
+  filterTabs.addEventListener("click", event => {
+    const button = event.target.closest("button[data-filter]"); if (!button) return;
+    filterTabs.querySelectorAll("button").forEach(b=>b.classList.toggle("active", b===button)); renderList(button.dataset.filter);
+  });
+  async function loadCatalog() {
+    try {
+      const response = await fetch(`${API}/services/catalog`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      if (Array.isArray(data.services) && data.services.length) services = data.services;
+      if (Array.isArray(data.singles) && data.singles.length) singles = data.singles.map(item => ({...item, image: item.image || NUSAEAST_DATA.singles.find(x=>x.id===item.id)?.image || "images/service-content.jpg"}));
+      statusEl.textContent = "";
+    } catch (_) {
+      statusEl.textContent = "";
+    }
+    renderTabs(); const initial = location.hash.slice(1) || "all"; renderList(services.some(s=>s.id===initial) ? initial : "all");
+    const active = [...filterTabs.querySelectorAll("button")].find(b=>b.dataset.filter===(services.some(s=>s.id===initial)?initial:"all"));
+    if (active) { filterTabs.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b===active)); }
+  }
+  loadCatalog();
+</script>
+</body>
+</html>

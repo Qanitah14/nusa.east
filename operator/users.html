@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Manajemen Pengguna — Operator Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<link rel="stylesheet" href="../css/operator.css">
+<script defer src="../js/icons.js"></script>
+</head>
+<body class="admin-body operator-body">
+<div class="admin-app" id="adminApp">
+  <main class="admin-main">
+    <div class="admin-content">
+      <div class="a-page-head">
+        <div>
+          <span class="eyebrow">Pengguna</span>
+          <h1 style="font-size:clamp(1.7rem,3.2vw,2.4rem);">Manajemen Pengguna</h1>
+          <p>Seluruh akun terdaftar (pelanggan, Admin Penjualan, Super User). Cari, saring, dan buka detail akun.</p>
+        </div>
+        
+      </div>
+      <div id="tbl"></div>
+    </div>
+  </main>
+</div>
+<script src="../js/operator-config.js"></script>
+<script src="../js/admin.js"></script>
+<script src="../js/operator.js"></script>
+<script>
+if (Admin.init("users")) {
+  Op.table({ mount: "#tbl", endpoint: "/operator/users", searchPlaceholder: "Cari nama, email, telepon, alamat…",
+    filters: [{ name: "role", label: "Role", options: [["","Semua role"],["user","Pelanggan"],["sales_admin","Admin Penjualan"],["super_user","Super User"]] }, { name: "status", label: "Status akun", options: [["","Semua status akun"],["active","Aktif"],["disabled","Nonaktif"],["blocked","Diblokir"]] }],
+    columns: [
+      { label: "Pengguna", render: Op.person },
+      { label: "Role", render: (u) => Op.roleBadge(u.role) },
+      { label: "Status akun", render: (u) => Op.statusBadge(u.status) },
+      { label: "Login", render: (u) => Op.onlineDot(u.online) },
+      { label: "Terdaftar", render: (u) => Op.dt(u.created_at) }
+    ],
+    rowActions: (u) => Op.btn("detail", "fa-eye", "Lihat detail"),
+    actions: { detail: (u) => Op.showUser(u.id) } });
+}
+</script>
+</body>
+</html>

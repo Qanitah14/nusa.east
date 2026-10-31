@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<link rel="icon" type="image/png" href="img/logo.png">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Layanan Satuan — Nusa East</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/single-products.css">
+  <script defer src="js/icons.js"></script>
+</head>
+<body>
+  <main class="single-detail-page">
+    <section class="section">
+      <div class="container">
+        <a href="singles.html" class="detail-back">← Kembali ke Layanan Satuan</a>
+        <div id="detailRoot">
+          <p>Memuat detail produk…</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/layout.js"></script>
+  <script>
+    renderHeader('services');
+    renderFooter();
+
+    const API = "https://nusa-east-vsxf.vercel.app/api".replace(/\/$/, "");
+    const root = document.getElementById('detailRoot');
+    const id = new URLSearchParams(location.search).get('id');
+
+    const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[c]));
+
+    const imageFor = item =>
+      item.image
+      || NUSAEAST_DATA.singles.find(x => x.id === item.id)?.image
+      || 'images/service-content.jpg';
+
+    const money = n => formatIDR(Number(n) || 0);
+
+    let allSingles = NUSAEAST_DATA.singles.map(s => ({
+      ...s,
+      image: s.image || 'images/service-content.jpg'
+    }));
+    let allServices = NUSAEAST_DATA.services;
+
+    /* ---------- Deskripsi unik tiap produk ----------
+       Dipakai kalau deskripsi dari database/data.js masih berupa teks
+       bawaan ("Layanan ... dari Nusa East ..."). Kalau kamu mengisi
+       deskripsi sendiri lewat admin, isian admin yang dipakai. */
+    const SINGLE_DESCRIPTIONS = {
+      "single-feed":
+        "Pembuatan 1 desain visual feed media sosial yang estetis, profesional, dan disesuaikan dengan identitas brand Anda untuk mempercantik tampilan profil.",
+      "single-carousel":
+        "Pembuatan 1 set postingan carousel bergeser yang informatif dan interaktif untuk meningkatkan engagement serta menyampaikan informasi produk secara detail.",
+      "single-reels":
+        "Pembuatan 1 video pendek kreatif dan menarik yang dirancang khusus untuk format Reels atau TikTok guna menjangkau audiens yang lebih luas.",
+      "single-story":
+        "Pembuatan 1 desain cerita (story) interaktif yang menarik perhatian untuk promosi harian, pengumuman, atau interaksi langsung dengan pengikut.",
+      "single-foto":
+        "Pengambilan dan penyuntingan 3 foto produk berkualitas tinggi dengan penataan visual yang menarik untuk menonjolkan keunggulan produk Anda",
+      "single-caption":
+        "Penulisan teks (caption) yang persuasif, komunikatif, dan relevan per konten untuk membangun hubungan dengan audiens serta mendorong tindakan (call-to-action).",
+      "single-hashtag":
+        "Analisis dan pemilihan kombinasi hashtag yang tepat dan relevan untuk memaksimalkan jangkauan (reach) serta visibilitas konten Anda di media sosial.",
+      "single-upload":
+        "Layanan pengunggahan dan pembaruan 1 produk di toko online (e-commerce) lengkap dengan optimasi judul, deskripsi, kata kunci, dan kategori agar mudah ditemukan pembeli.",
+      "single-banner":
+        "Pembuatan 1 visual iklan yang siap digunkan untuk kampanye iklan berbayar (Pay-Per-Click) guna meningkatkan lalu lintas toko dan penjualan",
+      "single-logo":
+        "Perancangan 1 desain logo orisinal dan profesional yang mewakili visi, nilai, serta keunikan bisnis Anda.",
+      "single-palette":
+        "Penyusunan 1 paket panduan visual yang mencakup kombinasi warna khas dan penentuan jenis huruf (font) agar tampilan brand konsisten di semua media.",
+      "single-guideline":
+        "Pembuatan 1 dokumen panduan identitas brand secara menyeluruh yang menjadi acuan standar visual dan komunikasi bisnis Anda ke depannya."
+    };
+
+    const GENERIC_DESC = /^Layanan .+ dari Nusa East/i;
+
+    function descriptionFor(item) {
+      const custom = String(item.description || '').trim();
+      if (custom && !GENERIC_DESC.test(custom)) return custom;
+      return SINGLE_DESCRIPTIONS[item.id]
+        || `Layanan ${item.name} dari Nusa East untuk membantu kebutuhan digital brand dan UMKM.`;
+    }
+
+    function stars(n) {
+      const full = Math.max(0, Math.min(5, Math.round(n)));
+      return '★'.repeat(full) + '☆'.repeat(5 - full);
+    }
+
+    function render(item, reviewData = { average: 0, count: 0, reviews: [] }) {
+      const service = allServices.find(s => s.id === item.service);
+
+      const recs = allSingles
+        .filter(s => s.id !== item.id)
+        .sort((a, b) => (a.service === item.service ? 0 : 1) - (b.service === item.service ? 0 : 1))
+        .slice(0, 4);
+
+      root.innerHTML = `
+        <div class="single-detail-grid">
+          <div class="single-detail-media">
+            <img src="${esc(imageFor(item))}"
+                 alt="Foto ${esc(item.name)}"
+                 onerror="this.onerror=null;this.src='images/service-content.jpg'">
+          </div>
+          <div class="single-detail-info">
+            <span class="eyebrow">LAYANAN SATUAN</span>
+            <p class="detail-category">${esc(service?.name || 'Nusa East')}</p>
+            <h1>${esc(item.name)}</h1>
+            <div class="detail-rating">
+              <span>${stars(reviewData.average)}</span>
+              <b>${reviewData.average ? Number(reviewData.average).toFixed(1) : 'Belum ada rating'}</b>
+              <a href="#reviews">(${reviewData.count || 0} ulasan)</a>
+            </div>
+            <div class="detail-price">${money(item.price)}</div>
+            <p class="detail-unit">Satuan: ${esc(item.unit || 'sesuai kebutuhan')}</p>
+            <p class="detail-description">${esc(descriptionFor(item))}</p>
+            <div class="detail-actions">
+              <button class="btn btn-primary" id="addDetailCart">+ Tambah ke Keranjang</button>
+              <a class="btn btn-outline" href="singles.html">Lihat layanan lain</a>
+            </div>
+            <ul class="detail-benefits">
+              <li>✓ Dikerjakan dengan brief yang jelas</li>
+              <li>✓ Cocok untuk UMKM dan brand lokal</li>
+              <li>✓ Dapat dikombinasikan dengan layanan lain</li>
+            </ul>
+          </div>
+        </div>
+
+        <section class="detail-section" id="reviews">
+          <div class="detail-section-head">
+            <div>
+              <span class="eyebrow">PENGALAMAN PELANGGAN</span>
+              <h2>Rating & Komentar</h2>
+            </div>
+            <div class="review-summary">
+              <strong>${reviewData.average ? Number(reviewData.average).toFixed(1) : '—'}</strong>
+              <span>${stars(reviewData.average)}<small>${reviewData.count || 0} ulasan</small></span>
+            </div>
+          </div>
+          <div class="review-layout">
+            <div>
+              <div id="reviewList">
+                ${reviewData.reviews?.length
+                  ? reviewData.reviews.map(r => `
+                    <article class="review-card">
+                      <div class="review-card-top">
+                        <b>${esc(r.reviewer_name || 'Pelanggan Nusa East')}</b>
+                        <span>${stars(r.rating)}</span>
+                      </div>
+                      <p>${esc(r.comment)}</p>
+                      <small>${r.created_at
+                        ? new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                        : ''}</small>
+                    </article>`).join('')
+                  : `<div class="review-empty">Belum ada ulasan untuk layanan ini. Jadilah pelanggan pertama yang memberi rating.</div>`}
+              </div>
+            </div>
+            <form class="review-form" id="reviewForm">
+              <h3>Tulis ulasan</h3>
+              <p>Masuk sebagai pengguna terlebih dahulu untuk mengirim rating dan komentar.</p>
+              <label for="reviewRating">Rating</label>
+              <select id="reviewRating" required>
+                <option value="5">★★★★★ — Sangat puas</option>
+                <option value="4">★★★★☆ — Puas</option>
+                <option value="3">★★★☆☆ — Cukup</option>
+                <option value="2">★★☆☆☆ — Kurang</option>
+                <option value="1">★☆☆☆☆ — Tidak puas</option>
+              </select>
+              <label for="reviewComment">Komentar</label>
+              <textarea id="reviewComment" rows="4" minlength="3" maxlength="1200" placeholder="Bagikan pengalaman kamu…" required></textarea>
+              <button class="btn btn-primary" type="submit">Kirim ulasan</button>
+              <p class="review-message" id="reviewMessage" aria-live="polite"></p>
+            </form>
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <div class="detail-section-head">
+            <div>
+              <span class="eyebrow">PILIHAN LAIN</span>
+              <h2>Rekomendasi layanan</h2>
+            </div>
+            <a href="singles.html" class="detail-all-link">Lihat semua →</a>
+          </div>
+          <div class="recommended-grid">
+            ${recs.map(r => `
+              <article class="recommended-card">
+                <a href="single-detail.html?id=${encodeURIComponent(r.id)}">
+                  <img src="${esc(imageFor(r))}"
+                       alt="Foto ${esc(r.name)}"
+                       loading="lazy"
+                       onerror="this.onerror=null;this.src='images/service-content.jpg'">
+                </a>
+                <div>
+                  <a class="recommended-title" href="single-detail.html?id=${encodeURIComponent(r.id)}">${esc(r.name)}</a>
+                  <strong>${money(r.price)}</strong>
+                  <a class="recommended-link" href="single-detail.html?id=${encodeURIComponent(r.id)}">Lihat detail →</a>
+                </div>
+              </article>`).join('')}
+          </div>
+        </section>`;
+
+      document.getElementById('addDetailCart').addEventListener('click', () => {
+        addToCart({
+          id: item.id,
+          type: 'single',
+          name: item.name,
+          price: Number(item.price),
+          qty: 1,
+          meta: item.unit || 'Layanan satuan'
+        });
+      });
+
+      document.getElementById('reviewForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const msg = document.getElementById('reviewMessage');
+        const token = localStorage.getItem('nusaeast_token');
+
+        if (!token) {
+          msg.textContent = 'Silakan login sebagai pengguna terlebih dahulu.';
+          return;
+        }
+
+        const btn = e.currentTarget.querySelector('button[type=submit]');
+        btn.disabled = true;
+        msg.textContent = 'Mengirim ulasan…';
+
+        try {
+          const response = await fetch(`${API}/services/singles/${encodeURIComponent(item.id)}/reviews`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              rating: Number(document.getElementById('reviewRating').value),
+              comment: document.getElementById('reviewComment').value.trim()
+            })
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.error || `Gagal mengirim ulasan (HTTP ${response.status})`);
+          msg.textContent = 'Ulasan berhasil dikirim.';
+          await load();
+        } catch (err) {
+          msg.textContent = err.message;
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    }
+
+    async function load() {
+      const fallback = allSingles.find(x => x.id === id);
+
+      if (!fallback) {
+        root.innerHTML = '<div class="review-empty">Produk tidak ditemukan. <a href="singles.html">Kembali ke katalog</a></div>';
+        return;
+      }
+
+      let item = fallback;
+      let reviewData = { average: 0, count: 0, reviews: [] };
+
+      try {
+        const [catalogRes, reviewsRes] = await Promise.all([
+          fetch(`${API}/services/catalog`),
+          fetch(`${API}/services/singles/${encodeURIComponent(id)}/reviews`)
+        ]);
+
+        if (catalogRes.ok) {
+          const c = await catalogRes.json();
+          if (c.services?.length) allServices = c.services;
+          if (c.singles?.length) {
+            allSingles = c.singles.map(s => ({
+              ...s,
+              image: s.image
+                || NUSAEAST_DATA.singles.find(x => x.id === s.id)?.image
+                || 'images/service-content.jpg'
+            }));
+            item = allSingles.find(x => x.id === id) || fallback;
+          }
+        }
+
+        if (reviewsRes.ok) reviewData = await reviewsRes.json();
+      } catch (_) {}
+
+      render(item, reviewData);
+    }
+
+    load();
+  </script>
+</body>
+</html>

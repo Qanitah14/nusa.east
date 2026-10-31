@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+
+  <title>Masuk Operator — Nusa East</title>
+  <link rel="icon" type="image/png" href="../img/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="stylesheet" href="../css/admin-login.css">
+  <link rel="stylesheet" href="../css/operator.css">
+
+  <script defer src="../js/icons.js"></script>
+</head>
+
+<body class="admin-body operator-body">
+
+  <div class="auth-wrap">
+  <div class="auth-card admin-auth-card">
+
+    <div class="text-center admin-auth-header">
+      <img
+        src="../img/logo (2).png"
+        alt="Logo Nusa East"
+        class="admin-auth-logo"
+      >
+
+      <h2>Masuk Operator</h2>
+
+      <p class="mt-8">
+        Kelola pengguna, status login, dan permintaan reset password.
+      </p>
+    </div>
+
+    <div class="form-error" id="loginError" role="alert" hidden></div>
+
+<form id="adminLoginForm" novalidate>
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input
+      type="email"
+      id="email"
+      class="form-control"
+      name="email"
+      autocomplete="username"
+      required
+    >
+  </div>
+
+  <div class="form-group">
+    <label for="password">Password</label>
+
+    <div class="a-pw">
+      <input
+        type="password"
+        id="password"
+        class="form-control"
+        name="password"
+        autocomplete="current-password"
+        required
+      >
+
+      <button
+        type="button"
+        id="togglePw"
+        aria-label="Tampilkan password"
+      >
+        <i class="fas fa-eye" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="admin-login-buttons">
+    <button
+      type="submit"
+      class="btn btn-primary"
+      id="loginBtn"
+    >
+      Masuk
+    </button>
+  </div>
+</form>
+
+<p class="a-login-note">
+  Halaman ini khusus Super User / Operator. Akun dibuat oleh operator, tidak ada pendaftaran publik.
+</p>
+
+  </div>
+</div>
+
+  <script src="../js/operator-config.js"></script>
+  <script src="../js/admin.js"></script>
+
+  <script>
+    // Periksa sesi admin yang sudah aktif
+    if (Admin.getToken() && Admin.getUser()) {
+      location.replace("index.html");
+    }
+
+    const errBox = document.getElementById("loginError");
+
+    const showErr = (message) => {
+      errBox.textContent = message;
+      errBox.hidden = !message;
+    };
+
+    // Tampilkan pesan jika sesi sudah berakhir
+    if (new URLSearchParams(location.search).get("expired")) {
+      showErr("Sesi operator berakhir. Silakan masuk kembali.");
+    }
+
+    // Tampilkan atau sembunyikan password
+    document.getElementById("togglePw").addEventListener("click", (e) => {
+      const input = document.getElementById("password");
+      const show = input.type === "password";
+
+      input.type = show ? "text" : "password";
+
+      e.currentTarget.innerHTML =
+        `<i class="fas ${show ? "fa-eye-slash" : "fa-eye"}" aria-hidden="true"></i>`;
+
+      e.currentTarget.setAttribute(
+        "aria-label",
+        show ? "Sembunyikan password" : "Tampilkan password"
+      );
+    });
+
+    // Proses login admin
+    document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      showErr("");
+
+      const btn = document.getElementById("loginBtn");
+
+      const { email, password } =
+        Object.fromEntries(new FormData(e.target).entries());
+
+      if (!email.trim() || !password) {
+        showErr("Email dan password wajib diisi.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Memeriksa…";
+
+      try {
+        await Admin.login(email.trim(), password);
+        location.href = "index.html";
+      } catch (err) {
+        showErr(err.message || "Login gagal. Silakan coba lagi.");
+
+        btn.disabled = false;
+        btn.textContent = "Masuk";
+      }
+    });
+  </script>
+
+</body>
+</html>

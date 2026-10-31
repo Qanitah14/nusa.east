@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id">
+<link rel="icon" type="image/png" href="img/logo.png">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pencarian — Nusa East</title>
+<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script defer src="js/icons.js"></script>
+</head>
+<body>
+
+<main class="section search-page"><div class="container">
+  <span class="eyebrow">Pencarian Nusa East</span><h1 class="search-title">Temukan layanan yang kamu butuhkan.</h1>
+  <form id="searchPageForm" class="search-page-form" role="search"><label class="sr-only" for="searchQuery">Kata kunci pencarian</label><input id="searchQuery" name="q" type="search" placeholder="Contoh: social media, reels, logo…" autocomplete="off"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Cari</button></form>
+  <p id="searchSummary" class="search-summary" aria-live="polite"></p><div id="searchResults" class="search-results"></div>
+</div></main>
+<script src="js/data.js"></script><script src="js/cart.js"></script><script src="js/layout.js"></script>
+<script>
+renderHeader(''); renderFooter();
+const params = new URLSearchParams(location.search);
+const input = document.getElementById('searchQuery');
+const summary = document.getElementById('searchSummary');
+const results = document.getElementById('searchResults');
+const money = value => value == null ? 'Hubungi kami' : new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(value);
+const items = [];
+(NUSAEAST_DATA.services || []).forEach(x => items.push({title:x.name, description:x.short || '', category:'Layanan', href:'services.html'}));
+Object.entries(NUSAEAST_DATA.packages || {}).forEach(([key,group]) => (group.tiers || []).forEach(x => items.push({title:`Paket ${x.name} — ${key.toUpperCase()}`,description:x.fit || group.durationLabel || '',category:'Paket',price:x.price,href:'packages.html'})));
+(NUSAEAST_DATA.singles || []).forEach(x => items.push({title:x.name,description:x.unit || '',category:'Layanan satuan',price:x.price,href:'singles.html'}));
+(NUSAEAST_DATA.addons || []).forEach(x => items.push({title:x.name,description:x.note || 'Add-on untuk project aktif',category:'Add-on',price:x.price,href:'addon.html'}));
+function runSearch(query) {
+ const q = query.trim().toLocaleLowerCase('id'); results.replaceChildren();
+ if (!q) { summary.textContent = 'Masukkan kata kunci untuk mencari layanan, paket, atau layanan satuan.'; return; }
+ const matches = items.filter(x => `${x.title} ${x.description} ${x.category}`.toLocaleLowerCase('id').includes(q));
+ summary.textContent = matches.length ? `${matches.length} hasil untuk “${query.trim()}”` : `Belum ada hasil untuk “${query.trim()}”. Coba kata kunci lain.`;
+ matches.forEach(x => { const card = document.createElement('article'); card.className='card search-result-card'; const h = document.createElement('h3'); h.textContent=x.title; const category=document.createElement('span'); category.className='eyebrow'; category.textContent=x.category; const desc=document.createElement('p'); desc.textContent=x.description; const foot=document.createElement('div'); foot.className='search-result-foot'; if (x.price != null) {const price=document.createElement('strong'); price.textContent=money(x.price); foot.append(price);} const link=document.createElement('a'); link.className='btn btn-outline btn-sm'; link.href=x.href; link.textContent='Lihat detail'; foot.append(link); card.append(category,h,desc,foot); results.append(card); });
+}
+input.value = params.get('q') || '';
+document.getElementById('searchPageForm').addEventListener('submit', e => { e.preventDefault(); const q=input.value.trim(); history.replaceState({},'',`search.html?q=${encodeURIComponent(q)}`); runSearch(q); });
+runSearch(input.value);
+</script>
+</body></html>

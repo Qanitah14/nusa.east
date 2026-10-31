@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Profil Admin — Admin Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<script defer src="../js/icons.js"></script>
+</head>
+<body class="admin-body">
+<div class="admin-app" id="adminApp">
+  <main class="admin-main">
+    <div class="admin-content">
+      <div class="a-page-head">
+        <div>
+          <span class="eyebrow">Akun</span>
+          <h1 style="font-size:clamp(1.8rem,3.4vw,2.6rem);">Profil Admin</h1>
+          <p>Kelola informasi akun dan keamanan akses admin Nusa East.</p>
+        </div>
+      </div>
+
+      <div class="a-profile-grid">
+        <aside class="a-card a-id-card">
+          <div class="a-avatar lg" id="pAvatar" aria-hidden="true">A</div>
+          <h3 id="pName">Admin</h3>
+          <p id="pEmail" class="hint">-</p>
+          <span class="badge badge-green"><i class="fas fa-shield-halved"></i> Administrator</span>
+          <div class="a-kv-grid one" style="margin-top:22px;">
+            <div class="a-kv"><span>Bergabung</span><b id="pSince">-</b></div>
+            <div class="a-kv"><span>Sesi</span><b>Aktif sampai tab ditutup</b></div>
+          </div>
+          <div class="a-id-links">
+            <a class="btn btn-outline btn-sm" href="orders.html"><i class="fas fa-clipboard-list"></i> Lihat Pesanan</a>
+            <button class="btn btn-accent btn-sm" id="pLogout"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+          </div>
+        </aside>
+
+        <div class="a-profile-forms">
+          <section class="a-card">
+            <div class="a-card-head"><h3><i class="fas fa-user-circle"></i> Informasi Akun</h3></div>
+            <div class="form-error" id="infoErr" hidden></div>
+            <form id="infoForm" novalidate>
+              <div class="form-group">
+                <label for="fName">Nama</label>
+                <input type="text" id="fName" class="form-control" maxlength="150" autocomplete="name" required>
+              </div>
+              <div class="form-group">
+                <label for="fEmail">Email</label>
+                <input type="email" id="fEmail" class="form-control" disabled>
+                <small class="hint">Email dipakai untuk masuk dan tidak dapat diubah dari sini.</small>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm" id="infoBtn"><i class="fas fa-save"></i> Simpan perubahan</button>
+            </form>
+          </section>
+
+          <section class="a-card">
+            <div class="a-card-head"><h3><i class="fas fa-key"></i> Ganti Password</h3></div>
+            <div class="form-error" id="pwErr" hidden></div>
+            <form id="pwForm" novalidate>
+              <div class="form-group">
+                <label for="curPw">Password saat ini</label>
+                <input type="password" id="curPw" class="form-control" autocomplete="current-password" required>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="newPw">Password baru</label>
+                  <input type="password" id="newPw" class="form-control" autocomplete="new-password" minlength="8" required>
+                </div>
+                <div class="form-group">
+                  <label for="newPw2">Ulangi password baru</label>
+                  <input type="password" id="newPw2" class="form-control" autocomplete="new-password" required>
+                </div>
+              </div>
+              <small class="hint" style="display:block;margin-bottom:14px;">Minimal 8 karakter.</small>
+              <button type="submit" class="btn btn-primary btn-sm" id="pwBtn"><i class="fas fa-lock"></i> Perbarui password</button>
+            </form>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/admin.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const showErr = (id, m) => { const b = $(id); b.textContent = m || ""; b.hidden = !m; };
+
+  function paint(user) {
+    $("pAvatar").textContent = Admin.initials(user.name);
+    $("pName").textContent = user.name || "Admin";
+    $("pEmail").textContent = user.email || "-";
+    $("fName").value = user.name || "";
+    $("fEmail").value = user.email || "";
+  }
+
+  if (Admin.init("profile")) {
+    paint(Admin.getUser());
+    $("pLogout").addEventListener("click", () => Admin.logout());
+
+    // Tanggal bergabung diambil dari backend (jika endpoint tersedia)
+    Admin.api.get("/auth/admin-me").then((me) => {
+      $("pSince").textContent = Admin.dateID(me.created_at);
+    }).catch(() => { $("pSince").textContent = "-"; });
+
+    $("infoForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      showErr("infoErr", "");
+      const name = $("fName").value.trim();
+      if (name.length < 2) return showErr("infoErr", "Nama minimal 2 karakter.");
+      const btn = $("infoBtn");
+      btn.disabled = true;
+      try {
+        const out = await Admin.api.put("/auth/admin-profile", { name });
+        const user = { ...Admin.getUser(), name: out.name };
+        Admin.setUser(user); paint(user);
+        Admin.toast("Profil berhasil disimpan.");
+      } catch (err) {
+        if (/Endpoint tidak ditemukan/i.test(err.message)) {
+          // Backend lama belum punya endpoint ini: simpan di sesi browser saja.
+          const user = { ...Admin.getUser(), name };
+          Admin.setUser(user); paint(user);
+          Admin.toast("Nama diperbarui di sesi ini. Deploy ulang backend agar tersimpan di database.");
+        } else showErr("infoErr", err.message);
+      } finally { btn.disabled = false; }
+    });
+
+    $("pwForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      showErr("pwErr", "");
+      const currentPassword = $("curPw").value, newPassword = $("newPw").value;
+      if (!currentPassword) return showErr("pwErr", "Masukkan password saat ini.");
+      if (newPassword.length < 8) return showErr("pwErr", "Password baru minimal 8 karakter.");
+      if (newPassword !== $("newPw2").value) return showErr("pwErr", "Konfirmasi password baru tidak sama.");
+      if (newPassword === currentPassword) return showErr("pwErr", "Password baru harus berbeda dari yang lama.");
+      const btn = $("pwBtn");
+      btn.disabled = true;
+      try {
+        await Admin.api.put("/auth/admin-password", { currentPassword, newPassword });
+        e.target.reset();
+        Admin.toast("Password berhasil diperbarui.");
+      } catch (err) { showErr("pwErr", err.message); }
+      finally { btn.disabled = false; }
+    });
+  }
+</script>
+</body>
+</html>

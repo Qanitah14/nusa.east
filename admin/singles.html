@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Layanan Satuan — Admin Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<script defer src="../js/icons.js"></script>
+</head>
+<body class="admin-body">
+<div class="admin-app" id="adminApp">
+  <main class="admin-main">
+    <div class="admin-content">
+      <div class="a-page-head">
+        <div>
+          <span class="eyebrow">Katalog</span>
+          <h1 style="font-size:clamp(1.8rem,3.4vw,2.6rem);">Layanan Satuan</h1>
+          <p>Item yang bisa dibeli per-unit tanpa mengambil paket penuh.</p>
+        </div>
+        <div class="a-actions"><button class="btn btn-primary btn-sm" id="addBtn"><i class="fas fa-plus"></i> Tambah Layanan Satuan</button></div>
+      </div>
+      <div class="a-tabs" id="tabs"></div>
+      <div id="list"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/admin.js"></script>
+<script>
+  let services = [], singles = [], filter = "all";
+
+  if (Admin.init("singles")) { load(); document.getElementById("addBtn").addEventListener("click", () => openForm()); }
+
+  async function load() {
+    const box = document.getElementById("list");
+    box.innerHTML = Admin.loading();
+    try {
+      [services, singles] = await Promise.all([Admin.api.get("/services/admin/services"), Admin.api.get("/services/admin/singles")]);
+      renderTabs(); render();
+    } catch (err) { box.innerHTML = Admin.errorBox(err.message); document.getElementById("retryBtn")?.addEventListener("click", load); }
+  }
+
+  const svcName = (id) => (services.find((s) => s.id === id) || {}).name || id;
+
+  function renderTabs() {
+    const tabs = document.getElementById("tabs");
+    tabs.innerHTML = [{ id: "all", name: "Semua" }, ...services].map((s) => `<button class="${filter === s.id ? "active" : ""}" data-f="${Admin.esc(s.id)}">${Admin.esc(s.name)}</button>`).join("");
+    tabs.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { filter = b.dataset.f; renderTabs(); render(); }));
+  }
+
+  function render() {
+    const box = document.getElementById("list");
+    const rows = singles.filter((s) => filter === "all" || s.service === filter);
+    if (!services.length) { box.innerHTML = Admin.empty("fa-layer-group", "Belum ada layanan", "Buat layanan terlebih dahulu di menu Layanan."); return; }
+    if (!rows.length) { box.innerHTML = Admin.empty("fa-tags", "Belum ada layanan satuan", "Klik “Tambah Layanan Satuan” untuk membuat yang pertama."); return; }
+    box.innerHTML = `<div class="a-table-wrap"><table class="a-table">
+      <thead><tr><th>Foto</th><th>Nama</th><th>Layanan</th><th>Satuan</th><th>Status</th><th class="num">Harga</th><th></th></tr></thead>
+      <tbody>${rows.map((s) => `
+        <tr>
+          <td data-label="Foto">${s.image ? `<img src="${Admin.esc(/^(https?:|data:|\/)/i.test(s.image) ? s.image : '../' + s.image)}" alt="" style="width:54px;height:42px;object-fit:cover;border-radius:8px;" onerror="this.style.display='none'">` : '<span class="sub">Belum ada</span>'}</td>
+          <td class="main"><span class="name">${Admin.esc(s.name)}</span><span class="sub">${Admin.esc(s.id)}</span></td>
+          <td data-label="Layanan">${Admin.esc(svcName(s.service))}</td>
+          <td data-label="Satuan">${Admin.esc(s.unit || "-")}</td>
+          <td data-label="Status">${Admin.statusBadge(s.isActive)}</td>
+          <td class="num" data-label="Harga"><b>${Admin.idr(s.price)}</b></td>
+          <td class="acts">
+            <button class="a-row-btn" data-edit="${Admin.esc(s.id)}" aria-label="Ubah ${Admin.esc(s.name)}"><i class="fas fa-pen"></i></button>
+            <button class="a-row-btn danger" data-del="${Admin.esc(s.id)}" aria-label="Hapus ${Admin.esc(s.name)}"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`).join("")}
+      </tbody></table></div>`;
+    box.querySelectorAll("[data-edit]").forEach((b) => b.addEventListener("click", () => openForm(singles.find((s) => s.id === b.dataset.edit))));
+    box.querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => askDelete(singles.find((s) => s.id === b.dataset.del))));
+  }
+
+  function openForm(s) {
+    const edit = !!s;
+    if (!services.length) return Admin.toast("Buat layanan terlebih dahulu.");
+    const v = s || { service: filter !== "all" ? filter : services[0].id, name: "", unit: "", price: "", sortOrder: singles.length + 1, isActive: true };
+    const ctx = Admin.openModal({
+      title: edit ? "Ubah Layanan Satuan" : "Tambah Layanan Satuan",
+      submitLabel: edit ? "Simpan Perubahan" : "Tambah",
+      body: `
+        <div class="form-group"><label>Layanan <span class="req">*</span></label>
+          <select class="form-control" name="serviceId">${services.map((x) => `<option value="${Admin.esc(x.id)}" ${x.id === v.service ? "selected" : ""}>${Admin.esc(x.name)}</option>`).join("")}</select></div>
+        <div class="form-group"><label>Nama <span class="req">*</span></label>
+          <input class="form-control" name="name" maxlength="150" placeholder="Feed Design" value="${Admin.esc(v.name)}" required></div>
+        <div class="form-row">
+          <div class="form-group"><label>Harga (Rp) <span class="req">*</span></label>
+            <input class="form-control" type="number" name="price" min="0" step="1" inputmode="numeric" value="${Admin.esc(v.price)}" required></div>
+          <div class="form-group"><label>Satuan</label>
+            <input class="form-control" name="unit" maxlength="100" placeholder="1 desain / per konten" value="${Admin.esc(v.unit)}"></div>
+        </div>
+        <div class="form-group"><label>URL / path foto produk</label>
+          <input class="form-control" name="image" maxlength="500" placeholder="images/products/single-feed.jpg" value="${Admin.esc(v.image || "")}">
+          <small>Gunakan path relatif dari folder utama website agar mudah mengganti foto di VS Code.</small></div>
+        <div class="form-group"><label>Deskripsi produk</label>
+          <textarea class="form-control" name="description" rows="3" maxlength="1500" placeholder="Jelaskan hasil, manfaat, dan detail layanan.">${Admin.esc(v.description || "")}</textarea></div>
+        <div class="form-group"><label>Urutan tampil</label>
+          <input class="form-control" type="number" name="sortOrder" min="0" step="1" value="${Admin.esc(v.sortOrder)}"></div>
+        <div class="a-switch-group">${Admin.switchHTML("isActive", "Tampilkan di situs", v.isActive)}</div>`,
+      onSubmit: async (form) => {
+        const price = Number(form.price.value);
+        if (!form.elements.name.value.trim()) throw new Error("Nama wajib diisi.");
+        if (form.price.value === "" || !Number.isFinite(price) || price < 0) throw new Error("Harga tidak valid.");
+        const payload = {
+          serviceId: form.serviceId.value, name: form.elements.name.value.trim(), price,
+          unit: form.unit.value.trim(), image: form.image.value.trim(), description: form.description.value.trim(), sortOrder: Number(form.sortOrder.value) || 0, isActive: form.isActive.checked
+        };
+        if (edit) await Admin.api.put(`/services/admin/singles/${encodeURIComponent(s.id)}`, payload);
+        else await Admin.api.post("/services/admin/singles", payload);
+        ctx.close(); Admin.toast(edit ? "Layanan satuan diperbarui." : "Layanan satuan ditambahkan."); load();
+      }
+    });
+  }
+
+  function askDelete(s) {
+    Admin.confirmDialog({
+      title: "Hapus layanan satuan?",
+      message: `<b>${Admin.esc(s.name)}</b> akan dihapus permanen.`,
+      onConfirm: async () => { await Admin.api.del(`/services/admin/singles/${encodeURIComponent(s.id)}`); Admin.toast("Layanan satuan dihapus."); load(); }
+    });
+  }
+</script>
+</body>
+</html>

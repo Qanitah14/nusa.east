@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<link rel="icon" type="image/png" href="img/logo.png">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tracking — Nusa East</title>
+<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script defer src="js/icons.js"></script>
+</head>
+<body>
+
+<section class="page-hero" style="text-align:left; padding-bottom:0;">
+  <div class="container">
+    <span class="eyebrow">Tracking</span>
+    <h1>Tracking Status Project</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="form-card mb-32" style="max-width:420px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Cari berdasarkan Nomor Order</label>
+        <div style="display:flex; gap:10px;">
+          <input type="text" class="form-control" id="searchOrder" placeholder="Contoh: NE-2026-0091">
+          <button class="btn btn-primary" onclick="loadOrder()">Cari</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="trackingResult"></div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/layout.js"></script>
+<script>
+  renderHeader('tracking');
+  renderFooter();
+
+  const DEMO_MODE = new URLSearchParams(location.search).get("demo") === "1";
+  const resultBox = document.getElementById("trackingResult");
+
+  function fmtDate(iso) {
+    return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+  }
+
+  function renderOrder(order) {
+    const currentStatus = STATUS_STEPS[order.statusIndex];
+    const isDone = order.statusIndex === STATUS_STEPS.length - 1;
+
+    const timelineHTML = STATUS_STEPS.map((step, idx) => {
+      const logEntry = order.log.find(l => l.step === step);
+      let cls = "";
+      if (idx < order.statusIndex) cls = "done";
+      else if (idx === order.statusIndex) cls = "active";
+      return `
+        <div class="timeline-item ${cls}">
+          <div class="t-date">${logEntry ? fmtDate(logEntry.date) : "Menunggu"}</div>
+          <div class="t-title">${step}</div>
+        </div>
+      `;
+    }).join("");
+
+    resultBox.innerHTML = `
+      <div class="grid-2" style="align-items:start;">
+        <div class="card">
+          <div class="flex-between mb-24">
+            <div>
+              <span class="badge badge-gray">Order ${order.id}</span>
+              <p class="hint mt-8">Dipesan ${fmtDate(order.createdAt)}</p>
+            </div>
+            <span class="status-pill"><span class="dot"></span>${currentStatus}</span>
+          </div>
+          <div class="timeline">${timelineHTML}</div>
+
+          ${!isDone ? (DEMO_MODE ? `
+  <div class="card mt-24" style="background:var(--color-cream-card); border:none;">
+    <strong>Simulasi Admin (Demo)</strong>
+    <p class="hint mt-8">
+      Tombol ini mensimulasikan update status oleh tim Nusa East.
+      Pada penggunaan normal, status diperbarui oleh admin lewat panel admin.
+    </p>
+    <button class="btn btn-primary btn-sm mt-16"
+      onclick="simulateAdvance('${order.id}')">
+      Lanjutkan ke Tahap Berikutnya →
+    </button>
+  </div>
+` : ``) : `
+  <div class="card mt-24" style="background:#DCEAE0; border:none;">
+    <strong>🎉 Project Selesai!</strong>
+    <p class="mt-8">
+      Terima kasih sudah menggunakan layanan Nusa East.
+    </p>
+  </div>
+`}
+
+${currentStatus === "Preview Dikirim" || currentStatus === "Revisi" ? `
+  <a href="review.html?order=${encodeURIComponent(order.id)}"
+     class="btn btn-accent btn-block mt-16">
+    Lihat Preview & Ajukan Revisi
+  </a>
+` : ""}
+
+${currentStatus === "Finalisasi" ? `
+  <a href="finalize.html?order=${encodeURIComponent(order.id)}"
+     class="btn btn-accent btn-block mt-16">
+    Finalisasi Project
+  </a>
+` : ""}
+</div>
+
+<div class="card summary-box">
+  <h3 class="mb-16">Detail Pesanan</h3>
+  ${order.items.map(i => `
+    <div class="summary-row">
+      <span>${i.name}</span>
+      <span>${formatIDR(i.lineTotal)}</span>
+    </div>
+  `).join("")}
+  <div class="summary-row total">
+    <span>Total</span>
+    <span>${formatIDR(order.total)}</span>
+  </div>
+</div>
+</div>
+`;
+}
+
+  function loadOrder() {
+    const id = document.getElementById("searchOrder").value.trim();
+    const order = getOrder(id);
+    if (!order) {
+      resultBox.innerHTML = `<div class="empty-state"><h3>Order tidak ditemukan</h3><p class="mt-8">Periksa kembali nomor order kamu.</p></div>`;
+      return;
+    }
+    history.replaceState(null, "", "tracking.html?order=" + order.id + (DEMO_MODE ? "&demo=1" : ""));
+    renderOrder(order);
+  }
+
+  window.simulateAdvance = function(id) {
+    advanceOrder(id);
+    renderOrder(getOrder(id));
+  };
+
+  const params = new URLSearchParams(location.search);
+  const preId = params.get("order");
+  if (preId) {
+    document.getElementById("searchOrder").value = preId;
+    loadOrder();
+  } else {
+    const orders = getOrders();
+    if (orders.length > 0) {
+      document.getElementById("searchOrder").value = orders[orders.length - 1].id;
+      loadOrder();
+    } else {
+      resultBox.innerHTML = `<div class="empty-state"><h3>Belum ada project</h3><p class="mt-8">Pesan paket terlebih dahulu untuk melihat tracking di sini.</p><a href="packages.html" class="btn btn-primary mt-24">Lihat Paket</a></div>`;
+    }
+  }
+</script>
+</body>
+</html>

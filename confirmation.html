@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<link rel="icon" type="image/png" href="img/logo.png">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmation — Nusa East</title>
+<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script defer src="js/icons.js"></script>
+</head>
+<body>
+
+<section class="section">
+  <div class="container">
+    <div class="form-card text-center" style="max-width:600px; margin:0 auto;" id="confirmBox"></div>
+  </div>
+</section>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/layout.js"></script>
+<script>
+  renderHeader('services');
+  renderFooter();
+
+  const params = new URLSearchParams(location.search);
+  const orderId = params.get("order");
+  const order = orderId ? getOrder(orderId) : null;
+  const box = document.getElementById("confirmBox");
+
+  if (!order) {
+    box.innerHTML = `
+      <div class="confirmation-empty">
+        <h2>Pesanan Tidak Ditemukan</h2>
+        <p>Maaf, data pesanan tidak dapat ditemukan.</p>
+        <a href="packages.html" class="btn btn-primary mt-24">
+          Lihat Paket
+        </a>
+      </div>
+    `;
+  } else {
+    box.innerHTML = `
+      <div class="payment-success-icon"
+           aria-label="Pembayaran berhasil"
+           role="img">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="success-circle" cx="32" cy="32" r="27" />
+          <path class="success-check" d="M18 33 L27 42 L46 23" />
+        </svg>
+      </div>
+
+      <span class="confirmation-label">PEMBAYARAN SELESAI</span>
+
+      <h2 class="confirmation-title">Pembayaran Berhasil!</h2>
+
+      <p class="confirmation-description">
+        Terima kasih telah mempercayakan project kamu kepada Nusa East.
+      </p>
+
+      <div class="confirmation-order">
+        <span class="confirmation-order-label">Nomor Order</span>
+        <strong>${order.id}</strong>
+      </div>
+
+      <div class="confirmation-total">
+        <span>Total Dibayar</span>
+        <strong>${formatIDR(order.total)}</strong>
+      </div>
+
+      <div class="confirmation-next">
+        <h3>Langkah Selanjutnya</h3>
+        <p>
+          Lengkapi brief project agar kami dapat memahami kebutuhan
+          dan tujuan brand kamu dengan lebih baik.
+        </p>
+      </div>
+
+      <div class="confirmation-actions">
+        <a href="brief.html?order=${encodeURIComponent(order.id)}"
+           class="btn btn-primary">
+          Isi Brief Project
+          <span aria-hidden="true">→</span>
+        </a>
+
+        <a href="tracking.html?order=${encodeURIComponent(order.id)}"
+           class="btn btn-outline">
+          Lihat Tracking Project
+        </a>
+      </div>
+    `;
+  }
+</script>
+</body>
+</html>
