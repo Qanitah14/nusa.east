@@ -14,123 +14,223 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <script defer src="../js/icons.js"></script>
 </head>
+
 <body class="admin-body operator-body">
 <div class="admin-app" id="adminApp">
   <main class="admin-main">
     <div class="admin-content">
+
       <div class="a-page-head">
         <div>
           <span class="eyebrow">Akun</span>
-          <h1 style="font-size:clamp(1.7rem,3.2vw,2.4rem);">Profil Operator</h1>
-          <p>Kelola informasi akun dan keamanan akses Super User.</p>
+          <h1 style="font-size:clamp(1.7rem,3.2vw,2.4rem);">
+            Profil Operator
+          </h1>
+          <p>Kelola informasi akun dan profil Super User.</p>
         </div>
-        
       </div>
+
       <div class="a-profile-grid">
+
+        <!-- Kartu identitas dan foto profil -->
         <aside class="a-card a-id-card">
           <div class="a-avatar lg" id="pAvatar" aria-hidden="true">A</div>
-          <label class="profile-photo-upload" for="pPhotoInput">Ubah foto profil</label>
-          <input type="file" id="pPhotoInput" accept="image/png,image/jpeg,image/webp" hidden>
-          <button type="button" id="pPhotoRemove" class="hint" style="background:none;border:0;color:var(--color-danger);cursor:pointer;margin-top:4px;" hidden>Hapus foto</button>
-          <p id="pPhotoMsg" class="hint" style="margin:6px 0 14px;">Maks. 1,5 MB</p>
-          <h3 id="pName">Admin</h3>
+
+          <label class="profile-photo-upload" for="pPhotoInput">
+            Ubah foto profil
+          </label>
+
+          <input
+            type="file"
+            id="pPhotoInput"
+            accept="image/png,image/jpeg,image/webp"
+            hidden
+          >
+
+          <button
+            type="button"
+            id="pPhotoRemove"
+            class="hint"
+            style="background:none;border:0;color:var(--color-danger);cursor:pointer;margin-top:4px;"
+            hidden
+          >
+            Hapus foto
+          </button>
+
+          <p id="pPhotoMsg" class="hint" style="margin:6px 0 14px;">
+            Maks. 1,5 MB
+          </p>
+
+          <h3 id="pName">Operator</h3>
           <p id="pEmail" class="hint">-</p>
-          <span class="badge badge-green"><i class="fas fa-shield-halved"></i> Super User</span>
+
+          <span class="badge badge-green">
+            <i class="fas fa-shield-halved"></i> Super User
+          </span>
+
           <div class="a-kv-grid one" style="margin-top:22px;">
-            <div class="a-kv"><span>Bergabung</span><b id="pSince">-</b></div>
-            <div class="a-kv"><span>Sesi</span><b>Berakhir saat tab ditutup / tidak aktif 30 menit</b></div>
+            <div class="a-kv">
+              <span>Bergabung</span>
+              <b id="pSince">-</b>
+            </div>
+
+            <div class="a-kv">
+              <span>Sesi</span>
+              <b>Berakhir saat tab ditutup / tidak aktif 30 menit</b>
+            </div>
           </div>
+
           <div class="a-id-links">
-            <a class="btn btn-outline btn-sm" href="activity.html"><i class="fas fa-clock-rotate-left"></i> Riwayat Aktivitas</a>
-            <button class="btn btn-accent btn-sm" id="pLogout"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+            <a class="btn btn-outline btn-sm" href="activity.html">
+              <i class="fas fa-clock-rotate-left"></i>
+              Riwayat Aktivitas
+            </a>
+
+            <button class="btn btn-accent btn-sm" id="pLogout" type="button">
+              <i class="fas fa-sign-out-alt"></i>
+              Keluar
+            </button>
           </div>
         </aside>
 
+        <!-- Form informasi akun -->
         <div class="a-profile-forms">
           <section class="a-card">
-            <div class="a-card-head"><h3><i class="fas fa-user-circle"></i> Informasi Akun</h3></div>
+
+            <div class="a-card-head">
+              <h3>
+                <i class="fas fa-user-circle"></i>
+                Informasi Akun
+              </h3>
+            </div>
+
             <div class="form-error" id="infoErr" hidden></div>
+
             <form id="infoForm" novalidate>
               <div class="form-group">
                 <label for="fName">Nama</label>
-                <input type="text" id="fName" class="form-control" maxlength="150" autocomplete="name" required>
+                <input
+                  type="text"
+                  id="fName"
+                  class="form-control"
+                  maxlength="150"
+                  autocomplete="name"
+                  required
+                >
               </div>
+
               <div class="form-group">
                 <label for="fEmail">Email</label>
-                <input type="email" id="fEmail" class="form-control" disabled>
-                <small class="hint">Email dipakai untuk masuk dan tidak dapat diubah dari sini.</small>
+                <input
+                  type="email"
+                  id="fEmail"
+                  class="form-control"
+                  disabled
+                >
+                <small class="hint">
+                  Email dipakai untuk masuk dan tidak dapat diubah dari sini.
+                </small>
               </div>
-              <button type="submit" class="btn btn-primary btn-sm" id="infoBtn"><i class="fas fa-save"></i> Simpan perubahan</button>
+
+              <button
+                type="submit"
+                class="btn btn-primary btn-sm"
+                id="infoBtn"
+              >
+                <i class="fas fa-save"></i>
+                Simpan perubahan
+              </button>
             </form>
+
           </section>
         </div>
-      </div>
 
+      </div>
     </div>
   </main>
 </div>
+
 <script src="../js/operator-config.js"></script>
 <script src="../js/admin.js"></script>
 <script src="../js/operator.js"></script>
 <script src="../js/staff-photo.js"></script>
+
 <script>
 if (Admin.init("profile")) {
   const $ = (id) => document.getElementById(id);
-  const showErr = (id, m) => { const b = $(id); b.textContent = m || ""; b.hidden = !m; };
+
+  const showErr = (id, message) => {
+    const box = $(id);
+    box.textContent = message || "";
+    box.hidden = !message;
+  };
 
   function paint(user) {
-    $("pAvatar").textContent = Admin.initials(user.name);
-    $("pName").textContent = user.name || "Admin";
+    if (!user) return;
+
+    StaffPhoto.paintInitials(user.name);
+
+    $("pName").textContent = user.name || "Operator";
     $("pEmail").textContent = user.email || "-";
     $("fName").value = user.name || "";
     $("fEmail").value = user.email || "";
   }
 
-  
-    paint(Admin.getUser());
-    $("pLogout").addEventListener("click", () => Admin.logout());
+  // Tampilkan informasi operator
+  paint(Admin.getUser());
 
-    // Tanggal bergabung diambil dari backend (jika endpoint tersedia)
-    Admin.api.get("/auth/staff-me").then((me) => {
-      $("pSince").textContent = Admin.dateID(me.created_at);
-    }).catch(() => { $("pSince").textContent = "-"; });
+  // Inisialisasi pengelolaan foto profil
+  StaffPhoto.init();
 
-    $("infoForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      showErr("infoErr", "");
-      const name = $("fName").value.trim();
-      if (name.length < 2) return showErr("infoErr", "Nama minimal 2 karakter.");
-      const btn = $("infoBtn");
-      btn.disabled = true;
-      try {
-        const out = await Admin.api.put("/auth/staff-profile", { name });
-        const user = { ...Admin.getUser(), name: out.name };
-        Admin.setUser(user); paint(user);
-        Admin.toast("Profil berhasil disimpan.");
-      } catch (err) {
-        showErr("infoErr", err.message);
-      } finally { btn.disabled = false; }
+  // Tombol keluar
+  $("pLogout").addEventListener("click", () => Admin.logout());
+
+  // Tanggal bergabung dari backend
+  Admin.api.get("/auth/staff-me")
+    .then((me) => {
+      $("pSince").textContent = me.created_at
+        ? Admin.dateID(me.created_at)
+        : "-";
+    })
+    .catch(() => {
+      $("pSince").textContent = "-";
     });
 
-    $("pwForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      showErr("pwErr", "");
-      const currentPassword = $("curPw").value, newPassword = $("newPw").value;
-      if (!currentPassword) return showErr("pwErr", "Masukkan password saat ini.");
-      if (newPassword.length < 8) return showErr("pwErr", "Password baru minimal 8 karakter.");
-      if (newPassword !== $("newPw2").value) return showErr("pwErr", "Konfirmasi password baru tidak sama.");
-      if (newPassword === currentPassword) return showErr("pwErr", "Password baru harus berbeda dari yang lama.");
-      const btn = $("pwBtn");
-      btn.disabled = true;
-      try {
-        await Admin.api.put("/auth/staff-password", { currentPassword, newPassword });
-        e.target.reset();
-        Admin.toast("Password berhasil diperbarui.");
-      } catch (err) { showErr("pwErr", err.message); }
-      finally { btn.disabled = false; }
-    });
-  
+  // Simpan perubahan informasi akun
+  $("infoForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showErr("infoErr", "");
+
+    const name = $("fName").value.trim();
+
+    if (name.length < 2) {
+      showErr("infoErr", "Nama minimal 2 karakter.");
+      return;
+    }
+
+    const btn = $("infoBtn");
+    btn.disabled = true;
+
+    try {
+      const out = await Admin.api.put("/auth/staff-profile", { name });
+
+      const user = {
+        ...Admin.getUser(),
+        name: out.name
+      };
+
+      Admin.setUser(user);
+      paint(user);
+
+      Admin.toast("Profil berhasil disimpan.");
+    } catch (err) {
+      showErr("infoErr", err.message || "Gagal menyimpan profil.");
+    } finally {
+      btn.disabled = false;
+    }
+  });
 }
 </script>
+
 </body>
 </html>
