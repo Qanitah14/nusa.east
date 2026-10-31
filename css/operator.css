@@ -228,20 +228,70 @@ a.op-stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
   background-color: #1d3c2d;
 }
 
-/* Perbaiki posisi panah dropdown pada toolbar operator */
-.op-toolbar select,
-.a-toolbar select {
-  box-sizing: border-box;
-  padding-right: 40px;
-  background-position: right 14px center;
-  background-repeat: no-repeat;
-  cursor: pointer;
-}
+/* =========================================
+   PERBAIKAN DROPDOWN TOOLBAR OPERATOR
+   ========================================= */
 
-/* Pastikan teks dropdown tidak menabrak panah */
-.op-toolbar select,
-.a-toolbar select {
+/* Dropdown pada toolbar operator dan admin */
+.operator-body .op-toolbar select,
+.operator-body .a-toolbar select,
+.operator-body select.form-control.op-filter {
+  box-sizing: border-box;
+  min-width: 165px;
+  max-width: 100%;
+
+  /* Beri ruang agar teks tidak bertabrakan dengan panah */
+  padding: 10px 42px 10px 14px;
+
+  /* Tampilan dropdown */
   text-overflow: ellipsis;
   white-space: nowrap;
-  min-width: 165px;
+  overflow: hidden;
+  cursor: pointer;
+
+  /* Posisi panah bawaan browser */
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+}
+
+/* Pastikan dropdown status akun cukup lebar */
+.operator-body .op-toolbar select[data-op-filter="status"] {
+  min-width: 175px;
+}
+
+/* Dropdown status login */
+.operator-body .op-toolbar select[data-op-filter="online"] {
+  min-width: 145px;
+}
+
+/* Jarak antarelemen toolbar */
+.operator-body .op-toolbar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Kolom pencarian tetap responsif */
+.operator-body .op-toolbar .a-search {
+  flex: 1 1 260px;
+  min-width: 0;
+  max-width: 420px;
+}
+
+/* Dropdown menyesuaikan layar kecil */
+@media (max-width: 860px) {
+  .operator-body .op-toolbar .a-search {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .operator-body .op-toolbar select,
+  .operator-body .a-toolbar select,
+  .operator-body select.form-control.op-filter {
+    flex: 1 1 140px;
+    min-width: 0;
+    max-width: 100%;
+  }
 }
