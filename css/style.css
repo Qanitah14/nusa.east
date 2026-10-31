@@ -371,7 +371,7 @@ p {
 }
 .btn-accent {
   background: var(--color-accent-light);
-  color: var(--color-accent-dark);
+  color: var( --color-danger);
 }
 .btn-accent:hover {
   background: var(--color-accent);
