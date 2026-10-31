@@ -225,3 +225,20 @@ a.op-stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .operator-body .admin-sidebar {
   background-color: #1d3c2d;
 }
+
+/* Perbaiki posisi panah dropdown pada toolbar operator */
+.op-toolbar select,
+.a-toolbar select {
+  box-sizing: border-box;
+  padding-right: 40px;
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+/* Pastikan teks dropdown tidak menabrak panah */
+.op-toolbar select,
+.a-toolbar select {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
