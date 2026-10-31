@@ -4,7 +4,7 @@ window.NUSAEAST_PORTAL = {
   tokenKey: "nusaeast_operator_token",
   userKey: "nusaeast_operator_user",
   loginEndpoint: "/auth/operator-login",
-  panelName: "Operator Panel",
+  panelName: "Agency Control Center",
   menuLabel: "Menu operator",
   profileHref: "profile.html",
   
