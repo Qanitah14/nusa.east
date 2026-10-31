@@ -282,32 +282,31 @@ body.admin-body {
   }
 }
 
-
-/* Container dua tombol login */
+/* Container tombol login */
 .admin-body .admin-login-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   align-items: stretch;
   gap: 12px;
   width: 100%;
   margin-top: 4px;
 }
 
-/* Samakan ukuran kedua tombol */
+/* Ukuran tombol agar memenuhi container */
 .admin-body .admin-login-buttons .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+
   width: 100%;
   min-width: 0;
   min-height: 54px;
   margin: 0;
-  padding: 12px 10px;
+  padding: 14px 20px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-
-  box-sizing: border-box;
-  border-radius: 30px;
+  border: 1px solid #1d3c2d;
+  border-radius: 50px;
 
   font-family: "Inter", sans-serif;
   font-size: 14px;
@@ -319,42 +318,42 @@ body.admin-body {
 
 /* Tombol Masuk */
 .admin-body .admin-login-buttons #loginBtn {
-  background: #fff;
-  color: #1d3b2d;
-  border: 1px solid #1d3b2d;
+  background: #1d3c2d;
+  color: #fff;
+  border-color: #1d3c2d;
 }
 
 /* Tombol Masuk sebagai Pengguna */
 .admin-body .admin-login-buttons .btn-admin-user {
   background: #fff;
-  color: #1d3b2d;
-  border: 1px solid #1d3b2d;
+  color: #1d3c2d;
 }
 
-/* Hover tombol Masuk sebagai Pengguna */
-.admin-body .admin-login-buttons .btn-admin-user:hover {
-  background: #1d3b2d;
-  color: #fff;
-  border-color: #1d3b2d;
-}
-
-/* Hover tombol Masuk */
+/* Efek hover tombol Masuk */
 .admin-body .admin-login-buttons #loginBtn:hover {
-  background: #1d3b2d;
+  background: #294f3c;
+  border-color: #294f3c;
+}
+
+/* Efek hover tombol pengguna */
+.admin-body .admin-login-buttons .btn-admin-user:hover {
+  background: #1d3c2d;
   color: #fff;
-  border-color: #1d3b2d;
+  border-color: #1d3c2d;
 }
 
 /* Tampilan ponsel */
 @media (max-width: 420px) {
   .admin-body .admin-login-buttons {
-    gap: 8px;
+    gap: 10px;
   }
 
   .admin-body .admin-login-buttons .btn {
+    width: 100%;
     min-height: 50px;
-    padding: 10px 6px;
-    font-size: 12px;
+    padding: 12px 10px;
+    font-size: 13px;
   }
 }
+
 

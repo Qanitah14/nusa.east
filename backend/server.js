@@ -5,6 +5,7 @@ const cors = require("cors");
 const { router: authRouter } = require("./routes/auth");
 const ordersRouter = require("./routes/orders");
 const profileRouter = require("./routes/profile");
+const staffProfileRouter = require("./routes/staffProfile");
 const paymentRouter = require("./routes/payment");
 const servicesRouter = require("./routes/services");
 const operatorRouter = require("./routes/operator");
@@ -55,6 +56,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/orders", ordersRouter);
 app.use("/api/payment", paymentRouter);
 app.use("/api/profile", profileRouter);
+app.use("/api/staff-profile", staffProfileRouter);
 app.use("/api/operator", operatorRouter);
 
 app.use((req, res) => res.status(404).json({ error: `Endpoint tidak ditemukan: ${req.method} ${req.path}` }));

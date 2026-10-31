@@ -1,67 +1,283 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow">
-<title>Dashboard — Operator Nusa East</title>
-<link rel="icon" type="image/png" href="../img/logo.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/style.css">
-<link rel="stylesheet" href="../css/admin.css">
-<link rel="stylesheet" href="../css/operator.css">
-<script defer src="../js/icons.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+
+  <title>Dashboard — Operator Nusa East</title>
+
+  <link rel="icon" type="image/png" href="../img/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- Font Awesome untuk ikon dashboard -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  >
+
+  <!-- CSS utama -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="stylesheet" href="../css/operator.css">
+
+  <script defer src="../js/icons.js"></script>
 </head>
+
 <body class="admin-body operator-body">
-<div class="admin-app" id="adminApp">
-  <main class="admin-main">
-    <div class="admin-content">
-      <div class="a-page-head">
-        <div>
-          <span class="eyebrow">Ringkasan</span>
-          <h1 style="font-size:clamp(1.7rem,3.2vw,2.4rem);">Selamat datang, <span id="who">Operator</span></h1>
-          <p>Pantau pengguna, status login, dan permintaan reset password. Semua angka diambil langsung dari database.</p>
+
+  <div class="admin-app" id="adminApp">
+
+    <main class="admin-main">
+      <div class="admin-content">
+
+        <!-- HEADER DASHBOARD -->
+        <div class="a-page-head">
+          <div>
+            <span class="eyebrow">Ringkasan</span>
+
+            <h1 style="font-size:clamp(1.7rem,3.2vw,2.4rem);">
+              Selamat datang, <span id="who">Operator</span>
+            </h1>
+
+            <p>
+              Pantau pengguna, status login, dan permintaan reset password.
+              Semua angka diambil langsung dari database.
+            </p>
+          </div>
         </div>
-        
+
+        <!-- TUJUH KOTAK STATISTIK -->
+        <div id="stats"></div>
+
+        <!-- AKTIVITAS DAN PENGGUNA TERBARU -->
+        <div class="op-grid-2">
+
+          <div class="a-card">
+            <div class="a-card-head">
+              <h3>Aktivitas Terbaru</h3>
+
+              <a href="activity.html" class="btn btn-outline btn-sm">
+                Lihat semua
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+              </a>
+            </div>
+
+            <div id="recent"></div>
+          </div>
+
+          <div class="a-card">
+            <div class="a-card-head">
+              <h3>Pengguna Terbaru</h3>
+
+              <a href="users.html" class="btn btn-outline btn-sm">
+                Kelola
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+              </a>
+            </div>
+
+            <div id="latest"></div>
+          </div>
+
+        </div>
       </div>
-      <div id="stats"></div>
-      <div class="op-grid-2">
-        <div class="a-card"><div class="a-card-head"><h3>Aktivitas Terbaru</h3><a href="activity.html" class="btn btn-outline btn-sm">Lihat semua <i class="fas fa-arrow-right"></i></a></div><div id="recent"></div></div>
-        <div class="a-card"><div class="a-card-head"><h3>Pengguna Terbaru</h3><a href="users.html" class="btn btn-outline btn-sm">Kelola <i class="fas fa-arrow-right"></i></a></div><div id="latest"></div></div>
-      </div>
-    </div>
-  </main>
-</div>
-<script src="../js/operator-config.js"></script>
-<script src="../js/admin.js"></script>
-<script src="../js/operator.js"></script>
-<script>
-if (Admin.init("dashboard")) {
-  document.getElementById("who").textContent = (Admin.getUser().name || "Operator").split(" ")[0];
-  const card = (icon, num, label, sub, href) => `<a class="a-stat op-stat" ${href ? `href="${href}"` : ""}><div class="ico"><i class="fas ${icon}"></i></div><div class="num">${num}</div><div class="lbl">${label}</div>${sub ? `<div class="sub">${sub}</div>` : ""}</a>`;
-  async function load() {
-    const stats = document.getElementById("stats");
-    if (!stats.innerHTML) stats.innerHTML = Admin.loading();
-    try {
-      const d = await Admin.api.get("/operator/overview");
-      const u = d.users, r = d.resets;
-      stats.innerHTML = `<div class="a-stats">
-        ${card("fa-users", u.total, "Pengguna terdaftar", `${u.customers} pelanggan · ${u.sales_admins} admin penjualan · ${u.super_users} super user`, "users.html")}
-        ${card("fa-signal", d.online, "Sedang online", `aktif dalam ${d.onlineWindowMinutes} menit terakhir`, "sessions.html?online=1")}
-        ${card("fa-user-check", u.active, "Akun aktif", `+${u.new_7d} pendaftar 7 hari terakhir`, "accounts.html")}
-        ${card("fa-user-slash", u.disabled + u.blocked, "Akun dinonaktifkan / diblokir", `${u.disabled} nonaktif · ${u.blocked} diblokir`, "accounts.html")}
-        ${card("fa-key", r.pending + r.processing, "Reset password menunggu", `${r.pending} pending · ${r.processing} diproses · ${r.approved} menunggu dipakai`, "resets.html")}
-        ${card("fa-right-to-bracket", d.auth.logins_today, "Login hari ini", `${d.auth.failed_24h} login gagal (24 jam)`, "activity.html")}
-        ${card("fa-clipboard-list", d.orders.total, "Total pesanan", `${d.orders.paid} sudah dibayar`)}
-      </div>`;
-      const recent = document.getElementById("recent");
-      recent.innerHTML = d.recentActivity.length ? `<ul class="a-log op-log">${d.recentActivity.map((a) => `<li><b>${Op.esc(Op.actionLabel(a.action))}</b><span>${Op.esc(a.actor_name || (a.detail && a.detail.email) || "Sistem")}${a.target_name && a.target_name !== a.actor_name ? " → " + Op.esc(a.target_name) : ""} · ${Op.dt(a.created_at)}</span></li>`).join("")}</ul>` : Admin.empty("fa-clock-rotate-left","Belum ada aktivitas","Aktivitas akan tercatat di sini.");
-      document.getElementById("latest").innerHTML = d.latestUsers.map((x) => `<div class="op-mini"><div>${Op.person(x)}</div><div>${Op.roleBadge(x.role)}<small>${Op.ago(x.created_at)}</small></div></div>`).join("");
-    } catch (e) { stats.innerHTML = Admin.errorBox(e.message); const b = document.getElementById("retryBtn"); if (b) b.onclick = load; }
-  }
-  load(); setInterval(() => { if (!document.hidden) load(); }, 60000);
-}
-</script>
+    </main>
+  </div>
+
+  <!-- JAVASCRIPT UTAMA -->
+  <script src="../js/operator-config.js"></script>
+  <script src="../js/admin.js"></script>
+  <script src="../js/operator.js"></script>
+
+  <script>
+    if (Admin.init("dashboard")) {
+
+      document.getElementById("who").textContent =
+        (Admin.getUser().name || "Operator").split(" ")[0];
+
+      /*
+       * Fungsi pembuat kotak statistik.
+       * Setiap kotak memiliki ikon, angka, judul, dan keterangan.
+       */
+      const card = (icon, num, label, sub, href) => `
+        <a
+          class="a-stat op-stat"
+          ${href ? `href="${href}"` : ""}
+        >
+          <div class="ico">
+            <i class="fa-solid ${icon}" aria-hidden="true"></i>
+          </div>
+
+          <div class="num">${num}</div>
+
+          <div class="lbl">${label}</div>
+
+          ${sub ? `<div class="sub">${sub}</div>` : ""}
+        </a>
+      `;
+
+      async function load() {
+        const stats = document.getElementById("stats");
+
+        if (!stats.innerHTML) {
+          stats.innerHTML = Admin.loading();
+        }
+
+        try {
+          const d = await Admin.api.get("/operator/overview");
+
+          const u = d.users;
+          const r = d.resets;
+
+          stats.innerHTML = `
+            <div class="a-stats">
+
+              <!-- 1. PENGGUNA TERDAFTAR -->
+              ${card(
+                "fa-users",
+                u.total,
+                "Pengguna terdaftar",
+                `${u.customers} pelanggan · ${u.sales_admins} admin penjualan · ${u.super_users} super user`,
+                "users.html"
+              )}
+
+              <!-- 2. PENGGUNA ONLINE -->
+              ${card(
+                "fa-signal",
+                d.online,
+                "Sedang online",
+                `Aktif dalam ${d.onlineWindowMinutes} menit terakhir`,
+                "sessions.html?online=1"
+              )}
+
+              <!-- 3. AKUN AKTIF -->
+              ${card(
+                "fa-user-check",
+                u.active,
+                "Akun aktif",
+                `+${u.new_7d} pendaftar 7 hari terakhir`,
+                "accounts.html"
+              )}
+
+              <!-- 4. AKUN NONAKTIF / DIBLOKIR -->
+              ${card(
+                "fa-user-slash",
+                u.disabled + u.blocked,
+                "Akun dinonaktifkan / diblokir",
+                `${u.disabled} nonaktif · ${u.blocked} diblokir`,
+                "accounts.html"
+              )}
+
+              <!-- 5. RESET PASSWORD -->
+              ${card(
+                "fa-key",
+                r.pending + r.processing,
+                "Reset password menunggu",
+                `${r.pending} pending · ${r.processing} diproses · ${r.approved} menunggu dipakai`,
+                "resets.html"
+              )}
+
+              <!-- 6. LOGIN HARI INI -->
+              ${card(
+                "fa-right-to-bracket",
+                d.auth.logins_today,
+                "Login hari ini",
+                `${d.auth.failed_24h} login gagal dalam 24 jam`,
+                "activity.html"
+              )}
+
+              <!-- 7. TOTAL PESANAN -->
+              ${card(
+                "fa-clipboard-list",
+                d.orders.total,
+                "Total pesanan",
+                `${d.orders.paid} sudah dibayar`,
+                null
+              )}
+
+            </div>
+          `;
+
+          // AKTIVITAS TERBARU
+          const recent = document.getElementById("recent");
+
+          recent.innerHTML = d.recentActivity.length
+            ? `
+              <ul class="a-log op-log">
+                ${d.recentActivity.map((a) => `
+                  <li>
+                    <b>
+                      ${Op.esc(Op.actionLabel(a.action))}
+                    </b>
+
+                    <span>
+                      ${Op.esc(
+                        a.actor_name ||
+                        (a.detail && a.detail.email) ||
+                        "Sistem"
+                      )}
+
+                      ${
+                        a.target_name &&
+                        a.target_name !== a.actor_name
+                          ? " → " + Op.esc(a.target_name)
+                          : ""
+                      }
+
+                      · ${Op.dt(a.created_at)}
+                    </span>
+                  </li>
+                `).join("")}
+              </ul>
+            `
+            : Admin.empty(
+                "fa-clock-rotate-left",
+                "Belum ada aktivitas",
+                "Aktivitas akan tercatat di sini."
+              );
+
+          // PENGGUNA TERBARU
+          document.getElementById("latest").innerHTML =
+            d.latestUsers.map((x) => `
+              <div class="op-mini">
+                <div>${Op.person(x)}</div>
+
+                <div>
+                  ${Op.roleBadge(x.role)}
+                  <small>${Op.ago(x.created_at)}</small>
+                </div>
+              </div>
+            `).join("");
+
+        } catch (e) {
+          stats.innerHTML = Admin.errorBox(e.message);
+
+          const retryButton = document.getElementById("retryBtn");
+
+          if (retryButton) {
+            retryButton.onclick = load;
+          }
+        }
+      }
+
+      // Muat data dashboard
+      load();
+
+      // Perbarui data setiap 60 detik
+      setInterval(() => {
+        if (!document.hidden) {
+          load();
+        }
+      }, 60000);
+    }
+  </script>
+
 </body>
 </html>

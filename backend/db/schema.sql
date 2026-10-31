@@ -1,15 +1,16 @@
 -- =========================================================
--- NUSA EAST — SINGLE DATABASE SETUP (PostgreSQL / Production)
--- Jalankan SATU KALI pada SQL Editor database production yang dipakai Vercel.
--- Tidak menghapus data. Aman untuk struktur yang sudah ada (IF NOT EXISTS).
--- Sumber akun tunggal: public.users
--- Role: user (pelanggan), sales_admin (admin penjualan), super_user (operator).
--- =========================================================
-
--- 1. Struktur utama website (users, katalog, pesanan, pembayaran, dll.)
--- =========================================================
--- NUSA EAST — DATABASE SCHEMA (PostgreSQL)
--- Jalankan: psql -U postgres -d nusaeast -f schema.sql
+-- NUSA EAST — SINGLE CONSOLIDATED DATABASE SETUP
+-- PostgreSQL / Production
+--
+-- File tunggal untuk struktur website dan autentikasi:
+--   * users: user, sales_admin, super_user
+--   * katalog, pesanan, pembayaran, ulasan
+--   * user_sessions, activity_logs, password_reset_requests
+--   * views sales_admin_accounts dan operator_accounts
+--
+-- Aman untuk dijalankan ulang untuk objek yang sudah ada, tetapi tetap
+-- periksa database tujuan dan buat backup sebelum menjalankan di production.
+-- Skrip ini tidak menghapus tabel atau data.
 -- =========================================================
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto"; -- untuk gen_random_uuid()
@@ -95,6 +96,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_reset_open_per_user
 CREATE UNIQUE INDEX IF NOT EXISTS uq_reset_token_hash
   ON public.password_reset_requests(token_hash) WHERE token_hash IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_reset_status ON public.password_reset_requests(status, created_at DESC);
+
+-- ---------- PROFIL ADMIN & OPERATOR (satu tabel untuk keduanya) ----------
+-- Hanya menyimpan link foto profil dan tanggal. Identitas & login tetap di tabel users.
+CREATE TABLE IF NOT EXISTS public.staff_profiles (
+  user_id UUID PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
+  image_url TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
 -- ---------- SERVICES (4 layanan utama) ----------
 CREATE TABLE IF NOT EXISTS services (
@@ -258,23 +268,9 @@ SELECT id, name, email, phone, role, status, created_at
 FROM public.users
 WHERE role = 'super_user';
 
-
--- 2. Struktur autentikasi dan pengelolaan akun internal
--- Menambahkan tabel sesi, log aktivitas, permintaan reset password,
--- serta normalisasi role dan view kompatibilitas.
 -- =========================================================
--- 005 — RBAC, sesi login, log aktivitas, reset password,
---       foto profil sebagai URL (users.avatar_url)
--- Idempotent: aman dijalankan berulang. Tidak ada DROP TABLE di sini.
--- Dijalankan lewat: npm run migrate   (dalam 1 transaksi)
+-- ROLE NORMALIZATION AND LEGACY ADMIN ACCOUNT MIGRATION
 -- =========================================================
-
--- ---------- 1. Kolom tambahan pada users ----------
-ALTER TABLE users ADD COLUMN IF NOT EXISTS address    TEXT;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);          -- path/URL foto, bukan data gambar
-ALTER TABLE users ADD COLUMN IF NOT EXISTS status     VARCHAR(20) NOT NULL DEFAULT 'active';
-ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
-
 -- ---------- 2. Role: user | sales_admin | super_user ----------
 ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
 ALTER TABLE users DROP CONSTRAINT IF EXISTS users_status_check;
@@ -282,6 +278,10 @@ ALTER TABLE users DROP CONSTRAINT IF EXISTS users_status_check;
 -- 'client' (nama lama) -> 'user'. Role tak dikenal diturunkan ke 'user' (least privilege).
 UPDATE users SET role = 'user'
  WHERE role IS NULL OR role NOT IN ('user', 'sales_admin', 'super_user');
+
+-- Normalisasi status lama agar constraint tidak gagal pada data yang sudah ada.
+UPDATE users SET status = 'active'
+ WHERE status IS NULL OR status NOT IN ('active', 'disabled', 'blocked');
 
 ALTER TABLE users ALTER COLUMN role SET DEFAULT 'user';
 ALTER TABLE users ADD CONSTRAINT users_role_check   CHECK (role IN ('user', 'sales_admin', 'super_user'));
@@ -309,61 +309,9 @@ BEGIN
   END IF;
 END $$;
 
--- ---------- 4. Sesi login (status online + dasar riwayat login/logout) ----------
-CREATE TABLE IF NOT EXISTS user_sessions (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),   -- waktu login
-  last_seen_at TIMESTAMPTZ NOT NULL DEFAULT now(),   -- heartbeat / aktivitas terakhir
-  expires_at   TIMESTAMPTZ NOT NULL,
-  ended_at     TIMESTAMPTZ,                          -- waktu logout / sesi berakhir
-  end_reason   VARCHAR(20) CHECK (end_reason IN ('logout','expired','timeout','revoked','password_reset')),
-  ip           VARCHAR(64),
-  user_agent   VARCHAR(300)
-);
-CREATE INDEX IF NOT EXISTS idx_sessions_user   ON user_sessions(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_sessions_active ON user_sessions(last_seen_at) WHERE ended_at IS NULL;
-
--- ---------- 5. Log aktivitas (audit) — terpisah dari status sesi ----------
-CREATE TABLE IF NOT EXISTS activity_logs (
-  id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  actor_id       UUID REFERENCES users(id) ON DELETE SET NULL,
-  actor_role     VARCHAR(20),
-  action         VARCHAR(50) NOT NULL,
-  target_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-  detail         JSONB,
-  ip             VARCHAR(64),
-  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_activity_created ON activity_logs(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_activity_action  ON activity_logs(action, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_activity_actor   ON activity_logs(actor_id);
-CREATE INDEX IF NOT EXISTS idx_activity_target  ON activity_logs(target_user_id);
-
--- ---------- 6. Permintaan reset password ----------
--- Hanya HASH token yang disimpan. Token asli dilihat satu kali oleh operator saat disetujui.
-CREATE TABLE IF NOT EXISTS password_reset_requests (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  status            VARCHAR(15) NOT NULL DEFAULT 'pending'
-                    CHECK (status IN ('pending','processing','approved','completed','rejected','expired')),
-  source            VARCHAR(10) NOT NULL DEFAULT 'user' CHECK (source IN ('user','operator')),
-  identity_verified BOOLEAN NOT NULL DEFAULT false,
-  token_hash        CHAR(64),
-  token_expires_at  TIMESTAMPTZ,
-  token_used_at     TIMESTAMPTZ,
-  handled_by        UUID REFERENCES users(id) ON DELETE SET NULL,
-  note              TEXT,
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
-);
--- Satu pengguna hanya boleh punya satu permintaan terbuka (anti-spam).
-CREATE UNIQUE INDEX IF NOT EXISTS uq_reset_open_per_user
-  ON password_reset_requests(user_id) WHERE status IN ('pending','processing','approved');
-CREATE UNIQUE INDEX IF NOT EXISTS uq_reset_token_hash
-  ON password_reset_requests(token_hash) WHERE token_hash IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_reset_status ON password_reset_requests(status, created_at DESC);
-
+-- =========================================================
+-- INDEXES FOR ROLE, STATUS, AND CASE-INSENSITIVE EMAIL
+-- =========================================================
 -- ---------- 7. Indeks users ----------
 CREATE INDEX IF NOT EXISTS idx_users_role   ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
@@ -377,101 +325,9 @@ BEGIN
   END IF;
 END $$;
 
-
 -- =========================================================
--- 006 — Perbaikan kompatibilitas autentikasi produksi
--- Idempotent: aman dijalankan berulang; tidak menghapus data.
--- Tabel users tetap menjadi sumber akun utama untuk menjaga FK sesi/order.
--- sales_admin_accounts dan operator_accounts adalah VIEW pemisah berdasarkan role.
+-- VERIFICATION: REQUIRED AUTH TABLES/VIEWS AND ACCOUNT COUNTS
 -- =========================================================
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS phone VARCHAR(30);
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS address TEXT;
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS password_hash TEXT;
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'user';
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'active';
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS image_url TEXT;
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT now();
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
-
-CREATE TABLE IF NOT EXISTS public.user_sessions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  last_seen_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  expires_at TIMESTAMPTZ NOT NULL,
-  ended_at TIMESTAMPTZ,
-  end_reason VARCHAR(20),
-  ip VARCHAR(64),
-  user_agent VARCHAR(300)
-);
-ALTER TABLE public.user_sessions ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ NOT NULL DEFAULT now();
-ALTER TABLE public.user_sessions ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ;
-ALTER TABLE public.user_sessions ADD COLUMN IF NOT EXISTS ended_at TIMESTAMPTZ;
-ALTER TABLE public.user_sessions ADD COLUMN IF NOT EXISTS end_reason VARCHAR(20);
-ALTER TABLE public.user_sessions ADD COLUMN IF NOT EXISTS ip VARCHAR(64);
-ALTER TABLE public.user_sessions ADD COLUMN IF NOT EXISTS user_agent VARCHAR(300);
-CREATE INDEX IF NOT EXISTS idx_sessions_user ON public.user_sessions(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_sessions_active ON public.user_sessions(last_seen_at) WHERE ended_at IS NULL;
-
-CREATE TABLE IF NOT EXISTS public.activity_logs (
-  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  actor_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
-  actor_role VARCHAR(20),
-  action VARCHAR(50) NOT NULL,
-  target_user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
-  detail JSONB,
-  ip VARCHAR(64),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS actor_id UUID;
-ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS actor_role VARCHAR(20);
-ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS action VARCHAR(50);
-ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS target_user_id UUID;
-ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS detail JSONB;
-ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS ip VARCHAR(64);
-ALTER TABLE public.activity_logs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now();
-CREATE INDEX IF NOT EXISTS idx_activity_created ON public.activity_logs(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_activity_action ON public.activity_logs(action, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_activity_actor ON public.activity_logs(actor_id);
-CREATE INDEX IF NOT EXISTS idx_activity_target ON public.activity_logs(target_user_id);
-
-CREATE TABLE IF NOT EXISTS public.password_reset_requests (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-  status VARCHAR(15) NOT NULL DEFAULT 'pending',
-  source VARCHAR(10) NOT NULL DEFAULT 'user',
-  identity_verified BOOLEAN NOT NULL DEFAULT false,
-  token_hash CHAR(64),
-  token_expires_at TIMESTAMPTZ,
-  token_used_at TIMESTAMPTZ,
-  handled_by UUID REFERENCES public.users(id) ON DELETE SET NULL,
-  note TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-ALTER TABLE public.password_reset_requests ADD COLUMN IF NOT EXISTS source VARCHAR(10) NOT NULL DEFAULT 'user';
-ALTER TABLE public.password_reset_requests ADD COLUMN IF NOT EXISTS identity_verified BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE public.password_reset_requests ADD COLUMN IF NOT EXISTS token_hash CHAR(64);
-ALTER TABLE public.password_reset_requests ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMPTZ;
-ALTER TABLE public.password_reset_requests ADD COLUMN IF NOT EXISTS token_used_at TIMESTAMPTZ;
-ALTER TABLE public.password_reset_requests ADD COLUMN IF NOT EXISTS handled_by UUID;
-ALTER TABLE public.password_reset_requests ADD COLUMN IF NOT EXISTS note TEXT;
-ALTER TABLE public.password_reset_requests ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
-CREATE INDEX IF NOT EXISTS idx_reset_status ON public.password_reset_requests(status, created_at DESC);
-
--- Views memberi daftar terpisah tanpa menyalin password atau memutus relasi FK.
-CREATE OR REPLACE VIEW public.sales_admin_accounts AS
-SELECT id, name, email, phone, role, status, created_at
-FROM public.users WHERE role = 'sales_admin';
-
-CREATE OR REPLACE VIEW public.operator_accounts AS
-SELECT id, name, email, phone, role, status, created_at
-FROM public.users WHERE role = 'super_user';
-
-
 -- 3. Verifikasi tabel autentikasi yang wajib tersedia.
 SELECT table_name, table_type
 FROM information_schema.tables

@@ -28,6 +28,10 @@
       <div class="a-profile-grid">
         <aside class="a-card a-id-card">
           <div class="a-avatar lg" id="pAvatar" aria-hidden="true">A</div>
+          <label class="profile-photo-upload" for="pPhotoInput">Ubah foto profil</label>
+          <input type="file" id="pPhotoInput" accept="image/png,image/jpeg,image/webp" hidden>
+          <button type="button" id="pPhotoRemove" class="hint" style="background:none;border:0;color:var(--color-danger);cursor:pointer;margin-top:4px;" hidden>Hapus foto</button>
+          <p id="pPhotoMsg" class="hint" style="margin:6px 0 14px;">Maks. 1,5 MB</p>
           <h3 id="pName">Admin</h3>
           <p id="pEmail" class="hint">-</p>
           <span class="badge badge-green"><i class="fas fa-shield-halved"></i> Super User</span>
@@ -90,13 +94,14 @@
 <script src="../js/operator-config.js"></script>
 <script src="../js/admin.js"></script>
 <script src="../js/operator.js"></script>
+<script src="../js/staff-photo.js"></script>
 <script>
 if (Admin.init("profile")) {
   const $ = (id) => document.getElementById(id);
   const showErr = (id, m) => { const b = $(id); b.textContent = m || ""; b.hidden = !m; };
 
   function paint(user) {
-    $("pAvatar").textContent = Admin.initials(user.name);
+    StaffPhoto.paintInitials(user.name);
     $("pName").textContent = user.name || "Admin";
     $("pEmail").textContent = user.email || "-";
     $("fName").value = user.name || "";
@@ -105,6 +110,7 @@ if (Admin.init("profile")) {
 
   
     paint(Admin.getUser());
+    StaffPhoto.init();
     $("pLogout").addEventListener("click", () => Admin.logout());
 
     // Tanggal bergabung diambil dari backend (jika endpoint tersedia)
