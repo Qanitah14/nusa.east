@@ -42,10 +42,9 @@
         <div class="a-page-head">
           <div>
             <span class="eyebrow">Ringkasan</span>
-
             <h1 style="font-size:clamp(1.7rem,3.2vw,2.4rem);">
-              Sukses Bersama, <span id="who"></span>Nusa East</span>
-            </h1>
+  Sukses Bersama, Nusa East
+</h1>
           </div>
         </div>
 
@@ -93,9 +92,6 @@
 
   <script>
     if (Admin.init("dashboard")) {
-
-      document.getElementById("who").textContent =
-        (Admin.getUser().name || "Nusa East").split(" ")[0];
 
       /*
        * Fungsi pembuat kotak statistik.
