@@ -1,93 +1,179 @@
 <!DOCTYPE html>
 <html lang="id">
-<link rel="icon" type="image/png" href="img/logo.png">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title> Masuk — Nusa east</title>
-<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk — Nusa East</title>
+  <meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
+  <link rel="icon" type="image/png" href="img/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="css/style.css">
 <script defer src="js/icons.js"></script>
 </head>
-<body>
+<body class="auth-split-page">
 
-  
-<div class="auth-wrap">
-  <div class="auth-card">
+<main class="auth-split-layout">
 
-    <div class="text-center mb-24">
-      <img
-        src="img/logo (2).png"
-        alt="Nusa East"
-        style="width:64px;height:64px;margin:0 auto 14px;object-fit:contain;"
-        onerror="this.style.display='none'"
-      >
-      <h2>Masuk ke Akun Kamu</h2>
-      <p class="mt-8">Wujudkan potensi brand kamu bersama Nusa East</p>
+  <!-- PANEL KIRI -->
+  <section class="auth-split-hero">
+    <div class="auth-split-hero-content">
+
+      <a href="index.html" class="auth-split-brand">
+        <img src="img/logo 1.png" alt="Logo Nusa East" onerror="this.style.display='none'">
+        <span>NUSA EAST</span>
+      </a>
+
+      <div class="auth-split-welcome">
+        <span class="auth-split-eyebrow">NUSA EAST</span>
+
+        <h1>
+          Selamat Datang
+          <span>Kembali.</span>
+        </h1>
+
+        <p>
+          Wujudkan potensi brand kamu bersama Nusa East. Masuk untuk
+          memesan layanan dan memantau progres pesananmu.
+        </p>
+
+        <div class="auth-split-divider"></div>
+
+        <div class="auth-split-hero-note">
+          <span class="auth-split-note-icon" aria-hidden="true">
+            <i class="fa-solid fa-shield-halved"></i>
+          </span>
+          <span>
+            Akun kamu aman bersama
+            <strong>Nusa East</strong>
+          </span>
+        </div>
+      </div>
+
+      <div class="auth-split-hero-footer">
+        <span>© 2026 Nusa East</span>
+        <span>Brand lokal, tampil profesional</span>
+      </div>
+
     </div>
+  </section>
 
-    <div class="form-error" id="loginError" role="alert" hidden></div>
+  <!-- PANEL KANAN -->
+  <section class="auth-split-form-section">
+    <div class="auth-split-form-container">
 
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="loginEmail">Email</label>
-        <input
-          type="email"
-          class="form-control"
-          id="loginEmail"
-          name="email"
-          autocomplete="email"
-          required
-        >
+      <div class="auth-split-form-heading">
+        <span class="auth-split-eyebrow">MASUK</span>
+        <h2>Masuk ke Akun Kamu</h2>
+        <p>Masukkan email dan password yang kamu gunakan saat mendaftar.</p>
       </div>
 
-      <div class="form-group">
-        <label for="loginPassword">Password</label>
-        <input
-          type="password"
-          class="form-control"
-          id="loginPassword"
-          name="password"
-          autocomplete="current-password"
-          required
-        >
-      </div>
+      <div class="auth-split-error" id="loginError" role="alert" hidden></div>
 
-      <p class="auth-forgot" style="text-align:right;margin:-4px 0 14px;font-size:.88rem;">
-        <a href="forgot-password.html">Lupa password?</a>
+      <form id="loginForm" novalidate>
+
+        <div class="auth-split-field">
+          <label for="loginEmail">Email</label>
+          <div class="auth-split-input-wrap">
+            <span class="auth-split-icon" aria-hidden="true">
+              <i class="fa-regular fa-envelope"></i>
+            </span>
+            <input
+              type="email"
+              class="auth-split-input"
+              id="loginEmail"
+              name="email"
+              placeholder="nama@email.com"
+              autocomplete="email"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="auth-split-field">
+          <label for="loginPassword">Password</label>
+          <div class="auth-split-input-wrap">
+            <span class="auth-split-icon" aria-hidden="true">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+            <input
+              type="password"
+              class="auth-split-input"
+              id="loginPassword"
+              name="password"
+              placeholder="Masukkan password"
+              autocomplete="current-password"
+              required
+            >
+            <button type="button" class="auth-split-toggle" id="togglePw" aria-label="Tampilkan password">
+              <i class="fa-regular fa-eye" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <p class="auth-split-forgot">
+          <a href="forgot-password.html">Lupa password?</a>
+        </p>
+
+        <button type="submit" class="auth-split-submit" id="loginBtn">
+          <span class="btn-label">Masuk</span>
+          <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+        </button>
+
+      </form>
+
+      <p class="auth-split-switch">
+        Belum punya akun?
+        <a href="register.html">Daftar sekarang</a>
       </p>
 
-      <button type="submit" class="btn btn-primary-login btn-block">
-        Masuk
-      </button>
-    </form>
+    </div>
+  </section>
 
-    <p class="auth-switch">
-      Belum punya akun?
-      <a href="register.html">Daftar sekarang</a>
-    </p>
-
-  </div>
-</div>
-
+</main>
 
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/layout.js"></script>
 <script src="js/auth.js"></script>
 <script>
-  document.getElementById("loginForm").addEventListener("submit", async e => {
+  // Tampilkan atau sembunyikan password
+  document.getElementById("togglePw").addEventListener("click", (e) => {
+    const input = document.getElementById("loginPassword");
+    const show = input.type === "password";
+
+    input.type = show ? "text" : "password";
+    e.currentTarget.innerHTML =
+      `<i class="fa-regular ${show ? "fa-eye-slash" : "fa-eye"}" aria-hidden="true"></i>`;
+    e.currentTarget.setAttribute("aria-label", show ? "Sembunyikan password" : "Tampilkan password");
+  });
+
+  // Proses login
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const data = Object.fromEntries(new FormData(e.target).entries());
     const errorBox = document.getElementById("loginError");
-    const submit = e.target.querySelector('button[type="submit"]');
-    errorBox.hidden = true; errorBox.textContent = "";
-    submit.disabled = true; submit.textContent = "Memeriksa…";
-    try { await nusaeastLogin(data.email, data.password); }
-    catch (error) { errorBox.textContent = error.message || "Login gagal. Silakan coba lagi."; errorBox.hidden = false; }
-    finally { submit.disabled = false; submit.textContent = "Masuk"; }
+    const submit = document.getElementById("loginBtn");
+    const label = submit.querySelector(".btn-label");
+
+    errorBox.hidden = true;
+    errorBox.textContent = "";
+    submit.disabled = true;
+    label.textContent = "Memeriksa…";
+
+    try {
+      await nusaeastLogin(data.email, data.password);
+    } catch (error) {
+      errorBox.textContent = error.message || "Login gagal. Silakan coba lagi.";
+      errorBox.hidden = false;
+    } finally {
+      submit.disabled = false;
+      label.textContent = "Masuk";
+    }
   });
 </script>
 </body>

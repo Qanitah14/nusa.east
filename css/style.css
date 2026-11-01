@@ -2722,3 +2722,623 @@ body:has(#trackingResult) #trackingResult .card:hover {
   object-fit: contain;
   margin: 0 auto 14px;
 }
+
+/* =========================================================
+   AUTH SPLIT — LOGIN & REGISTER PENGGUNA NUSA EAST
+   Dua panel: foto di kiri, form di kanan
+   ========================================================= */
+
+body.auth-split-page {
+  --as-green: #1E3B2C;
+  --as-green-light: #2E5240;
+  --as-green-dark: #14281D;
+
+  --as-cream: #FAF1E6;
+  --as-cream-soft: #F5EDE3;
+  --as-white: #FFFFFF;
+
+  --as-accent: #DD9C88;
+  --as-accent-dark: #C97D63;
+
+  --as-text: #26241F;
+  --as-muted: #77736C;
+  --as-border: #E7DCCF;
+  --as-danger: #C24B3E;
+
+  /* GANTI FOTO BACKGROUND DI SINI */
+  --as-bg-image: url("../img/bgr.jpg");
+
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--as-cream);
+  color: var(--as-text);
+  font-family: "Inter", sans-serif;
+}
+
+.auth-split-page *,
+.auth-split-page *::before,
+.auth-split-page *::after {
+  box-sizing: border-box;
+}
+
+.auth-split-page button,
+.auth-split-page input,
+.auth-split-page textarea {
+  font: inherit;
+}
+
+/* ---------- Layout ---------- */
+
+.auth-split-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(420px, 0.88fr);
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ---------- Panel kiri ---------- */
+
+.auth-split-hero {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  isolation: isolate;
+  display: flex;
+  min-width: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--as-green-dark);
+  background-image:
+    linear-gradient(180deg,
+      rgba(20, 40, 29, 0.48) 0%,
+      rgba(20, 40, 29, 0.58) 55%,
+      rgba(20, 40, 29, 0.88) 100%),
+    var(--as-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: var(--as-white);
+}
+
+.auth-split-hero-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 100%;
+  padding: clamp(28px, 4.2vw, 64px);
+}
+
+.auth-split-brand {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 12px;
+  color: var(--as-white);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2.2px;
+}
+
+.auth-split-brand img {
+  display: block;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.auth-split-welcome {
+  width: 100%;
+  max-width: 580px;
+  margin-block: 48px;
+}
+
+.auth-split-eyebrow {
+  display: inline-block;
+  margin-bottom: 18px;
+  color: var(--as-accent-dark);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+
+.auth-split-hero .auth-split-eyebrow {
+  color: var(--as-accent);
+}
+
+.auth-split-welcome h1 {
+  margin: 0 0 22px;
+  color: var(--as-white);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(42px, 5vw, 72px);
+  font-weight: 600;
+  letter-spacing: -1.8px;
+  line-height: 1.08;
+  overflow-wrap: break-word;
+}
+
+.auth-split-welcome h1 span {
+  display: block;
+  color: var(--as-accent);
+}
+
+.auth-split-welcome > p {
+  max-width: 460px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 14.5px;
+  line-height: 1.8;
+}
+
+.auth-split-divider {
+  width: 54px;
+  height: 3px;
+  margin: 28px 0 22px;
+  border-radius: 10px;
+  background: var(--as-accent);
+}
+
+.auth-split-hero-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.auth-split-hero-note .auth-split-note-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  border-radius: 11px;
+  color: var(--as-accent);
+  font-size: 15px;
+}
+
+.auth-split-hero-note strong {
+  display: block;
+  color: var(--as-white);
+  font-weight: 600;
+}
+
+.auth-split-hero-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 11.5px;
+  line-height: 1.7;
+}
+
+/* ---------- Panel kanan ---------- */
+
+.auth-split-form-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: clamp(28px, 5vw, 76px);
+  background: var(--as-cream);
+}
+
+.auth-split-form-container {
+  width: 100%;
+  max-width: 440px;
+  margin: auto;
+}
+
+.auth-split-form-heading {
+  margin-bottom: 30px;
+}
+
+.auth-split-form-heading .auth-split-eyebrow {
+  margin-bottom: 14px;
+}
+
+.auth-split-form-heading h2 {
+  margin: 0 0 12px;
+  color: var(--as-green);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(30px, 3vw, 42px);
+  font-weight: 600;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+}
+
+.auth-split-form-heading p {
+  max-width: 390px;
+  margin: 0;
+  color: var(--as-muted);
+  font-size: 13.5px;
+  line-height: 1.8;
+}
+
+/* ---------- Input ---------- */
+
+.auth-split-field {
+  margin-bottom: 20px;
+}
+
+.auth-split-field > label {
+  display: block;
+  margin-bottom: 9px;
+  color: var(--as-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.auth-split-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.auth-split-icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--as-green-light);
+  font-size: 15px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Ikon pada textarea berada di bagian atas */
+.auth-split-input-wrap.is-textarea {
+  align-items: flex-start;
+}
+
+.auth-split-input-wrap.is-textarea .auth-split-icon {
+  bottom: auto;
+  height: 54px;
+}
+
+.auth-split-icon svg,
+.auth-split-icon i {
+  width: 16px;
+  height: 16px;
+  font-size: 15px;
+}
+
+.auth-split-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 54px;
+  padding: 0 52px 0 46px;
+  border: 1px solid var(--as-border);
+  border-radius: 12px;
+  outline: none;
+  background: var(--as-white);
+  color: var(--as-text);
+  font-size: 14px;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+textarea.auth-split-input {
+  height: auto;
+  min-height: 98px;
+  padding: 16px 16px 16px 46px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.auth-split-input::placeholder {
+  color: #A09A91;
+}
+
+.auth-split-input:hover {
+  border-color: #C8BBAA;
+}
+
+.auth-split-input:focus {
+  border-color: var(--as-green);
+  box-shadow: 0 0 0 3px rgba(30, 59, 44, 0.09);
+}
+
+.auth-split-input-wrap:focus-within .auth-split-icon {
+  color: var(--as-green);
+}
+
+.auth-split-input:-webkit-autofill,
+.auth-split-input:-webkit-autofill:hover,
+.auth-split-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--as-text);
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  caret-color: var(--as-text);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+.auth-split-hint {
+  margin: 7px 0 0;
+  color: var(--as-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Tombol mata */
+.auth-split-toggle {
+  position: absolute;
+  right: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #817D75;
+  cursor: pointer;
+  transition: background-color .2s ease, color .2s ease;
+}
+
+.auth-split-toggle:hover {
+  background: var(--as-cream-soft);
+  color: var(--as-green);
+}
+
+.auth-split-toggle:focus-visible {
+  outline: 2px solid var(--as-green);
+  outline-offset: 2px;
+}
+
+/* Tautan lupa password */
+.auth-split-forgot {
+  margin: -6px 0 0;
+  text-align: right;
+  font-size: 12.5px;
+}
+
+.auth-split-forgot a {
+  color: var(--as-accent-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-split-forgot a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Pesan error ---------- */
+
+.auth-split-error {
+  margin-bottom: 22px;
+  padding: 13px 15px;
+  border: 1px solid #EBC8BF;
+  border-radius: 10px;
+  background: #FFF1ED;
+  color: var(--as-danger);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.auth-split-error[hidden] {
+  display: none;
+}
+
+/* ---------- Tombol ---------- */
+
+.auth-split-submit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 54px;
+  margin-top: 28px;
+  padding: 0 20px;
+  border: 1px solid var(--as-green);
+  border-radius: 12px;
+  background: var(--as-green);
+  color: var(--as-white);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color .2s ease, border-color .2s ease,
+              box-shadow .2s ease, transform .2s ease;
+}
+
+.auth-split-submit > i,
+.auth-split-submit > svg {
+  font-size: 13px;
+  transition: transform .2s ease;
+}
+
+.auth-split-submit:hover:not(:disabled) {
+  border-color: var(--as-green-dark);
+  background: var(--as-green-dark);
+  box-shadow: 0 7px 18px rgba(20, 40, 29, 0.15);
+  transform: translateY(-1px);
+}
+
+.auth-split-submit:hover:not(:disabled) > i,
+.auth-split-submit:hover:not(:disabled) > svg {
+  transform: translateX(3px);
+}
+
+.auth-split-submit:focus-visible {
+  outline: 3px solid var(--as-accent);
+  outline-offset: 3px;
+}
+
+.auth-split-submit:disabled {
+  opacity: .7;
+  cursor: wait;
+}
+
+/* ---------- Tautan pindah halaman ---------- */
+
+.auth-split-switch {
+  margin: 26px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--as-border);
+  color: var(--as-muted);
+  font-size: 13.5px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.auth-split-switch a {
+  color: var(--as-accent-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-split-switch a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Tablet ---------- */
+
+@media (max-width: 1000px) {
+  .auth-split-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(350px, 0.9fr);
+  }
+
+  .auth-split-hero-content,
+  .auth-split-form-section {
+    padding: 32px;
+  }
+
+  .auth-split-welcome h1 {
+    font-size: clamp(38px, 5vw, 56px);
+  }
+
+  .auth-split-hero-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ---------- HP ---------- */
+
+@media (max-width: 700px) {
+  .auth-split-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .auth-split-hero {
+    position: relative;
+    height: auto;
+    min-height: 330px;
+    min-height: 38svh;
+  }
+
+  .auth-split-hero-content {
+    min-height: 330px;
+    min-height: 38svh;
+    padding: 24px;
+  }
+
+  .auth-split-brand img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .auth-split-welcome {
+    margin: 34px 0 24px;
+  }
+
+  .auth-split-welcome h1 {
+    margin-bottom: 13px;
+    font-size: clamp(35px, 8vw, 48px);
+    letter-spacing: -1px;
+  }
+
+  .auth-split-welcome > p {
+    max-width: 460px;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .auth-split-divider {
+    margin: 17px 0;
+  }
+
+  .auth-split-hero-footer {
+    display: none;
+  }
+
+  .auth-split-form-section {
+    flex: 1;
+    align-items: flex-start;
+    min-height: auto;
+    padding: 36px 24px 28px;
+  }
+
+  .auth-split-form-container {
+    max-width: 480px;
+  }
+
+  .auth-split-form-heading {
+    margin-bottom: 26px;
+  }
+
+  .auth-split-form-heading h2 {
+    font-size: 31px;
+  }
+}
+
+@media (max-width: 380px) {
+  .auth-split-hero-content {
+    padding: 20px;
+  }
+
+  .auth-split-form-section {
+    padding: 30px 20px 24px;
+  }
+
+  .auth-split-welcome h1 {
+    font-size: 34px;
+  }
+
+  .auth-split-form-heading h2 {
+    font-size: 27px;
+  }
+
+  .auth-split-input {
+    height: 50px;
+  }
+
+  .auth-split-submit {
+    min-height: 50px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-split-page *,
+  .auth-split-page *::before,
+  .auth-split-page *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
