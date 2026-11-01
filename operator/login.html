@@ -5,156 +5,281 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
 
-  <title>Masuk Operator — Nusa East</title>
+  <title>Masuk — Nusa East Management</title>
+
   <link rel="icon" type="image/png" href="../img/logo.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  >
 
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/admin.css">
   <link rel="stylesheet" href="../css/admin-login.css">
   <link rel="stylesheet" href="../css/operator.css">
 
+  <!-- CSS khusus halaman login -->
+  <link rel="stylesheet" href="../css/operator-login.css">
+
   <script defer src="../js/icons.js"></script>
 </head>
 
-<body class="admin-body operator-body">
+<body class="operator-login-page">
 
-  <div class="auth-wrap">
-  <div class="auth-card admin-auth-card">
+  <main class="operator-login-layout">
 
-    <div class="text-center admin-auth-header">
-      <img
-        src="../img/logo (2).png"
-        alt="Logo Nusa East"
-        class="admin-auth-logo"
-      >
+    <!-- BAGIAN KIRI: BACKGROUND DAN SAMBUTAN -->
+    <section class="operator-login-hero">
 
-      <h2>Log In</h2>
+      <div class="operator-login-hero-content">
 
-      <p class="mt-8">
-        mengelola aktivitas operasional, & memantau pengguna
-      </p>
-    </div>
+        <a href="../index.html" class="operator-login-brand">
+          <img
+            src="../img/logo (2).png"
+            alt="Logo Nusa East"
+          >
+          <span>NUSA EAST</span>
+        </a>
 
-    <div class="form-error" id="loginError" role="alert" hidden></div>
+        <div class="operator-login-welcome">
 
-<form id="adminLoginForm" novalidate>
-  <div class="form-group">
-    <label for="email">Email</label>
-    <input
-      type="email"
-      id="email"
-      class="form-control"
-      name="email"
-      autocomplete="username"
-      required
-    >
-  </div>
+          <span class="operator-login-eyebrow">
+            NUSA EAST MANAGEMENT
+          </span>
 
-  <div class="form-group">
-    <label for="password">Password</label>
+          <h1>
+            Selamat Datang
+            <span>Kembali.</span>
+          </h1>
 
-    <div class="a-pw">
-      <input
-        type="password"
-        id="password"
-        class="form-control"
-        name="password"
-        autocomplete="current-password"
-        required
-      >
+          <p>
+            Satu ruang untuk mengelola aktivitas perusahaan,
+            memantau pengguna, dan menjaga operasional Nusa East
+            tetap terorganisasi.
+          </p>
 
-      <button
-        type="button"
-        id="togglePw"
-        aria-label="Tampilkan password"
-      >
-        <i class="fas fa-eye" aria-hidden="true"></i>
-      </button>
-    </div>
-  </div>
+          <div class="operator-login-divider"></div>
 
-  <div class="admin-login-buttons">
-    <button
-      type="submit"
-      class="btn btn-primary"
-      id="loginBtn"
-    >
-      Masuk
-    </button>
-  </div>
-</form>
-  </div>
-</div>
+          <div class="operator-login-hero-note">
+            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
 
+            <span>
+              Sistem manajemen internal
+              <strong>Nusa East</strong>
+            </span>
+          </div>
+
+        </div>
+
+        <div class="operator-login-hero-footer">
+          <span>© 2026 Nusa East</span>
+          <span>Secure Management Portal</span>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- BAGIAN KANAN: FORM LOGIN -->
+    <section class="operator-login-form-section">
+
+      <div class="operator-login-form-container">
+
+        <div class="operator-login-form-heading">
+
+          <span class="operator-login-eyebrow">
+            MANAGEMENT PORTAL
+          </span>
+
+          <h2>Masuk ke akun Anda</h2>
+
+          <p>
+            Silakan masuk menggunakan akun staf yang telah
+            terdaftar untuk mengakses sistem manajemen.
+          </p>
+
+        </div>
+
+        <div
+          class="operator-login-error"
+          id="loginError"
+          role="alert"
+          hidden
+        ></div>
+
+        <form id="adminLoginForm" novalidate>
+
+          <div class="operator-login-field">
+
+            <label for="email">Alamat email</label>
+
+            <div class="operator-login-input-wrap">
+              <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+
+              <input
+                type="email"
+                id="email"
+                class="operator-login-input"
+                name="email"
+                placeholder="nama@perusahaan.com"
+                autocomplete="username"
+                required
+              >
+            </div>
+
+          </div>
+
+
+          <div class="operator-login-field">
+
+            <div class="operator-login-label-row">
+              <label for="password">Kata sandi</label>
+            </div>
+
+            <div class="operator-login-input-wrap">
+              <i class="fa-solid fa-lock" aria-hidden="true"></i>
+
+              <input
+                type="password"
+                id="password"
+                class="operator-login-input"
+                name="password"
+                placeholder="Masukkan kata sandi"
+                autocomplete="current-password"
+                required
+              >
+
+              <button
+                type="button"
+                class="operator-login-toggle"
+                id="togglePw"
+                aria-label="Tampilkan kata sandi"
+              >
+                <i class="fa-regular fa-eye" aria-hidden="true"></i>
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="submit"
+            class="operator-login-submit"
+            id="loginBtn"
+          >
+            <span>Masuk ke Portal</span>
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          </button>
+
+        </form>
+
+
+        <div class="operator-login-security">
+          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+
+          <p>
+            Akses terbatas untuk staf yang memiliki akun resmi
+            Nusa East.
+          </p>
+        </div>
+
+
+        <div class="operator-login-bottom">
+          <span>Dilindungi oleh sistem autentikasi Nusa East</span>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- KONFIGURASI DAN AUTENTIKASI -->
   <script src="../js/operator-config.js"></script>
   <script src="../js/admin.js"></script>
 
   <script>
-    // Periksa sesi admin yang sudah aktif
+    // Jika sesi sudah aktif, buka dashboard.
     if (Admin.getToken() && Admin.getUser()) {
       location.replace("index.html");
     }
 
     const errBox = document.getElementById("loginError");
+    const loginForm = document.getElementById("adminLoginForm");
+    const loginBtn = document.getElementById("loginBtn");
 
     const showErr = (message) => {
       errBox.textContent = message;
       errBox.hidden = !message;
     };
 
-    // Tampilkan pesan jika sesi sudah berakhir
+    // Pesan ketika sesi berakhir.
     if (new URLSearchParams(location.search).get("expired")) {
-      showErr("Sesi operator berakhir. Silakan masuk kembali.");
+      showErr("Sesi Anda telah berakhir. Silakan masuk kembali.");
     }
 
-    // Tampilkan atau sembunyikan password
+    // Tampilkan atau sembunyikan kata sandi.
     document.getElementById("togglePw").addEventListener("click", (e) => {
       const input = document.getElementById("password");
+      const button = e.currentTarget;
       const show = input.type === "password";
 
       input.type = show ? "text" : "password";
 
-      e.currentTarget.innerHTML =
-        `<i class="fas ${show ? "fa-eye-slash" : "fa-eye"}" aria-hidden="true"></i>`;
+      button.innerHTML = show
+        ? '<i class="fa-regular fa-eye-slash" aria-hidden="true"></i>'
+        : '<i class="fa-regular fa-eye" aria-hidden="true"></i>';
 
-      e.currentTarget.setAttribute(
+      button.setAttribute(
         "aria-label",
-        show ? "Sembunyikan password" : "Tampilkan password"
+        show ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
       );
     });
 
-    // Proses login admin
-    document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
+    // Proses autentikasi operator.
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       showErr("");
 
-      const btn = document.getElementById("loginBtn");
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
 
-      const { email, password } =
-        Object.fromEntries(new FormData(e.target).entries());
-
-      if (!email.trim() || !password) {
-        showErr("Email dan password wajib diisi.");
+      if (!email || !password) {
+        showErr("Alamat email dan kata sandi wajib diisi.");
         return;
       }
 
-      btn.disabled = true;
-      btn.textContent = "Memeriksa…";
+      loginBtn.disabled = true;
+
+      loginBtn.innerHTML = `
+        <span>Memeriksa akun...</span>
+        <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+      `;
 
       try {
-        await Admin.login(email.trim(), password);
-        location.href = "index.html";
+        await Admin.login(email, password);
+        location.replace("index.html");
       } catch (err) {
-        showErr(err.message || "Login gagal. Silakan coba lagi.");
+        showErr(err.message || "Login gagal. Silakan periksa akun Anda.");
 
-        btn.disabled = false;
-        btn.textContent = "Masuk";
+        loginBtn.disabled = false;
+
+        loginBtn.innerHTML = `
+          <span>Masuk ke Portal</span>
+          <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+        `;
       }
     });
   </script>
