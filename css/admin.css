@@ -983,3 +983,51 @@ body.admin-body {
   color: #244333;
   line-height: 1;
 }
+/* =========================================================
+   DASHBOARD ADMIN: 6 KOTAK STATISTIK = 3 ATAS + 3 BAWAH
+   ========================================================= */
+#stats .a-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  align-items: stretch;
+  margin-bottom: 24px;
+}
+
+#stats .a-stat {
+  min-width: 0;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#stats .a-stat .lbl,
+#stats .a-stat .sub {
+  overflow-wrap: anywhere;
+}
+
+/* Tablet: tetap 3 kolom, kotak dibuat sedikit lebih rapat */
+@media (max-width: 1024px) {
+  #stats .a-stats {
+    gap: 14px;
+  }
+
+  #stats .a-stat {
+    min-height: 170px;
+    padding: 18px;
+  }
+}
+
+/* HP: 2 kolom x 3 baris */
+@media (max-width: 600px) {
+  #stats .a-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  #stats .a-stat {
+    min-height: 150px;
+    padding: 16px;
+  }
+}
