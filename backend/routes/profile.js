@@ -14,7 +14,7 @@ const { requireUser, logActivity, clientIp, dbErrorResponse } = require("../midd
 const router = express.Router();
 const MAX_FILE_SIZE = 1.5 * 1024 * 1024;
 const EXT = { "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp" };
-const URL_PREFIX = "/uploads/avatars/";
+const URL_PREFIX = "https://nusa-east-vsxf.vercel.app/uploads/avatars/";
 
 // Folder penyimpanan. Di hosting serverless (mis. Vercel) disk bersifat sementara —
 // atur AVATAR_UPLOAD_DIR ke volume persisten atau pindahkan ke object storage.
