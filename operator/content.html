@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Pengelolaan Konten — Nusa East</title>
+<link rel="icon" href="../img/logo.png"><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/admin.css"><link rel="stylesheet" href="../css/operator.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"><script defer src="../js/icons.js"></script></head>
+<body class="admin-body operator-body"><div class="admin-app" id="adminApp"><main class="admin-main"><div class="admin-content">
+<div class="a-page-head"><div><span class="eyebrow">Website Nusa East</span><h1>Pengelolaan Konten</h1><p>Kelola artikel, halaman legal, Hero Section, dan Tentang Kami dari dashboard.</p></div></div>
+<div class="a-toolbar"><select id="kind" class="form-control" style="max-width:260px">
+<option value="articles">Manajemen Artikel</option><option value="terms_and_conditions">Syarat dan Ketentuan</option><option value="privacy_policies">Kebijakan Privasi</option><option value="hero_sections">Hero Section</option><option value="about_sections">About / Tentang Kami</option></select>
+<button class="btn btn-primary btn-sm" id="add">Tambah Konten</button><button class="btn btn-outline btn-sm" id="reload">Muat Ulang</button></div>
+<div id="notice" class="form-error" hidden></div><div id="editor" class="a-card" style="padding:20px;margin:16px 0" hidden></div><div id="items"></div>
+</div></main></div>
+<script src="../js/operator-config.js"></script><script src="../js/admin.js"></script><script>
+const queryKind = new URLSearchParams(location.search).get("kind") || "articles";
+const activeKey = ({articles:"articles",terms_and_conditions:"terms",privacy_policies:"privacy",hero_sections:"hero",about_sections:"about"})[queryKind] || "articles";
+if (Admin.init(activeKey)) {
+const $=s=>document.querySelector(s), esc=Admin.esc;
+const kind=$("#kind"), editor=$("#editor"), items=$("#items"), notice=$("#notice");
+let records=[]; kind.value=queryKind;
+const labels={articles:"Artikel",terms_and_conditions:"Syarat dan Ketentuan",privacy_policies:"Kebijakan Privasi",hero_sections:"Hero Section",about_sections:"About"};
+const fields={
+ articles:[["title","Judul","text"],["slug","Slug","text"],["author","Penulis","text"],["content","Isi Artikel","textarea"],["image","Path Gambar","text"],["is_published","Terbitkan","checkbox"]],
+ terms_and_conditions:[["title","Judul","text"],["slug","Slug","text"],["author","Penulis","text"],["content","Isi Syarat dan Ketentuan","textarea"]],
+ privacy_policies:[["title","Judul","text"],["slug","Slug","text"],["author","Penulis","text"],["content","Isi Kebijakan Privasi","textarea"]],
+ hero_sections:[["title","Judul","text"],["subtitle","Subjudul","textarea"],["image","Path Gambar","text"],["button_text","Teks Tombol","text"],["button_link","Link Tombol","text"],["is_active","Aktifkan","checkbox"]],
+ about_sections:[["title","Judul","text"],["subtitle","Subjudul","textarea"],["content","Deskripsi","textarea"],["image","Path Gambar","text"],["vision","Visi","textarea"],["mission","Misi","textarea"]]
+};
+async function load(){notice.hidden=true;try{records=await Admin.api.get("/content/"+kind.value);render()}catch(e){showError(e.message)}}
+function render(){if(!records.length){items.innerHTML='<p class="a-empty">Belum ada konten. Klik Tambah Konten untuk membuatnya.</p>';return}
+items.innerHTML='<div class="a-table-wrap"><table class="a-table"><thead><tr><th>Judul</th><th>Slug / Penulis</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'+records.map(r=>`<tr><td><b>${esc(r.title||"(tanpa judul)")}</b></td><td>${esc(r.slug||r.author||"-")}</td><td>${r.is_published===false||r.is_active===false?"Draft / Nonaktif":"Aktif / Terbit"}</td><td><button class="btn btn-outline btn-sm" data-edit="${r.id}">Edit</button> <button class="btn btn-outline btn-sm" data-del="${r.id}">Hapus</button></td></tr>`).join("")+'</tbody></table></div>'}
+function showError(msg){notice.textContent=msg;notice.hidden=false;Admin.toast(msg)}
+function openForm(record={}){const defs=fields[kind.value];editor.hidden=false;editor.innerHTML=`<h2 style="margin-bottom:16px">${record.id?"Edit":"Tambah"} ${labels[kind.value]}</h2><form id="contentForm">${defs.map(([name,label,type])=>`<div class="form-group"><label>${label}</label>${type==="textarea"?`<textarea class="form-control" name="${name}" rows="7">${esc(record[name]??"")}</textarea>`:type==="checkbox"?`<input type="checkbox" name="${name}" ${record[name]?"checked":""}>`: `<input class="form-control" name="${name}" value="${esc(record[name]??"")}" ${name==="slug"?'placeholder="Dibuat otomatis dari judul jika kosong"':""}>`}</div>`).join("")}<div class="form-group"><label>Unggah gambar (maks. 5 MB)</label><input class="form-control" type="file" id="imageFile" accept="image/png,image/jpeg,image/webp,image/gif"><img id="imagePreview" src="${record.image?Admin.assetUrl(record.image):""}" alt="Preview gambar" style="display:${record.image?"block":"none"};max-width:240px;max-height:140px;object-fit:cover;margin-top:10px;border-radius:10px"></div><div style="display:flex;gap:8px"><button class="btn btn-primary" type="submit">Simpan</button><button class="btn btn-outline" type="button" id="cancel">Batal</button></div></form>`;
+$("#cancel").onclick=()=>editor.hidden=true;
+$("#imageFile").onchange=ev=>{const f=ev.target.files[0],p=$("#imagePreview");if(f){p.src=URL.createObjectURL(f);p.style.display="block"}};
+$("#contentForm").onsubmit=async ev=>{ev.preventDefault();const form=ev.currentTarget,data={};for(const [n] of defs){const el=form.elements[n];data[n]=el.type==="checkbox"?el.checked:el.value}
+try{const file=$("#imageFile").files[0];if(file){const fd=new FormData();fd.append("image",file);const uploaded=await Admin.api.post("/content/upload",fd);data.image=uploaded.image}
+if(record.id) await Admin.api.put(`/content/${kind.value}/${record.id}`,data);else await Admin.api.post(`/content/${kind.value}`,data);
+Admin.toast("Konten berhasil disimpan.");editor.hidden=true;await load()}catch(e){showError(e.message)}};
+}
+$("#add").onclick=()=>openForm();$("#reload").onclick=load;kind.onchange=()=>{location.href="content.html?kind="+encodeURIComponent(kind.value)};
+items.onclick=async ev=>{const e=ev.target.closest("[data-edit],[data-del]");if(!e)return;const r=records.find(x=>String(x.id)===String(e.dataset.edit||e.dataset.del));if(e.dataset.edit)openForm(r);else Admin.confirmDialog({title:"Hapus konten?",message:"Konten yang dihapus tidak dapat dipulihkan.",confirmLabel:"Hapus",onConfirm:async()=>{try{await Admin.api.del(`/content/${kind.value}/${r.id}`);Admin.toast("Konten dihapus.");load()}catch(err){showError(err.message)}}})};
+load();
+}
+</script></body></html>

@@ -35,7 +35,6 @@ const Op = (() => {
   const roleBadge = (r) => `<span class="badge ${r === "super_user" ? "badge-orange" : r === "sales_admin" ? "badge-green" : "badge-gray"}">${esc(ROLE[r] || r)}</span>`;
   const statusBadge = (s) => { const [l, c] = STATUS[s] || [s, "badge-gray"]; return `<span class="badge ${c}">${esc(l)}</span>`; };
   const resetBadge = (s) => { const [l, c] = RESET[s] || [s, "badge-gray"]; return `<span class="badge ${c}">${esc(l)}</span>`; };
-  const onlineDot = (on) => `<span class="op-dot ${on ? "on" : "off"}"><i></i>${on ? "Online" : "Offline"}</span>`;
   const avatar = (u) => u.avatar_url
     ? `<span class="a-avatar sm op-av"><img src="${esc(Admin.assetUrl(u.avatar_url))}" alt="" loading="lazy"></span>`
     : `<span class="a-avatar sm op-av" aria-hidden="true">${esc(Admin.initials(u.name))}</span>`;
@@ -113,8 +112,6 @@ const Op = (() => {
           ${kv("Terdaftar", dt(u.created_at))}
           ${kv("Diperbarui", dt(u.updated_at))}
         </div>
-        <h4 class="a-sub-h">Sesi login terakhir</h4>
-        ${list(u.sessions, (s) => `<li><b>${s.online ? "Online" : s.ended_at ? "Berakhir" : "Offline (belum logout)"}</b><span>Masuk ${dt(s.created_at)} · ${s.ended_at ? "keluar " + dt(s.ended_at) + " (" + esc(s.end_reason) + ")" : "terakhir aktif " + ago(s.last_seen_at)} · IP ${esc(s.ip || "-")}</span></li>`, "Belum pernah login.")}
         ${u.role === "user" ? `<h4 class="a-sub-h">Pesanan</h4>${list(u.orders, (o) => `<li><b>${esc(o.id)}</b><span>${idr(o.total)} · ${esc(o.status)} · ${esc(o.payment_status)} · ${dt(o.created_at)}</span></li>`, "Belum ada pesanan.")}` : ""}
         <h4 class="a-sub-h">Permintaan reset password</h4>
         ${list(u.resetRequests, (r) => `<li><b>${esc((RESET[r.status] || [r.status])[0])}</b><span>${dt(r.created_at)} · ${r.source === "operator" ? "dibuat operator" : "diajukan pengguna"}</span></li>`, "Tidak ada.")}
@@ -181,5 +178,5 @@ const Op = (() => {
     }, 0);
   }
 
-  return { esc, dt, ago, ROLE, STATUS, ACTIONS, actionLabel, roleBadge, statusBadge, resetBadge, onlineDot, avatar, person, kv, idr, table, btn, showUser, changeStatus, revokeSessions, showResetLink, patch };
+  return { esc, dt, ago, ROLE, STATUS, ACTIONS, actionLabel, roleBadge, statusBadge, resetBadge, avatar, person, kv, idr, table, btn, showUser, changeStatus, revokeSessions, showResetLink, patch };
 })();

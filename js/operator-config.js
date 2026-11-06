@@ -27,13 +27,7 @@ nav: [
     label: "Data Pelanggan",
     icon: "fa-address-card"
   },
-  {
-    key: "sessions",
-    href: "sessions.html",
-    label: "Status Login",
-    icon: "fa-user-clock"
-  },
-  {
+{
     key: "activity",
     href: "activity.html",
     label: "Riwayat Aktivitas",
@@ -51,12 +45,11 @@ nav: [
     label: "Manajemen Akun",
     icon: "fa-user-shield"
   },
-  {
-    key: "roles",
-    href: "roles.html",
-    label: "Manajemen Role",
-    icon: "fa-user-tag"
-  },
+{ key: "articles", href: "content.html?kind=articles", label: "Manajemen Artikel", icon: "fa-newspaper" },
+  { key: "terms", href: "content.html?kind=terms_and_conditions", label: "Syarat dan Ketentuan", icon: "fa-file-contract" },
+  { key: "privacy", href: "content.html?kind=privacy_policies", label: "Kebijakan Privasi", icon: "fa-shield-halved" },
+  { key: "hero", href: "content.html?kind=hero_sections", label: "Hero Section", icon: "fa-panorama" },
+  { key: "about", href: "content.html?kind=about_sections", label: "About / Tentang Kami", icon: "fa-circle-info" },
   {
     key: "profile",
     href: "profile.html",

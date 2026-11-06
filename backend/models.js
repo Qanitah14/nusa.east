@@ -281,7 +281,27 @@ const Page = {
   }
 };
 
-module.exports = { ModelError, slugify, migrate, Category, Product, Customer, Order, OrderItem, Page };
+
+/* ======================= CMS Content =======================
+   Semua tabel CMS dibuat oleh migration 007_cms_content.sql.
+   Nama tabel dibatasi allowlist agar identifier SQL tidak berasal dari input pengguna. */
+const CMS_TABLES = new Set(["articles", "terms_and_conditions", "privacy_policies", "hero_sections", "about_sections"]);
+const Content = {
+  async all(table, { publishedOnly = false } = {}) {
+    if (!CMS_TABLES.has(table)) throw new ModelError("Jenis konten tidak valid.");
+    const where = publishedOnly && table === "articles" ? "WHERE is_published = true"
+      : publishedOnly && table === "hero_sections" ? "WHERE is_active = true" : "";
+    return (await pool.query(`SELECT * FROM public.${table} ${where} ORDER BY updated_at DESC, id DESC`)).rows;
+  },
+  async find(table, id) {
+    if (!CMS_TABLES.has(table) || !isId(id)) throw new ModelError("Parameter konten tidak valid.");
+    const r = await pool.query(`SELECT * FROM public.${table} WHERE id=$1`, [id]);
+    if (!r.rowCount) throw new ModelError("Konten tidak ditemukan.", 404);
+    return r.rows[0];
+  }
+};
+
+module.exports = { ModelError, slugify, migrate, Category, Product, Customer, Order, OrderItem, Page, Content };
 
 // `node models.js` => jalankan migrasi
 if (require.main === module) {

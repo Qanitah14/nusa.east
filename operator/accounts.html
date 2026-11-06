@@ -45,7 +45,6 @@ if (Admin.init("accounts")) {
       { label: "Akun", render: Op.person },
       { label: "Role", render: (u) => Op.roleBadge(u.role) },
       { label: "Status akun", render: (u) => Op.statusBadge(u.status) },
-      { label: "Login", render: (u) => Op.onlineDot(u.online) }
     ],
     rowActions: (u) => Op.btn("detail", "fa-eye", "Lihat detail") + (u.role !== "super_user" && u.id !== me ? Op.btn("status", "fa-user-gear", "Ubah status akun") : ""),
     actions: { detail: (u) => Op.showUser(u.id), status: (u, c) => Op.changeStatus(u, c.reload) } });

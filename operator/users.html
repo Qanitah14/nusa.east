@@ -44,7 +44,6 @@ if (Admin.init("users")) {
       { label: "Pengguna", render: Op.person },
       { label: "Role", render: (u) => Op.roleBadge(u.role) },
       { label: "Status akun", render: (u) => Op.statusBadge(u.status) },
-      { label: "Login", render: (u) => Op.onlineDot(u.online) },
       { label: "Terdaftar", render: (u) => Op.dt(u.created_at) }
     ],
     rowActions: (u) => Op.btn("detail", "fa-eye", "Lihat detail"),

@@ -47,10 +47,6 @@ async function listUsers(req, { forceRole = null, withOrders = false } = {}) {
     const i = p.length;
     where.push(`(u.name ILIKE $${i} OR u.email ILIKE $${i} OR COALESCE(u.phone,'') ILIKE $${i} OR COALESCE(u.address,'') ILIKE $${i})`);
   }
-  const onlineSql = `EXISTS (SELECT 1 FROM user_sessions s WHERE s.user_id = u.id AND s.ended_at IS NULL AND s.expires_at > now()
-                       AND s.last_seen_at > now() - interval '${Number(ONLINE_WINDOW_MINUTES)} minutes')`;
-  if (req.query.online === "1") where.push(onlineSql);
-  if (req.query.online === "0") where.push(`NOT ${onlineSql}`);
   const w = where.length ? "WHERE " + where.join(" AND ") : "";
 
   const total = (await pool.query(`SELECT COUNT(*)::int AS n FROM users u ${w}`, p)).rows[0].n;
@@ -58,13 +54,9 @@ async function listUsers(req, { forceRole = null, withOrders = false } = {}) {
     ? `, (SELECT COUNT(*)::int FROM orders o WHERE o.user_id = u.id) AS order_count,
          (SELECT COALESCE(SUM(o.total),0)::float FROM orders o WHERE o.user_id = u.id AND o.payment_status = 'paid') AS total_spent`
     : "";
-  const sort = { name: "u.name ASC", oldest: "u.created_at ASC", last_seen: "last_seen_at DESC NULLS LAST" }[req.query.sort] || "u.created_at DESC";
+  const sort = { name: "u.name ASC", oldest: "u.created_at ASC" }[req.query.sort] || "u.created_at DESC";
   const rows = (await pool.query(
-    `SELECT u.id, u.name, u.email, u.phone, u.address, u.avatar_url, u.role, u.status, u.created_at,
-            ${onlineSql} AS online,
-            (SELECT MAX(s.created_at) FROM user_sessions s WHERE s.user_id = u.id) AS last_login_at,
-            (SELECT MAX(s.ended_at) FROM user_sessions s WHERE s.user_id = u.id AND s.end_reason = 'logout') AS last_logout_at,
-            (SELECT MAX(s.last_seen_at) FROM user_sessions s WHERE s.user_id = u.id) AS last_seen_at
+    `SELECT u.id, u.name, u.email, u.phone, u.address, u.avatar_url, u.role, u.status, u.created_at
             ${orderCols}
        FROM users u ${w} ORDER BY ${sort}, u.id LIMIT ${pageSize} OFFSET ${offset}`, p)).rows;
   return { rows, total, page, pageSize };
@@ -72,23 +64,69 @@ async function listUsers(req, { forceRole = null, withOrders = false } = {}) {
 router.get("/users", wrap((req) => listUsers(req)));
 router.get("/customers", wrap((req) => listUsers(req, { forceRole: "user", withOrders: true })));
 
+/* ---------- CRUD pelanggan: akun tetap berada pada tabel users ---------- */
+router.post("/customers", wrap(async (req) => {
+  const name=V.validateName(req.body.name), email=V.validateEmail(req.body.email);
+  const password=V.validatePassword(req.body.password);
+  const err=V.firstError([name,email,password]); if(err) throw new HttpError(err);
+  const phone=String(req.body.phone||"").trim().slice(0,30), address=String(req.body.address||"").trim();
+  const hash=await bcrypt.hash(password.value,12);
+  try {
+    const r=await pool.query(
+      `INSERT INTO users(name,email,password_hash,phone,address,role,status)
+       VALUES($1,$2,$3,$4,$5,'user','active')
+       RETURNING id,name,email,phone,address,role,status,created_at`,
+      [name.value,email.value,hash,phone||null,address||null]);
+    await audit(req,"customer_created",r.rows[0].id,{});
+    return r.rows[0];
+  } catch(e) { if(e.code==="23505") throw new HttpError("Email sudah terdaftar.",409); throw e; }
+}));
+router.put("/customers/:id", wrap(async (req) => {
+  const id=uuidParam(req.params.id);
+  const name=req.body.name===undefined?null:V.validateName(req.body.name);
+  const email=req.body.email===undefined?null:V.validateEmail(req.body.email);
+  const err=V.firstError([name,email].filter(Boolean)); if(err) throw new HttpError(err);
+  const phone=req.body.phone===undefined?null:String(req.body.phone).trim().slice(0,30);
+  const address=req.body.address===undefined?null:String(req.body.address).trim();
+  const r=await pool.query(
+    `UPDATE users SET name=COALESCE($1,name),email=COALESCE($2,email),phone=COALESCE($3,phone),
+     address=COALESCE($4,address),updated_at=now() WHERE id=$5 AND role='user'
+     RETURNING id,name,email,phone,address,role,status,created_at`,
+    [name?.value??null,email?.value??null,phone,address,id]);
+  if(!r.rowCount) throw new HttpError("Pelanggan tidak ditemukan.",404);
+  await audit(req,"customer_updated",id,{});
+  return r.rows[0];
+}));
+router.delete("/customers/:id", wrap(async (req) => {
+  const id=uuidParam(req.params.id);
+  const client=await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const u=(await client.query("SELECT id FROM users WHERE id=$1 AND role='user' FOR UPDATE",[id])).rows[0];
+    if(!u) throw new HttpError("Pelanggan tidak ditemukan.",404);
+    const orders=(await client.query("SELECT COUNT(*)::int AS n FROM orders WHERE user_id=$1",[id])).rows[0].n;
+    if(orders) throw new HttpError("Pelanggan memiliki riwayat pesanan. Data tidak dihapus agar histori transaksi tetap terjaga.",409);
+    await client.query("DELETE FROM users WHERE id=$1",[id]);
+    await logActivity(client,{actorId:req.user.userId,actorRole:req.user.role,action:"customer_deleted",targetUserId:id,detail:{},ip:clientIp(req)});
+    await client.query("COMMIT"); return {success:true};
+  } catch(e) { try{await client.query("ROLLBACK")}catch(_){} throw e; }
+  finally { client.release(); }
+}));
+
 /* ---------- detail pengguna / pelanggan (tanpa password_hash) ---------- */
 router.get("/users/:id", wrap(async (req) => {
   const id = uuidParam(req.params.id);
   const u = (await pool.query(
     `SELECT id, name, email, phone, address, avatar_url, role, status, created_at, updated_at FROM users WHERE id = $1`, [id])).rows[0];
   if (!u) throw new HttpError("Pengguna tidak ditemukan.", 404);
-  const [sessions, activity, orders, resets] = await Promise.all([
-    pool.query(`SELECT id, created_at, last_seen_at, ended_at, end_reason, ip, user_agent,
-                       (ended_at IS NULL AND expires_at > now() AND last_seen_at > now() - interval '${Number(ONLINE_WINDOW_MINUTES)} minutes') AS online
-                  FROM user_sessions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10`, [id]),
+  const [activity, orders, resets] = await Promise.all([
     pool.query(`SELECT action, detail, ip, created_at FROM activity_logs WHERE actor_id = $1 OR target_user_id = $1 ORDER BY created_at DESC LIMIT 15`, [id]),
     u.role === "user"
       ? pool.query(`SELECT id, total::float AS total, status, payment_status, created_at FROM orders WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10`, [id])
       : { rows: [] },
     pool.query(`SELECT id, status, source, created_at FROM password_reset_requests WHERE user_id = $1 ORDER BY created_at DESC LIMIT 5`, [id])
   ]);
-  return { ...u, sessions: sessions.rows, activity: activity.rows, orders: orders.rows, resetRequests: resets.rows };
+  return { ...u, activity: activity.rows, orders: orders.rows, resetRequests: resets.rows };
 }));
 
 /* ---------- status akun ---------- */

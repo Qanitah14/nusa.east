@@ -9,6 +9,7 @@ const staffProfileRouter = require("./routes/staffProfile");
 const paymentRouter = require("./routes/payment");
 const servicesRouter = require("./routes/services");
 const operatorRouter = require("./routes/operator");
+const contentRouter = require("./routes/content");
 const { AVATAR_DIR } = require("./routes/profile");
 const path = require("path");
 
@@ -58,6 +59,7 @@ app.use("/api/payment", paymentRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/staff-profile", staffProfileRouter);
 app.use("/api/operator", operatorRouter);
+app.use("/api/content", contentRouter);
 
 app.use((req, res) => res.status(404).json({ error: `Endpoint tidak ditemukan: ${req.method} ${req.path}` }));
 app.use((err, req, res, next) => {

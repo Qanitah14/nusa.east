@@ -179,6 +179,9 @@ function renderFooter() {
             <li><a href="packages.html">Paket</a></li>
             <li><a href="brand-matcher.html">Brand Matcher</a></li>
             <li><a href="about.html">About</a></li>
+            <li><a href="artikel.html">Artikel</a></li>
+            <li><a href="syarat-ketentuan.html">Syarat dan Ketentuan</a></li>
+            <li><a href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
           </ul>
 
         </div>
