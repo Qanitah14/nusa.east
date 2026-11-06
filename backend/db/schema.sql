@@ -343,3 +343,55 @@ SELECT role, status, COUNT(*) AS jumlah
 FROM public.users
 GROUP BY role, status
 ORDER BY role, status;
+
+-- Nusa East CMS content tables. Additive migration; preserves existing records.
+CREATE TABLE IF NOT EXISTS public.articles (
+  id BIGSERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL UNIQUE,
+  content TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  image TEXT,
+  author VARCHAR(150) NOT NULL DEFAULT 'Nusa East',
+  is_published BOOLEAN NOT NULL DEFAULT false
+);
+CREATE INDEX IF NOT EXISTS idx_articles_published ON public.articles(is_published, created_at DESC);
+CREATE TABLE IF NOT EXISTS public.terms_and_conditions (
+  id BIGSERIAL PRIMARY KEY, title VARCHAR(255) NOT NULL, slug VARCHAR(255) NOT NULL UNIQUE,
+  content TEXT NOT NULL DEFAULT '', created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(), author VARCHAR(150) NOT NULL DEFAULT 'Nusa East'
+);
+CREATE TABLE IF NOT EXISTS public.privacy_policies (
+  id BIGSERIAL PRIMARY KEY, title VARCHAR(255) NOT NULL, slug VARCHAR(255) NOT NULL UNIQUE,
+  content TEXT NOT NULL DEFAULT '', created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(), author VARCHAR(150) NOT NULL DEFAULT 'Nusa East'
+);
+CREATE TABLE IF NOT EXISTS public.hero_sections (
+  id BIGSERIAL PRIMARY KEY, title VARCHAR(255) NOT NULL DEFAULT '', subtitle TEXT NOT NULL DEFAULT '',
+  image TEXT, button_text VARCHAR(100), button_link VARCHAR(500),
+  is_active BOOLEAN NOT NULL DEFAULT true, created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS public.about_sections (
+  id BIGSERIAL PRIMARY KEY, title VARCHAR(255) NOT NULL DEFAULT '', subtitle TEXT NOT NULL DEFAULT '',
+  content TEXT NOT NULL DEFAULT '', image TEXT, vision TEXT, mission TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(), updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+-- Seed initial legal pages only when no content exists.
+INSERT INTO public.terms_and_conditions(title,slug,content,author)
+SELECT 
+WHERE NOT EXISTS (SELECT 1 FROM public.terms_and_conditions);
+INSERT INTO public.privacy_policies(title,slug,content,author)
+SELECT 
+
+WHERE NOT EXISTS (SELECT 1 FROM public.privacy_policies);
+
+-- Media tersimpan persisten di PostgreSQL agar tidak hilang pada deployment serverless.
+CREATE TABLE IF NOT EXISTS public.content_media (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  file_name VARCHAR(255) NOT NULL,
+  mime_type VARCHAR(50) NOT NULL CHECK (mime_type IN ('image/jpeg','image/png','image/webp','image/gif')),
+  image_data BYTEA NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
