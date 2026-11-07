@@ -38,6 +38,22 @@
                 Syarat dan Ketentuan
             </h1>
 
+            <!-- Gambar konten -->
+<div id="legalImageContainer" style="display:none; margin-top:24px;">
+    <img
+        id="legalImage"
+        src=""
+        alt="Gambar Syarat dan Ketentuan Nusa East"
+        style="
+            width:100%;
+            max-height:420px;
+            object-fit:cover;
+            border-radius:16px;
+        "
+    >
+</div>
+
+
             <!-- Nama penulis -->
             <p
                 id="legalAuthor"
@@ -84,6 +100,20 @@
                     // Menampilkan judul
                     document.getElementById("legalTitle").textContent =
                         d.title || "Syarat dan Ketentuan";
+
+                        // Menampilkan gambar konten
+const imageContainer = document.getElementById("legalImageContainer");
+const legalImage = document.getElementById("legalImage");
+
+if (d.image) {
+    legalImage.src = d.image.startsWith("http")
+        ? d.image
+        : "https://nusa-east-vsxf.vercel.app" + d.image;
+
+    imageContainer.style.display = "block";
+} else {
+    imageContainer.style.display = "none";
+}
 
                     // Menampilkan isi konten
                     document.getElementById("legalContent").textContent =
