@@ -1143,3 +1143,102 @@ body.operator-login-page {
 .operator-login-eyebrow {
   font-size: 11px;
 }
+/* Samakan warna tombol Keluar di sidebar dengan tombol Keluar profil */
+.operator-body .admin-sidebar button#adminLogout,
+.operator-body .admin-side button#adminLogout {
+  background-color: #f4d8cc;
+  color: #e58f7d;
+  border: 1px solid #f4d8cc;
+}
+
+/* Efek saat tombol diarahkan kursor */
+.operator-body .admin-sidebar button#adminLogout:hover,
+.operator-body .admin-side button#adminLogout:hover {
+  background-color: #edc5b5;
+  border-color: #edc5b5;
+  color: #d97868;
+}
+
+/* ==================================
+   SIDEBAR NUSA EAST
+================================== */
+
+.operator-body .admin-sidebar {
+  background: #1d3c2d;
+  width: 280px;
+  min-width: 280px;
+}
+
+/* Navigasi */
+.operator-body .admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 16px;
+}
+
+/* Kategori menu */
+.operator-body .nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Judul kategori */
+.operator-body .nav-group-title {
+  display: block;
+  padding: 0 12px;
+  margin-bottom: 5px;
+  color: #e9a08a;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+}
+
+/* Link menu */
+.operator-body .admin-nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 13px;
+  border-radius: 13px;
+  color: #f8f5ef;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .2s ease, color .2s ease;
+}
+
+/* Hover */
+.operator-body .admin-nav a:hover {
+  background: #294f3c;
+  color: #ffffff;
+}
+
+/* Menu aktif */
+.operator-body .admin-nav a.active {
+  background: #315b47;
+  color: #ffffff;
+  box-shadow: inset 3px 0 #e9a08a;
+}
+
+/* Ikon */
+.operator-body .admin-nav a i,
+.operator-body .admin-nav a svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsif */
+@media (max-width: 768px) {
+  .operator-body .admin-sidebar {
+    width: 250px;
+    min-width: 250px;
+  }
+
+  .operator-body .admin-nav {
+    padding: 16px 12px;
+  }
+}
