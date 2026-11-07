@@ -395,3 +395,29 @@ CREATE TABLE IF NOT EXISTS public.content_media (
   image_data BYTEA NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+
+-- Membuat tabel penyimpanan gambar Nusa East
+CREATE TABLE IF NOT EXISTS public.content_media (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    file_name VARCHAR(255) NOT NULL,
+
+    mime_type VARCHAR(50) NOT NULL
+        CHECK (
+            mime_type IN (
+                'image/jpeg',
+                'image/png',
+                'image/webp',
+                'image/gif'
+            )
+        ),
+
+    image_data BYTEA NOT NULL,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Index untuk pencarian berdasarkan waktu upload
+CREATE INDEX IF NOT EXISTS idx_content_media_created_at
+ON public.content_media (created_at DESC);
