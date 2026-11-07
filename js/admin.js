@@ -139,8 +139,28 @@ const Admin = (() => {
         <div><strong>NUSA EAST</strong><small>${esc(PORTAL.panelName)}</small></div>
       </div>
       <nav class="a-nav" aria-label="${esc(PORTAL.menuLabel)}">
-        ${NAV.map((n) => `<a href="${n.href}" class="${n.key === navKey ? "active" : ""}"><i class="fas ${n.icon}" aria-hidden="true"></i>${n.label}</a>`).join("")}
-      </nav>
+  ${(() => {
+    let currentGroup = "";
+
+    return NAV.map((n) => {
+      const groupTitle = n.group && n.group !== currentGroup
+        ? `<div class="nav-group-title">${esc(n.group)}</div>`
+        : "";
+
+      currentGroup = n.group || "";
+
+      return `
+        ${groupTitle}
+        <a href="${esc(n.href)}"
+           class="${n.key === navKey ? "active" : ""}">
+          <i class="fas ${esc(n.icon)}" aria-hidden="true"></i>
+          ${esc(n.label)}
+        </a>
+      `;
+    }).join("");
+  })()}
+</nav>
+
       <div class="a-side-foot">
         <a class="a-user" href="${PORTAL.profileHref}" title="Buka profil">
           <span class="a-avatar sm" aria-hidden="true">${esc(initials(user.name))}</span>
