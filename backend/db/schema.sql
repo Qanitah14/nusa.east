@@ -421,3 +421,18 @@ CREATE TABLE IF NOT EXISTS public.content_media (
 -- Index untuk pencarian berdasarkan waktu upload
 CREATE INDEX IF NOT EXISTS idx_content_media_created_at
 ON public.content_media (created_at DESC);
+
+ALTER TABLE public.articles
+ADD COLUMN IF NOT EXISTS image TEXT;
+
+ALTER TABLE public.terms_and_conditions
+ADD COLUMN IF NOT EXISTS image TEXT;
+
+ALTER TABLE public.privacy_policies
+ADD COLUMN IF NOT EXISTS image TEXT;
+
+ALTER TABLE public.hero_sections
+ADD COLUMN IF NOT EXISTS image TEXT;
+
+ALTER TABLE public.about_sections
+ADD COLUMN IF NOT EXISTS image TEXT;

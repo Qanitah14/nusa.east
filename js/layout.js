@@ -18,6 +18,7 @@ function renderHeader(activePage) {
     { href: "services.html", label: "Layanan", key: "services" },
     { href: "packages.html", label: "Paket", key: "packages" },
     { href: "brand-matcher.html", label: "Brand Matcher", key: "matcher" },
+    { href: "artikel.html", label: "Artikel", key: "artikel" },
     { href: "about.html", label: "About", key: "about" }
   ];
 
@@ -199,7 +200,7 @@ function renderFooter() {
             <li>
               <i class="fas fa-envelope" aria-hidden="true"></i>
               <a href="mailto:hello@nusaeast.id">
-                hello@nusaeast.id
+                nusaeast2026@gmail.com
               </a>
             </li>
 

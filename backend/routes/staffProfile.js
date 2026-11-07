@@ -14,7 +14,7 @@ const { AVATAR_DIR } = require("./profile");
 const router = express.Router();
 const MAX_FILE_SIZE = 1.5 * 1024 * 1024;
 const EXT = { "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp" };
-const URL_PREFIX = "/uploads/avatars/";
+const URL_PREFIX = "https://nusa-east-vsxf.vercel.app/uploads/avatars/";
 
 // Tabel dibuat otomatis bila belum ada (sama dengan definisi di db/schema.sql), agar tidak error
 // walaupun schema.sql belum dijalankan di database.
