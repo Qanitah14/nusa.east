@@ -143,9 +143,10 @@ const Admin = (() => {
     let currentGroup = "";
 
     return NAV.map((n) => {
-      const groupTitle = n.group && n.group !== currentGroup
-        ? `<div class="nav-group-title">${esc(n.group)}</div>`
-        : "";
+      const groupTitle =
+        n.group && n.group !== currentGroup
+          ? `<div class="nav-group-title">${esc(n.group)}</div>`
+          : "";
 
       currentGroup = n.group || "";
 
@@ -160,7 +161,6 @@ const Admin = (() => {
     }).join("");
   })()}
 </nav>
-
       <div class="a-side-foot">
         <a class="a-user" href="${PORTAL.profileHref}" title="Buka profil">
           <span class="a-avatar sm" aria-hidden="true">${esc(initials(user.name))}</span>
