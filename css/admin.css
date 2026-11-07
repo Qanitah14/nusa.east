@@ -1031,3 +1031,189 @@ body.admin-body {
     padding: 16px;
   }
 }
+
+
+/* =========================================================
+   NUSA EAST — SIDEBAR ADMIN PENJUALAN
+   Diselaraskan dengan kategori sidebar Operator
+   ========================================================= */
+
+.admin-sidebar {
+  width: 264px;
+  box-sizing: border-box;
+  padding: 24px 18px 18px;
+  gap: 24px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(243, 217, 206, .45) transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar { width: 6px; }
+.admin-sidebar::-webkit-scrollbar-track { background: transparent; }
+.admin-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(243, 217, 206, .35);
+  border-radius: 999px;
+}
+
+.a-brand {
+  min-height: 54px;
+  gap: 12px;
+  padding: 0 8px;
+  margin-bottom: 4px;
+}
+
+.a-brand img {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+}
+
+.a-brand strong {
+  font-size: 1.08rem;
+  letter-spacing: .045em;
+}
+
+.a-brand small {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-accent-light);
+  font-size: .66rem;
+  line-height: 1.35;
+  letter-spacing: .09em;
+}
+
+.a-nav {
+  gap: 5px;
+}
+
+.a-nav .nav-group-title {
+  padding: 14px 14px 7px;
+  margin-top: 5px;
+  color: var(--color-accent);
+  font-size: .66rem;
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: .105em;
+  text-transform: uppercase;
+}
+
+.a-nav .nav-group-title:first-child {
+  margin-top: 0;
+}
+
+.a-nav a {
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  gap: 12px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  color: rgba(250, 241, 230, .84);
+  font-size: .88rem;
+  font-weight: 600;
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+
+.a-nav a i {
+  width: 18px;
+  flex: 0 0 18px;
+  color: var(--color-accent-light);
+  font-size: .92rem;
+  text-align: center;
+  transition: color .18s ease;
+}
+
+.a-nav a:hover {
+  background: rgba(255, 255, 255, .09);
+  color: #fff;
+  transform: translateX(2px);
+}
+
+.a-nav a:hover i {
+  color: var(--color-accent);
+}
+
+.a-nav a.active {
+  background: var(--color-accent);
+  border-color: rgba(255, 255, 255, .16);
+  color: var(--color-primary-dark);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .10);
+}
+
+.a-nav a.active i {
+  color: var(--color-primary-dark);
+}
+
+.a-side-foot {
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(243, 217, 206, .16);
+}
+
+a.a-user {
+  min-height: 66px;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, .09);
+}
+
+a.a-user:hover {
+  background: rgba(255, 255, 255, .14);
+}
+
+.a-user .a-avatar.sm {
+  width: 40px;
+  height: 40px;
+  background: var(--color-accent);
+  color: var(--color-primary-dark);
+}
+
+.a-user-txt b {
+  color: #fff;
+  font-size: .84rem;
+}
+
+.a-user-txt span {
+  margin-top: 3px;
+  color: rgba(250, 241, 230, .72);
+  font-size: .72rem;
+}
+
+.a-side-foot .btn {
+  min-height: 42px;
+  border-radius: 999px;
+  font-size: .84rem;
+  font-weight: 700;
+}
+
+.a-side-foot .btn-ghost {
+  color: #fff;
+  border: 1px solid rgba(250, 241, 230, .48);
+  background: transparent;
+}
+
+.a-side-foot .btn-ghost:hover {
+  color: var(--color-primary-dark);
+  border-color: var(--color-accent-light);
+  background: var(--color-accent-light);
+}
+
+.a-side-foot .btn-accent {
+  color: var(--color-danger);
+  background: var(--color-accent-light);
+  border: 1px solid transparent;
+}
+
+.a-side-foot .btn-accent:hover {
+  background: var(--color-accent);
+}
+
+@media (max-width: 860px) {
+  .admin-sidebar {
+    width: min(300px, 86vw);
+    padding: 22px 18px 18px;
+  }
+}

@@ -14,7 +14,7 @@ const Admin = (() => {
     tokenKey: "nusaeast_admin_token",
     userKey: "nusaeast_admin_user",
     loginEndpoint: "/auth/admin-login",
-    panelName: "Admin Panel",
+    panelName: "Admin Place",
     menuLabel: "Menu admin",
     profileHref: "profile.html",
     nav: null
@@ -109,14 +109,52 @@ const Admin = (() => {
   }
 
   /* ---------- Kerangka halaman ---------- */
-  const NAV = PORTAL.nav || [
-    { key: "dashboard", href: "index.html", label: "Dashboard", icon: "fa-chart-pie" },
-    { key: "orders", href: "orders.html", label: "Pesanan", icon: "fa-clipboard-list" },
-    { key: "services", href: "services.html", label: "Layanan", icon: "fa-layer-group" },
-    { key: "packages", href: "packages.html", label: "Paket", icon: "fa-box-open" },
-    { key: "singles", href: "singles.html", label: "Layanan Satuan", icon: "fa-tags" },
-    { key: "profile", href: "profile.html", label: "Profil Admin", icon: "fa-user-circle" }
-  ];
+  
+const NAV = PORTAL.nav || [
+    {
+      group: "MENU UTAMA",
+      key: "dashboard",
+      href: "index.html",
+      label: "Dashboard",
+      icon: "fa-chart-pie"
+    },
+    {
+      group: "PENGELOLAAN",
+      key: "orders",
+      href: "orders.html",
+      label: "Pesanan",
+      icon: "fa-clipboard-list"
+    },
+    {
+      group: "PENGELOLAAN",
+      key: "services",
+      href: "services.html",
+      label: "Layanan",
+      icon: "fa-layer-group"
+    },
+    {
+      group: "PENGELOLAAN",
+      key: "packages",
+      href: "packages.html",
+      label: "Paket",
+      icon: "fa-box-open"
+    },
+    {
+      group: "PENGELOLAAN",
+      key: "singles",
+      href: "singles.html",
+      label: "Layanan Satuan",
+      icon: "fa-tags"
+    },
+    {
+      group: "AKUN",
+      key: "profile",
+      href: "profile.html",
+      label: "Profil Admin",
+      icon: "fa-user-circle"
+    }
+];
+
   // halaman yang tidak ada di menu tetapi termasuk bagian dari menu lain
   const PARENT = { tracking: "orders" };
   const initials = (name) => String(name || "A").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "A";
