@@ -5,6 +5,21 @@ const { requireAuth, requireRole, ROLES } = require("../middleware/auth");
 
 const router = express.Router();
 
+
+// GET /api/payment/config — hanya mengirim Client Key (aman untuk frontend).
+router.get("/config", (req, res) => {
+  const clientKey = process.env.MIDTRANS_CLIENT_KEY;
+  if (!clientKey) {
+    return res.status(503).json({ error: "Midtrans belum dikonfigurasi. Isi MIDTRANS_CLIENT_KEY pada Environment Variables Vercel." });
+  }
+
+  res.set("Cache-Control", "no-store");
+  return res.json({
+    clientKey,
+    isProduction: process.env.MIDTRANS_IS_PRODUCTION === "true"
+  });
+});
+
 // POST /api/payment/create — dipanggil dari halaman checkout untuk mendapatkan Snap Token.
 // Nominal & data pelanggan diambil dari database (bukan dari body) dan pesanan harus milik pemanggil.
 router.post("/create", requireAuth, requireRole(ROLES.USER), async (req, res) => {

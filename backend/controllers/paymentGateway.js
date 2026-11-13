@@ -28,6 +28,10 @@ const snap = new midtransClient.Snap({
  * Snap Token yang dipakai frontend untuk membuka popup pembayaran.
  */
 async function createTransaction({ orderId, grossAmount, customer }) {
+  if (!process.env.MIDTRANS_SERVER_KEY || !process.env.MIDTRANS_CLIENT_KEY) {
+    throw new Error("Konfigurasi MIDTRANS_SERVER_KEY atau MIDTRANS_CLIENT_KEY belum tersedia.");
+  }
+
   const parameter = {
     transaction_details: {
       order_id: orderId,
