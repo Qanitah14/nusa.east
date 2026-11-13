@@ -8,32 +8,13 @@
 
     <title>Syarat dan Ketentuan — Nusa East</title>
 
-    <link rel="icon" type="image/png" href="img/logo.png">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <link rel="icon" href="img/logo.png">
     <link rel="stylesheet" href="css/style.css">
 
     <script defer src="js/icons.js"></script>
 </head>
 
 <body>
-
-    <!-- ================= HEADER NUSA EAST ================= -->
-
-    <script src="js/data.js"></script>
-    <script src="js/cart.js"></script>
-    <script src="js/layout.js"></script>
-
-    <script>
-        renderHeader('terms');
-    </script>
-
-
-    <!-- ================= SYARAT DAN KETENTUAN ================= -->
 
     <main class="section">
 
@@ -58,22 +39,20 @@
             </h1>
 
             <!-- Gambar konten -->
-            <div
-                id="legalImageContainer"
-                style="display: none; margin-top: 24px"
-            >
-                <img
-                    id="legalImage"
-                    src=""
-                    alt="Gambar Syarat dan Ketentuan Nusa East"
-                    style="
-                        width: 100%;
-                        max-height: 420px;
-                        object-fit: cover;
-                        border-radius: 16px;
-                    "
-                >
-            </div>
+<div id="legalImageContainer" style="display:none; margin-top:24px;">
+    <img
+        id="legalImage"
+        src=""
+        alt="Gambar Syarat dan Ketentuan Nusa East"
+        style="
+            width:100%;
+            max-height:420px;
+            object-fit:cover;
+            border-radius:16px;
+        "
+    >
+</div>
+
 
             <!-- Nama penulis -->
             <p
@@ -98,16 +77,7 @@
 
     </main>
 
-
-    <!-- ================= FOOTER NUSA EAST ================= -->
-
-    <script>
-        renderFooter();
-    </script>
-
-
-    <!-- ================= MENGAMBIL DATA DARI API ================= -->
-
+    <!-- Mengambil data dari API PostgreSQL -->
     <script>
 
         (async () => {
@@ -115,59 +85,52 @@
             try {
 
                 // Mengambil data Syarat dan Ketentuan
-                const response = await fetch(
+                const r = await fetch(
                     "https://nusa-east-vsxf.vercel.app/api/content/public/legal/terms"
                 );
 
-                if (!response.ok) {
+                if (!r.ok) {
                     throw new Error("Gagal mengambil data");
                 }
 
-                const data = await response.json();
+                const d = await r.json();
 
-                if (data) {
+                if (d) {
 
                     // Menampilkan judul
                     document.getElementById("legalTitle").textContent =
-                        data.title || "Syarat dan Ketentuan";
+                        d.title || "Syarat dan Ketentuan";
 
-                    // Menampilkan gambar konten
-                    const imageContainer =
-                        document.getElementById("legalImageContainer");
+                        // Menampilkan gambar konten
+const imageContainer = document.getElementById("legalImageContainer");
+const legalImage = document.getElementById("legalImage");
 
-                    const legalImage =
-                        document.getElementById("legalImage");
+if (d.image) {
+    legalImage.src = d.image.startsWith("http")
+        ? d.image
+        : "https://nusa-east-vsxf.vercel.app" + d.image;
 
-                    if (data.image) {
-
-                        legalImage.src = /^https?:\/\//i.test(data.image)
-                            ? data.image
-                            : "https://nusa-east-vsxf.vercel.app" + data.image;
-
-                        imageContainer.style.display = "block";
-
-                    } else {
-
-                        imageContainer.style.display = "none";
-
-                    }
+    imageContainer.style.display = "block";
+} else {
+    imageContainer.style.display = "none";
+}
 
                     // Menampilkan isi konten
                     document.getElementById("legalContent").textContent =
-                        data.content || "";
+                        d.content || "";
 
                     // Menampilkan nama penulis
                     document.getElementById("legalAuthor").textContent =
-                        data.author && data.author.trim()
-                            ? "Penulis: " + data.author
+                        d.author && d.author.trim()
+                            ? "Penulis: " + d.author
                             : "Penulis: Nusa East";
 
                     // Menampilkan tanggal pembaruan
                     document.getElementById("legalUpdated").textContent =
                         "Diperbarui: " +
                         (
-                            data.updated_at
-                                ? new Date(data.updated_at).toLocaleDateString("id-ID")
+                            d.updated_at
+                                ? new Date(d.updated_at).toLocaleDateString("id-ID")
                                 : "-"
                         );
 
@@ -178,10 +141,9 @@
 
                 }
 
-            } catch (error) {
+            } catch (e) {
 
-                console.error("Gagal memuat Syarat dan Ketentuan:", error);
-
+                // Menampilkan pesan jika API gagal
                 document.getElementById("legalContent").textContent =
                     "Konten belum dapat dimuat. Silakan coba kembali.";
 

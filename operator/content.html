@@ -12,6 +12,9 @@
   <link rel="stylesheet" href="../css/content-management.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <script defer src="../js/icons.js"></script>
+  <style>
+    .rich-editor-wrap{grid-column:1/-1}.rich-toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:9px;background:#f7eee4;border:1px solid #e7d8c8;border-bottom:0;border-radius:10px 10px 0 0}.rich-toolbar button{min-width:36px;padding:7px 10px;border:1px solid #ddcbbb;border-radius:7px;background:#fff;color:#193b2c;cursor:pointer}.rich-editor{min-height:320px;padding:18px;background:#fff;border:1px solid #ddcbbb;border-radius:0 0 10px 10px;outline:none;line-height:1.75}.rich-editor:focus{border-color:#1d3d2e;box-shadow:0 0 0 2px #1d3d2e18}.rich-editor:empty:before{content:attr(data-placeholder);color:#999}.rich-editor img{max-width:100%;height:auto;border-radius:10px;display:block;margin:18px auto}.rich-editor figure{margin:22px 0;padding:10px;background:#faf1e6;border-radius:12px}.rich-editor figure img{width:100%;max-height:520px;object-fit:contain;margin:0}.rich-editor figcaption{text-align:center;color:#667;font-size:.85rem;padding:8px}
+  </style>
 </head>
 <body class="admin-body operator-body content-management-page">
   <div class="admin-app" id="adminApp">
@@ -76,7 +79,7 @@
         about_sections:"About / Tentang Kami"
       };
       const fields = {
-        articles:[["title","Judul","text"],["slug","Slug","text"],["author","Penulis","text"],["content","Isi Artikel","textarea"],["image","Path Gambar","text"],["is_published","Terbitkan","checkbox"]],
+        articles:[["title","Judul","text"],["slug","Slug","text"],["author","Penulis","text"],["content","Isi Artikel","richtext"],["image","Path Gambar","text"],["is_published","Terbitkan","checkbox"]],
         terms_and_conditions:[["title","Judul","text"],["slug","Slug","text"],["author","Penulis","text"],["content","Isi Syarat dan Ketentuan","textarea"]],
         privacy_policies:[["title","Judul","text"],["slug","Slug","text"],["author","Penulis","text"],["content","Isi Kebijakan Privasi","textarea"]],
         hero_sections:[["title","Judul","text"],["subtitle","Subjudul","textarea"],["image","Path Gambar","text"],["button_text","Teks Tombol","text"],["button_link","Link Tombol","text"],["is_active","Aktifkan","checkbox"]],
@@ -97,6 +100,8 @@
 
       function render() {
         const count = records.length;
+        const fixed = ["terms_and_conditions","privacy_policies","hero_sections","about_sections"].includes(kind.value);
+        $("#add").hidden = fixed;
         if (!count) {
           items.innerHTML = `
             <div class="content-list-card">
@@ -108,7 +113,7 @@
                 <div class="content-empty-icon"><i class="fa-regular fa-file-lines"></i></div>
                 <h3>Belum Ada Konten</h3>
                 <p>Mulai tambahkan ${labels[kind.value].toLowerCase()} agar informasi dapat dikelola dan ditampilkan pada website Nusa East.</p>
-                <button class="btn btn-primary" type="button" id="emptyAdd"><i class="fa-solid fa-plus"></i><span>Tambah Konten Pertama</span></button>
+                ${fixed ? '<p>Bagian ini merupakan konten tetap. Buat data awal melalui database/migrasi, kemudian gunakan Edit.</p>' : '<button class="btn btn-primary" type="button" id="emptyAdd"><i class="fa-solid fa-plus"></i><span>Tambah Konten Pertama</span></button>'}
               </div>
             </div>`;
           return;
@@ -129,7 +134,7 @@
                     <td data-label="Judul"><b>${esc(r.title || "(tanpa judul)")}</b></td>
                     <td data-label="Slug / Penulis"><span class="content-secondary">${esc(r.slug || r.author || "-")}</span></td>
                     <td data-label="Status"><span class="content-status ${inactive ? "is-draft" : "is-active"}"><i class="fa-solid ${inactive ? "fa-circle-minus" : "fa-circle-check"}"></i>${inactive ? "Draft / Nonaktif" : "Aktif / Terbit"}</span></td>
-                    <td data-label="Aksi"><div class="content-row-actions"><button class="btn btn-outline btn-sm" type="button" data-edit="${esc(r.id)}"><i class="fa-regular fa-pen-to-square"></i> Edit</button><button class="btn btn-outline btn-sm content-delete-btn" type="button" data-del="${esc(r.id)}"><i class="fa-regular fa-trash-can"></i> Hapus</button></div></td>
+                    <td data-label="Aksi"><div class="content-row-actions"><button class="btn btn-outline btn-sm" type="button" data-edit="${esc(r.id)}"><i class="fa-regular fa-pen-to-square"></i> Edit</button>${fixed ? '' : `<button class="btn btn-outline btn-sm content-delete-btn" type="button" data-del="${esc(r.id)}"><i class="fa-regular fa-trash-can"></i> Hapus</button>`}</div></td>
                   </tr>`;
                 }).join("")}</tbody>
               </table>
@@ -149,7 +154,7 @@
         editor.innerHTML = `
           <div class="content-editor-heading"><div><span class="content-eyebrow">FORMULIR KONTEN</span><h2>${record.id ? "Edit" : "Tambah"} ${labels[kind.value]}</h2><p>Lengkapi informasi berikut, lalu simpan perubahan.</p></div><button class="content-close-btn" type="button" id="cancelTop" aria-label="Tutup formulir"><i class="fa-solid fa-xmark"></i></button></div>
           <form id="contentForm" class="content-form">
-            <div class="content-form-grid">${defs.map(([name,label,type]) => `<div class="form-group ${type === "textarea" ? "content-field-wide" : ""} ${type === "checkbox" ? "content-checkbox-field" : ""}>${type === "checkbox" ? "" : `<label for="field-${name}">${label}</label>`}${type === "textarea" ? `<textarea class="form-control" id="field-${name}" name="${name}" rows="6">${esc(record[name] ?? "")}</textarea>` : type === "checkbox" ? `<label class="content-check-label"><input id="field-${name}" type="checkbox" name="${name}" ${record[name] ? "checked" : ""}><span>${label}</span></label>` : `<input class="form-control" id="field-${name}" name="${name}" value="${esc(record[name] ?? "")}" ${name === "slug" ? 'placeholder="Dibuat otomatis dari judul jika kosong"' : ""}>`}</div>`).join("")}</div>
+            <div class="content-form-grid">${defs.map(([name,label,type]) => `<div class="form-group ${["textarea","richtext"].includes(type) ? "content-field-wide" : ""} ${type === "checkbox" ? "content-checkbox-field" : ""}>${type === "checkbox" ? "" : `<label for="field-${name}">${label}</label>`}${type === "richtext" ? `<div class="rich-editor-wrap"><div class="rich-toolbar" role="toolbar" aria-label="Pemformatan artikel"><button type="button" data-cmd="bold" title="Tebal"><b>B</b></button><button type="button" data-cmd="italic" title="Miring"><i>I</i></button><button type="button" data-cmd="underline" title="Garis bawah"><u>U</u></button><button type="button" data-cmd="insertUnorderedList" title="Daftar berpoin">• List</button><button type="button" data-cmd="insertOrderedList" title="Daftar bernomor">1. List</button><button type="button" id="insertPhoto" title="Sisipkan foto di paragraf"><i class="fa-regular fa-image"></i> Foto</button><button type="button" id="insertSlide" title="Sisipkan slide foto"><i class="fa-regular fa-images"></i> Slide foto</button></div><div id="field-content" class="rich-editor" contenteditable="true" data-placeholder="Tulis artikel di sini...">${record[name] ?? ""}</div><input type="file" id="inlineImageFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden><small>Gunakan toolbar untuk format teks dan sisipkan foto/slide di posisi kursor.</small></div>` : type === "textarea" ? `<textarea class="form-control" id="field-${name}" name="${name}" rows="6">${esc(record[name] ?? "")}</textarea>` : type === "checkbox" ? `<label class="content-check-label"><input id="field-${name}" type="checkbox" name="${name}" ${record[name] ? "checked" : ""}><span>${label}</span></label>` : `<input class="form-control" id="field-${name}" name="${name}" value="${esc(record[name] ?? "")}" ${name === "slug" ? 'placeholder="Dibuat otomatis dari judul jika kosong"' : ""}>`}</div>`).join("")}</div>
             <div class="form-group content-upload-field"><label for="imageFile">Unggah gambar <span>(maks. 5 MB)</span></label><input class="form-control" type="file" id="imageFile" accept="image/png,image/jpeg,image/webp,image/gif"><img id="imagePreview" src="${record.image ? Admin.assetUrl(record.image) : ""}" alt="Preview gambar" style="display:${record.image ? "block" : "none"}"></div>
             <div class="content-form-actions"><button class="btn btn-primary" type="submit"><i class="fa-regular fa-floppy-disk"></i> Simpan Konten</button><button class="btn btn-outline" type="button" id="cancel">Batal</button></div>
           </form>`;
@@ -157,6 +162,29 @@
         const closeForm = () => { editor.hidden = true; };
         $("#cancel").onclick = closeForm;
         $("#cancelTop").onclick = closeForm;
+        const rich = $("#field-content");
+        if (rich) {
+          editor.querySelectorAll("[data-cmd]").forEach(btn => btn.onclick = () => { rich.focus(); document.execCommand(btn.dataset.cmd, false, null); });
+          const uploadInline = async (asSlide) => {
+            const input = $("#inlineImageFile"); input.onchange = async () => {
+              const file = input.files[0]; if (!file) return;
+              try {
+                const fd = new FormData(); fd.append("image", file);
+                const uploaded = await Admin.api.post("/content/upload", fd);
+                rich.focus();
+                const url = uploaded.image;
+                const html = asSlide
+                  ? `<figure class="article-slide"><img src="${esc(url)}" alt="${esc(file.name)}"><figcaption>${esc(file.name.replace(/\.[^.]+$/, ""))}</figcaption></figure><p><br></p>`
+                  : `<img src="${esc(url)}" alt="${esc(file.name)}"><p><br></p>`;
+                document.execCommand("insertHTML", false, html);
+                Admin.toast("Foto berhasil disisipkan ke artikel.");
+              } catch (err) { showError(err.message); }
+              input.value = "";
+            }; input.click();
+          };
+          $("#insertPhoto").onclick = () => uploadInline(false);
+          $("#insertSlide").onclick = () => uploadInline(true);
+        }
         $("#imageFile").onchange = ev => {
           const f = ev.target.files[0], p = $("#imagePreview");
           if (f) { p.src = URL.createObjectURL(f); p.style.display = "block"; }
@@ -166,7 +194,8 @@
           const form = ev.currentTarget, data = {};
           for (const [n] of defs) {
             const el = form.elements[n];
-            data[n] = el.type === "checkbox" ? el.checked : el.value;
+            if (n === "content" && rich) data[n] = rich.innerHTML;
+            else data[n] = el.type === "checkbox" ? el.checked : el.value;
           }
           try {
             const file = $("#imageFile").files[0];
@@ -185,12 +214,12 @@
         };
       }
 
-      $("#add").onclick = () => openForm();
+      $("#add").onclick = () => { if (!["terms_and_conditions","privacy_policies","hero_sections","about_sections"].includes(kind.value)) openForm(); };
       $("#reload").onclick = load;
       kind.onchange = () => { location.href = "content.html?kind=" + encodeURIComponent(kind.value); };
 
       items.onclick = async ev => {
-        if (ev.target.closest("#emptyAdd")) { openForm(); return; }
+        if (ev.target.closest("#emptyAdd")) { if (kind.value === "articles") openForm(); return; }
         const button = ev.target.closest("[data-edit],[data-del]");
         if (!button) return;
         const record = records.find(x => String(x.id) === String(button.dataset.edit || button.dataset.del));

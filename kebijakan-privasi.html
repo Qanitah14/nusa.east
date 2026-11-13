@@ -25,6 +25,7 @@
         renderHeader('privacy');
     </script>
 
+
     <!-- Konten Kebijakan Privasi -->
     <main class="section">
 
@@ -76,11 +77,14 @@
             <!-- Tanggal pembaruan -->
             <p id="legalUpdated" class="mt-8"></p>
 
-            <!-- Isi kebijakan privasi -->
+            <!-- Isi Kebijakan Privasi -->
             <div
                 id="legalContent"
                 class="mt-40"
-                style="white-space: pre-wrap; line-height: 1.8"
+                style="
+                    line-height: 1.8;
+                    overflow-wrap: anywhere;
+                "
             >
                 Memuat konten...
             </div>
@@ -89,13 +93,16 @@
 
     </main>
 
+
     <!-- Footer -->
     <script>
         renderFooter();
     </script>
 
+
     <!-- Mengambil data Kebijakan Privasi dari API -->
     <script>
+
         (async () => {
 
             try {
@@ -111,35 +118,56 @@
 
                 const d = await r.json();
 
+
                 if (d) {
 
                     // Menampilkan judul
                     document.getElementById("legalTitle").textContent =
                         d.title || "Kebijakan Privasi";
 
+
                     // Menampilkan gambar Kebijakan Privasi
-                    const imageContainer = document.getElementById("legalImageContainer");
-                    const legalImage = document.getElementById("legalImage");
+                    const imageContainer =
+                        document.getElementById("legalImageContainer");
+
+                    const legalImage =
+                        document.getElementById("legalImage");
+
 
                     if (d.image) {
+
                         legalImage.src = /^https?:\/\//i.test(d.image)
                             ? d.image
                             : "https://nusa-east-vsxf.vercel.app" + d.image;
 
+                        legalImage.alt =
+                            d.title || "Gambar Kebijakan Privasi Nusa East";
+
                         imageContainer.style.display = "block";
+
+                        legalImage.onerror = function () {
+                            imageContainer.style.display = "none";
+                        };
+
                     } else {
+
                         imageContainer.style.display = "none";
+
                     }
 
+
                     // Menampilkan isi konten
-                    document.getElementById("legalContent").textContent =
+                    // Mendukung format HTML dari editor admin
+                    document.getElementById("legalContent").innerHTML =
                         d.content || "";
+
 
                     // Menampilkan nama penulis
                     document.getElementById("legalAuthor").textContent =
                         d.author && d.author.trim()
                             ? "Penulis: " + d.author
                             : "Penulis: Nusa East";
+
 
                     // Menampilkan tanggal pembaruan
                     document.getElementById("legalUpdated").textContent =
@@ -159,13 +187,18 @@
 
             } catch (e) {
 
-                // Menampilkan pesan jika API gagal
+                console.error(
+                    "Gagal memuat Kebijakan Privasi:",
+                    e
+                );
+
                 document.getElementById("legalContent").textContent =
                     "Konten belum dapat dimuat. Silakan coba kembali.";
 
             }
 
         })();
+
     </script>
 
 </body>
