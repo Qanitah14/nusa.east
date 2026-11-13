@@ -25,6 +25,15 @@ const allowed = {
     fields: ["title", "subtitle", "content", "image", "vision", "mission"]
   }
 };
+
+function sanitizeArticleHtml(value) {
+  return String(value ?? "")
+    .replace(/<\s*(script|style|iframe|object|embed)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
+    .replace(/\s+on[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/(href|src)\s*=\s*(["'])\s*javascript:[\s\S]*?\2/gi, '$1="#"')
+    .replace(/<\s*meta[^>]*>/gi, "");
+}
+
 const wrap = fn => async (req,res) => {
   try { await fn(req,res); }
   catch(e) {
@@ -69,6 +78,8 @@ function clean(table, body) {
       out[f] = String(out[f] ?? "").trim();
     }
   }
+
+  if (table === "articles" && out.content !== undefined) out.content = sanitizeArticleHtml(out.content);
 
   // Memproses status publikasi dan aktivasi
   for (const f of ["is_active", "is_published"]) {
@@ -131,10 +142,12 @@ router.get("/public/legal/:kind",wrap(async(req,res)=>{
 router.use(requireSuper);
 router.get("/:table",wrap(async(req,res)=>{
   const t=req.params.table;if(!allowed[t])return res.status(404).json({error:"Jenis konten tidak dikenal."});
-  res.json(await list(t));
+  const rows = await list(t);
+  res.json(["terms_and_conditions","privacy_policies","hero_sections","about_sections"].includes(t) ? rows.slice(0,1) : rows);
 }));
 router.post("/:table",wrap(async(req,res)=>{
   const t=req.params.table;if(!allowed[t])return res.status(404).json({error:"Jenis konten tidak dikenal."});
+  if (["terms_and_conditions","privacy_policies","hero_sections","about_sections"].includes(t)) return res.status(405).json({error:"Bagian ini merupakan konten tetap. Gunakan Edit untuk memperbarui data yang sudah ada."});
   const d=clean(t,req.body);
   if(!d.title && !["hero_sections","about_sections"].includes(t))return res.status(400).json({error:"Judul wajib diisi."});
   if(["articles","terms_and_conditions","privacy_policies"].includes(t)&&!d.content)return res.status(400).json({error:"Isi konten wajib diisi."});
@@ -155,6 +168,7 @@ router.put("/:table/:id",wrap(async(req,res)=>{
 }));
 router.delete("/:table/:id",wrap(async(req,res)=>{
   const t=req.params.table;if(!allowed[t])return res.status(404).json({error:"Jenis konten tidak dikenal."});
+  if (["terms_and_conditions","privacy_policies","hero_sections","about_sections"].includes(t)) return res.status(405).json({error:"Konten tetap tidak dapat dihapus."});
   const r=await pool.query(`DELETE FROM public.${t} WHERE id=$1 RETURNING id`,[req.params.id]);
   if(!r.rowCount)return res.status(404).json({error:"Konten tidak ditemukan."});res.json({success:true});
 }));

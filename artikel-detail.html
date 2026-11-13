@@ -107,8 +107,8 @@
                     new Date(a.created_at).toLocaleDateString("id-ID");
 
                 // Menampilkan isi artikel
-                document.getElementById("content").textContent =
-                    a.content;
+                document.getElementById("content").innerHTML =
+                    a.content || "";
 
                 // Menampilkan gambar jika tersedia
                 if (a.image) {

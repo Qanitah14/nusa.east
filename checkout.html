@@ -19,12 +19,12 @@
     <div class="checkout-hero-content">
       <div class="checkout-hero-title">
         <span class="eyebrow">LANGKAH 2</span>
-        <h1>Simulasi Pembayaran</h1>
+        <h1>Pembayaran Pesanan</h1>
       </div>
 
       <p>
         Selesaikan pembayaran pesananmu dengan memilih metode yang paling nyaman.
-        Periksa kembali total biaya sebelum melanjutkan ke tahap berikutnya.
+        Periksa kembali total biaya, lalu selesaikan pembayaran melalui sistem pembayaran Midtrans.
       </p>
     </div>
   </div>
@@ -61,30 +61,10 @@
     layout.innerHTML = `
       <div>
         <div class="card mb-24">
-          <h3 class="mb-16">Metode Pembayaran</h3>
-          <div class="payment-methods" id="paymentMethods">
-
-            <label class="payment-method selected">
-              <input type="radio" name="pm" value="va" checked>
-              <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
-              <span>Virtual Account</span>
-            </label>
-
-            <label class="payment-method">
-              <input type="radio" name="pm" value="ewallet">
-              <i class="fa-regular fa-credit-card" aria-hidden="true"></i>
-              <span>E-Wallet</span>
-            </label>
-
-            <label class="payment-method">
-              <input type="radio" name="pm" value="qris">
-              <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
-              <span>QRIS</span>
-            </label>
-
-          </div>
+          <h3 class="mb-16">Pembayaran Aman dengan Midtrans</h3>
+          <p>Pilih metode pembayaran yang tersedia pada jendela pembayaran Midtrans. Kamu dapat menggunakan Virtual Account, transfer bank, QRIS, atau e-wallet sesuai metode yang diaktifkan pada akun merchant Nusa East.</p>
+          <p class="hint mt-16">Pembayaran akan diverifikasi oleh Midtrans dan status pesanan diperbarui melalui notifikasi backend.</p>
         </div>
-        <div class="card" id="paymentDetail"></div>
       </div>
       <div class="card summary-box">
         <h3 class="mb-16">Ringkasan Pembayaran</h3>
@@ -92,56 +72,12 @@
         ${percentExtra > 0 ? `<div class="summary-row"><span>Express/Priority</span><span>${formatIDR(percentExtra)}</span></div>` : ""}
         <div class="summary-row total"><span>Total Bayar</span><span>${formatIDR(total)}</span></div>
         <button class="btn btn-primary btn-block mt-24" id="payBtn">Bayar Sekarang</button>
-        <p class="hint mt-16">Dengan klik "Bayar Sekarang", pesanan akan dibuat dan kamu lanjut ke pengisian brief project.</p>
+        <p class="hint mt-16">Dengan klik "Bayar Sekarang", pesanan dibuat dan jendela pembayaran Midtrans akan terbuka. Status pesanan berubah setelah notifikasi pembayaran diverifikasi backend.</p>
       </div>
     `;
 
-    const detailBox = document.getElementById("paymentDetail");
-    function renderDetail(method) {
-      if (method === "va") {
-        detailBox.innerHTML = `
-          <h3 class="mb-16">Transfer Virtual Account</h3>
-          <div class="va-box">
-            <div>
-              <div class="line-meta">Bank Nusa Digital (Simulasi)</div>
-              <div class="va-number">8807 2026 1029 33</div>
-            </div>
-            <span class="badge badge-orange">Menunggu Pembayaran</span>
-          </div>
-          <p class="hint mt-16">Transfer sesuai nominal total secara tepat agar terverifikasi otomatis.</p>
-        `;
-      } else if (method === "ewallet") {
-        detailBox.innerHTML = `
-          <h3 class="mb-16">Bayar dengan E-Wallet</h3>
-          <div class="grid-3">
-            <button class="btn btn-outline btn-block">GoPay</button>
-            <button class="btn btn-outline btn-block">OVO</button>
-            <button class="btn btn-outline btn-block">DANA</button>
-          </div>
-          <p class="hint mt-16">Kamu akan diarahkan ke aplikasi e-wallet untuk konfirmasi (simulasi).</p>
-        `;
-      } else {
-        detailBox.innerHTML = `
-          <h3 class="mb-16">Scan QRIS</h3>
-          <div class="qris-box">
-            <img src="img/qris.jpg" alt="QRIS Nusa East">
-          </div>
-        `;
-      }
-    }
-    renderDetail("va");
-
-    document.querySelectorAll('input[name="pm"]').forEach(radio => {
-      radio.addEventListener("change", () => {
-        document.querySelectorAll(".payment-method").forEach(l => l.classList.remove("selected"));
-        radio.closest(".payment-method").classList.add("selected");
-        renderDetail(radio.value);
-      });
-    });
-
     document.getElementById("payBtn").addEventListener("click", async () => {
       const button = document.getElementById("payBtn");
-      const method = document.querySelector('input[name="pm"]:checked')?.value;
       if (!checkoutItems.length) {
         alert("Pilih item yang ingin dibayar dari keranjang.");
         location.href = "cart.html";
@@ -154,52 +90,81 @@
       }
 
       button.disabled = true;
-      button.textContent = "Membuat pesanan...";
+      button.textContent = "Menyiapkan pembayaran...";
       try {
         const payload = {
           items: breakdown.map(item => ({
-            id: String(item.id),
-            type: String(item.type || ""),
-            name: String(item.name || ""),
-            price: Number(item.price),
-            qty: Number(item.qty || 1),
-            lineTotal: Number(item.lineTotal)
+            id: String(item.id), type: String(item.type || ""),
+            name: String(item.name || ""), price: Number(item.price),
+            qty: Number(item.qty || 1), lineTotal: Number(item.lineTotal)
           })),
           total: Number(total),
-          paymentMethod: method
+          paymentMethod: "midtrans"
         };
-        const result = await apiFetch("/orders", {
-          method: "POST",
-          body: JSON.stringify(payload)
+        const orderResult = await apiFetch("/orders", {
+          method: "POST", body: JSON.stringify(payload)
         });
-        const orderId = result.orderId || result.id;
+        const orderId = orderResult.orderId || orderResult.id;
         if (!orderId) throw new Error("Backend tidak mengembalikan nomor pesanan.");
 
-        // Cache lokal hanya untuk menjaga halaman konfirmasi lama tetap kompatibel.
-        // Sumber utama pesanan tetap backend/Neon.
+        const paymentConfig = await apiFetch("/payment/config");
+        if (!paymentConfig.clientKey) throw new Error("Client Key Midtrans belum tersedia.");
+        const snapScript = document.createElement("script");
+        const snapHost = paymentConfig.isProduction
+          ? "https://app.midtrans.com/snap/snap.js"
+          : "https://app.sandbox.midtrans.com/snap/snap.js";
+        snapScript.src = `${snapHost}?client-key=${encodeURIComponent(paymentConfig.clientKey)}`;
+        snapScript.async = true;
+        await new Promise((resolve, reject) => {
+          snapScript.onload = resolve;
+          snapScript.onerror = () => reject(new Error("Gagal memuat Snap.js. Periksa koneksi atau Client Key Midtrans."));
+          document.head.appendChild(snapScript);
+        });
+
+        button.textContent = "Membuka pembayaran...";
+        const transaction = await apiFetch("/payment/create", {
+          method: "POST", body: JSON.stringify({ orderId })
+        });
+        if (!transaction.token) throw new Error("Backend tidak mengembalikan Snap Token.");
+
         const now = new Date().toISOString();
         const localOrders = getOrders().filter(order => order.id !== orderId);
         localOrders.push({
           id: orderId,
           items: breakdown.map(item => ({ ...item, lineTotal: Number(item.lineTotal) })),
-          total: Number(total),
-          paymentMethod: method,
-          paymentStatus: "pending",
-          createdAt: now,
-          statusIndex: 1,
-          revisionsUsed: 0,
-          log: [
-            { step: "Pesanan Dibuat", date: now },
-            { step: "Pembayaran Berhasil", date: now, note: "Status tampilan simulasi checkout" }
-          ],
-          brief: null
+          total: Number(total), paymentMethod: "midtrans", paymentStatus: "pending",
+          createdAt: now, statusIndex: 0, revisionsUsed: 0,
+          log: [{ step: "Pesanan Dibuat", date: now }], brief: null
         });
         saveOrders(localOrders);
-        removeCartItems(checkoutItems.map(item => item.id));
-        location.href = "confirmation.html?order=" + encodeURIComponent(orderId);
+
+        const finishPending = (message) => {
+          removeCartItems(checkoutItems.map(item => item.id));
+          alert(message);
+          location.href = "confirmation.html?order=" + encodeURIComponent(orderId);
+        };
+        window.snap.pay(transaction.token, {
+          onSuccess: function () {
+            finishPending("Pembayaran diterima. Status akhir akan diperbarui setelah verifikasi notifikasi Midtrans.");
+          },
+          onPending: function () {
+            finishPending("Pembayaran masih menunggu. Selesaikan pembayaran sesuai instruksi Midtrans.");
+          },
+          onError: function (result) {
+            console.error("Midtrans payment error:", result);
+            alert("Pembayaran belum berhasil. Silakan coba kembali atau pilih metode lain di jendela Midtrans.");
+            button.disabled = false;
+            button.textContent = "Coba Bayar Lagi";
+          },
+          onClose: function () {
+            alert("Jendela pembayaran ditutup. Pesanan tersimpan dengan status menunggu pembayaran.");
+            button.disabled = false;
+            button.textContent = "Lanjutkan Pembayaran";
+          }
+        });
       } catch (error) {
-        console.error("Gagal membuat pesanan:", error);
-        alert(error.message || "Gagal membuat pesanan. Periksa koneksi backend lalu coba lagi.");
+        console.error("Gagal memulai pembayaran Midtrans:", error);
+        alert(error.message || "Gagal memulai pembayaran. Periksa koneksi backend.");
         button.disabled = false;
         button.textContent = "Bayar Sekarang";
       }
