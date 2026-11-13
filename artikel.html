@@ -1,3 +1,165 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Artikel — Nusa East</title><link rel="icon" href="img/logo.png"><link rel="stylesheet" href="css/style.css"></head><body><main class="section"><div class="container"><span class="eyebrow">Insight Nusa East</span><h1>Artikel & Inspirasi</h1><p class="mt-16">Informasi dan inspirasi untuk mengembangkan brand lokal.</p><div id="articleList" class="grid-3 mt-40">Memuat artikel...</div></div></main><script>
-(async()=>{const root=document.getElementById("articleList");try{const r=await fetch("https://nusa-east-vsxf.vercel.app/api/content/public/articles");if(!r.ok)throw new Error();const data=await r.json();root.textContent="";if(!data.length){root.textContent="Belum ada artikel yang diterbitkan.";return;}for(const a of data){const card=document.createElement("article");card.className="card";if(a.image){const img=document.createElement("img");img.src=/^https?:\/\//i.test(a.image)?a.image:"https://nusa-east-vsxf.vercel.app"+a.image;img.alt=a.title;img.style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px";card.append(img)}const h=document.createElement("h2");const link=document.createElement("a");link.href="artikel-detail.html?slug="+encodeURIComponent(a.slug);link.textContent=a.title;h.append(link);h.style.marginTop="16px";const p=document.createElement("p");const plain=(a.content||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();p.textContent=plain.slice(0,180)+(plain.length>180?"…":"");p.className="mt-8";const meta=document.createElement("small");meta.textContent=(a.author||"Nusa East")+" · "+new Date(a.created_at).toLocaleDateString("id-ID");card.append(h,p,meta);root.append(card);}}catch(e){root.textContent="Artikel belum dapat dimuat.";}})();
-</script></body></html>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Artikel — Nusa East</title>
+  <meta name="description" content="Informasi dan inspirasi untuk mengembangkan brand lokal bersama Nusa East.">
+
+  <link rel="icon" type="image/png" href="img/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <script defer src="js/icons.js"></script>
+</head>
+
+<body>
+
+  <!-- HEADER DARI LAYOUT.JS -->
+  <script src="js/data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/layout.js"></script>
+
+  <script>
+    renderHeader('articles');
+  </script>
+
+
+  <!-- ================= ARTIKEL ================= -->
+
+  <main class="section">
+    <div class="container">
+
+      <span class="eyebrow">Insight Nusa East</span>
+
+      <h1>Artikel & Inspirasi</h1>
+
+      <p class="mt-16">
+        Informasi dan inspirasi untuk mengembangkan brand lokal.
+      </p>
+
+      <div id="articleList" class="grid-3 mt-40">
+        Memuat artikel...
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- ================= FOOTER ================= -->
+
+  <script>
+    renderFooter();
+  </script>
+
+
+  <!-- ================= DATA ARTIKEL ================= -->
+
+  <script>
+    (async () => {
+
+      const root = document.getElementById("articleList");
+
+      try {
+
+        const response = await fetch(
+          "https://nusa-east-vsxf.vercel.app/api/content/public/articles"
+        );
+
+        if (!response.ok) {
+          throw new Error("Gagal mengambil artikel");
+        }
+
+        const data = await response.json();
+
+        root.textContent = "";
+
+        if (!data.length) {
+          root.textContent = "Belum ada artikel yang diterbitkan.";
+          return;
+        }
+
+        for (const article of data) {
+
+          const card = document.createElement("article");
+          card.className = "card";
+
+          // GAMBAR ARTIKEL
+          if (article.image) {
+
+            const img = document.createElement("img");
+
+            img.src = /^https?:\/\//i.test(article.image)
+              ? article.image
+              : "https://nusa-east-vsxf.vercel.app" + article.image;
+
+            img.alt = article.title || "Gambar artikel";
+
+            img.style =
+              "width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px";
+
+            card.append(img);
+          }
+
+          // JUDUL ARTIKEL
+          const heading = document.createElement("h2");
+
+          const link = document.createElement("a");
+
+          link.href =
+            "artikel-detail.html?slug=" +
+            encodeURIComponent(article.slug);
+
+          link.textContent = article.title;
+
+          heading.append(link);
+          heading.style.marginTop = "16px";
+
+          // RINGKASAN ARTIKEL
+          const paragraph = document.createElement("p");
+
+          const content = article.content || "";
+
+          paragraph.textContent =
+            content.slice(0, 180) +
+            (content.length > 180 ? "…" : "");
+
+          paragraph.className = "mt-8";
+
+          // INFORMASI PENULIS DAN TANGGAL
+          const meta = document.createElement("small");
+
+          const date = article.created_at
+            ? new Date(article.created_at).toLocaleDateString("id-ID")
+            : "";
+
+          meta.textContent =
+            (article.author || "Nusa East") +
+            (date ? " · " + date : "");
+
+          // MASUKKAN KE KARTU
+          card.append(heading, paragraph, meta);
+
+          root.append(card);
+        }
+
+      } catch (error) {
+
+        console.error("Gagal memuat artikel:", error);
+
+        root.textContent = "Artikel belum dapat dimuat.";
+
+      }
+
+    })();
+  </script>
+
+</body>
+</html>

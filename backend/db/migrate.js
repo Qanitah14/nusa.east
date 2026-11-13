@@ -11,7 +11,7 @@ const pool = require("./pool");
   client.on("notice", (n) => console.log(`[${n.severity}] ${n.message}`));
   try {
     await client.query("BEGIN");
-    for (const file of ["005_rbac_sessions_reset.sql", "006_auth_compatibility.sql", "007_cms_content.sql", "008_midtrans_cms_editor.sql"]) {
+    for (const file of ["005_rbac_sessions_reset.sql", "006_auth_compatibility.sql", "007_cms_content.sql"]) {
       const sql = fs.readFileSync(path.join(__dirname, "migrations", file), "utf8");
       await client.query(sql);
     }

@@ -16,6 +16,16 @@
 
 <body>
 
+    <!-- Header -->
+    <script src="js/data.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/layout.js"></script>
+
+    <script>
+        renderHeader('privacy');
+    </script>
+
+    <!-- Konten Kebijakan Privasi -->
     <main class="section">
 
         <div class="container" style="max-width: 900px">
@@ -39,19 +49,22 @@
             </h1>
 
             <!-- Gambar Kebijakan Privasi -->
-<div id="legalImageContainer" style="display:none; margin-top:24px;">
-    <img
-        id="legalImage"
-        src=""
-        alt="Gambar Kebijakan Privasi Nusa East"
-        style="
-            width:100%;
-            max-height:420px;
-            object-fit:cover;
-            border-radius:16px;
-        "
-    >
-</div>
+            <div
+                id="legalImageContainer"
+                style="display: none; margin-top: 24px;"
+            >
+                <img
+                    id="legalImage"
+                    src=""
+                    alt="Gambar Kebijakan Privasi Nusa East"
+                    style="
+                        width: 100%;
+                        max-height: 420px;
+                        object-fit: cover;
+                        border-radius: 16px;
+                    "
+                >
+            </div>
 
             <!-- Nama penulis -->
             <p
@@ -76,9 +89,13 @@
 
     </main>
 
-    <!-- Mengambil data dari API PostgreSQL -->
+    <!-- Footer -->
     <script>
+        renderFooter();
+    </script>
 
+    <!-- Mengambil data Kebijakan Privasi dari API -->
+    <script>
         (async () => {
 
             try {
@@ -100,19 +117,19 @@
                     document.getElementById("legalTitle").textContent =
                         d.title || "Kebijakan Privasi";
 
-                        // Menampilkan gambar Kebijakan Privasi
-const imageContainer = document.getElementById("legalImageContainer");
-const legalImage = document.getElementById("legalImage");
+                    // Menampilkan gambar Kebijakan Privasi
+                    const imageContainer = document.getElementById("legalImageContainer");
+                    const legalImage = document.getElementById("legalImage");
 
-if (d.image) {
-    legalImage.src = d.image.startsWith("http")
-        ? d.image
-        : "https://nusa-east-vsxf.vercel.app" + d.image;
+                    if (d.image) {
+                        legalImage.src = /^https?:\/\//i.test(d.image)
+                            ? d.image
+                            : "https://nusa-east-vsxf.vercel.app" + d.image;
 
-    imageContainer.style.display = "block";
-} else {
-    imageContainer.style.display = "none";
-}
+                        imageContainer.style.display = "block";
+                    } else {
+                        imageContainer.style.display = "none";
+                    }
 
                     // Menampilkan isi konten
                     document.getElementById("legalContent").textContent =
@@ -133,10 +150,7 @@ if (d.image) {
                                 : "-"
                         );
 
-                } 
-                
-                
-                else {
+                } else {
 
                     document.getElementById("legalContent").textContent =
                         "Konten belum tersedia.";
@@ -152,7 +166,6 @@ if (d.image) {
             }
 
         })();
-
     </script>
 
 </body>

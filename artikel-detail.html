@@ -7,12 +7,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Artikel — Nusa East</title>
+    <meta name="description" content="Baca artikel dan inspirasi dari Nusa East untuk mengembangkan brand lokal.">
 
-    <link rel="icon" href="img/logo.png">
+    <link rel="icon" type="image/png" href="img/logo.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="css/style.css">
+
+    <script defer src="js/icons.js"></script>
 </head>
 
 <body>
+
+    <!-- HEADER NUSA EAST -->
+    <script src="js/data.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/layout.js"></script>
+
+    <script>
+        renderHeader('articles');
+    </script>
+
+
+    <!-- ================= DETAIL ARTIKEL ================= -->
 
     <main class="section">
 
@@ -59,7 +80,16 @@
 
     </main>
 
-    <!-- Mengambil data artikel dari API -->
+
+    <!-- ================= FOOTER NUSA EAST ================= -->
+
+    <script>
+        renderFooter();
+    </script>
+
+
+    <!-- ================= MENGAMBIL DATA ARTIKEL ================= -->
+
     <script>
 
         (async () => {
@@ -78,56 +108,60 @@
             try {
 
                 // Mengambil data artikel berdasarkan slug
-                const r = await fetch(
+                const response = await fetch(
                     "https://nusa-east-vsxf.vercel.app/api/content/public/articles/"
                     + encodeURIComponent(slug)
                 );
 
-                if (!r.ok) {
+                if (!response.ok) {
                     throw new Error("Gagal mengambil artikel");
                 }
 
-                const a = await r.json();
+                const article = await response.json();
 
                 // Menampilkan judul artikel
-                document.title = a.title + " — Nusa East";
+                document.title = article.title + " — Nusa East";
 
                 document.getElementById("title").textContent =
-                    a.title;
+                    article.title;
 
                 // Menampilkan nama penulis dan tanggal publikasi
+                const author =
+                    article.author && article.author.trim()
+                        ? article.author
+                        : "Nusa East";
+
+                const date = article.created_at
+                    ? new Date(article.created_at).toLocaleDateString("id-ID")
+                    : "";
+
                 document.getElementById("meta").textContent =
-                    "Penulis: " +
-                    (
-                        a.author && a.author.trim()
-                            ? a.author
-                            : "Nusa East"
-                    ) +
-                    " · " +
-                    new Date(a.created_at).toLocaleDateString("id-ID");
+                    "Penulis: " + author + (date ? " · " + date : "");
 
                 // Menampilkan isi artikel
-                document.getElementById("content").innerHTML =
-                    a.content || "";
+                document.getElementById("content").textContent =
+                    article.content || "";
 
                 // Menampilkan gambar jika tersedia
-                if (a.image) {
+                if (article.image) {
 
-                    const im = document.getElementById("image");
+                    const image = document.getElementById("image");
 
-                    im.src = /^https?:\/\//i.test(a.image)
-                        ? a.image
-                        : "https://nusa-east-vsxf.vercel.app" + a.image;
+                    image.src = /^https?:\/\//i.test(article.image)
+                        ? article.image
+                        : "https://nusa-east-vsxf.vercel.app" + article.image;
 
-                    im.alt = a.title || "Gambar artikel Nusa East";
+                    image.alt =
+                        article.title || "Gambar artikel Nusa East";
 
-                    im.style.display = "block";
+                    image.style.display = "block";
 
                 }
 
-            } catch (e) {
+            } catch (error) {
 
-                // Menampilkan pesan jika artikel gagal dimuat
+                console.error("Gagal memuat artikel:", error);
+
                 document.getElementById("title").textContent =
                     "Artikel tidak ditemukan";
 

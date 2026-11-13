@@ -65,7 +65,7 @@ router.post("/", requireAuth, requireCustomer, async (req, res) => {
   let inTransaction = false;
   try {
     const { items, total, paymentMethod } = req.body || {};
-    const allowedMethods = ["va", "ewallet", "qris", "midtrans"];
+    const allowedMethods = ["va", "ewallet", "qris"];
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: "Keranjang kosong atau item pesanan tidak valid." });

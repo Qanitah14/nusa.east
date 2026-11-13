@@ -228,26 +228,3 @@ npm run migrate-avatars         # salin foto lama (BYTEA) ke file; tabel lama TI
 npm run migrate-avatars -- --drop-table   # hanya setelah verifikasi OK & file berada di penyimpanan persisten
 npm test                        # uji RBAC & validasi (database di-stub)
 ```
-
-## Midtrans Snap Production
-
-Checkout menggunakan Snap.js Production dan meminta Snap Token ke backend:
-
-- `GET /api/payment/config` hanya mengirim Client Key dan mode environment ke frontend.
-- `POST /api/payment/create` membuat transaksi berdasarkan order milik pengguna yang sedang login.
-- `POST /api/payment/notification` menerima notifikasi Midtrans dan memverifikasi status transaksi kembali melalui Midtrans sebelum mengubah status pesanan.
-
-Atur environment variables pada project backend Vercel:
-
-```env
-MIDTRANS_SERVER_KEY=Mid-server-... (Server Key Production, rahasia)
-MIDTRANS_CLIENT_KEY=Mid-client-... (Client Key Production)
-MIDTRANS_IS_PRODUCTION=true
-FRONTEND_URL=https://DOMAIN-FRONTEND-ANDA
-DATABASE_URL=postgresql://...
-JWT_SECRET=...
-```
-
-Jangan pernah menaruh `MIDTRANS_SERVER_KEY` di frontend atau repository. Setelah mengatur variables, redeploy backend. Atur Payment Notification URL di Midtrans Dashboard ke `https://nusa-east-vsxf.vercel.app/api/payment/notification` jika domain tersebut memang deployment backend aktif. Pastikan migrasi database `008_midtrans_cms_editor.sql` sudah dijalankan dan tabel `payments` memiliki unique index pada `order_id`.
-
-Frontend checkout akan memuat Snap.js dari `https://app.midtrans.com/snap/snap.js` pada mode Production, meminta order ke `/api/orders`, lalu Snap Token ke `/api/payment/create`. Pembayaran sukses/pending tetap menunggu notifikasi backend sebagai sumber status final.

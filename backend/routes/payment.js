@@ -5,18 +5,6 @@ const { requireAuth, requireRole, ROLES } = require("../middleware/auth");
 
 const router = express.Router();
 
-// GET /api/payment/config — hanya mengirim Client Key (bukan Server Key) ke browser.
-router.get("/config", (req, res) => {
-  const clientKey = process.env.MIDTRANS_CLIENT_KEY;
-  const production = process.env.MIDTRANS_IS_PRODUCTION === "true";
-  if (!clientKey) return res.status(503).json({ error: "Client Key Midtrans belum dikonfigurasi pada backend." });
-  if (production && !clientKey.startsWith("Mid-client-")) {
-    return res.status(503).json({ error: "MIDTRANS_CLIENT_KEY bukan Client Key Production yang valid." });
-  }
-  res.set("Cache-Control", "no-store");
-  res.json({ clientKey, isProduction: production });
-});
-
 // POST /api/payment/create — dipanggil dari halaman checkout untuk mendapatkan Snap Token.
 // Nominal & data pelanggan diambil dari database (bukan dari body) dan pesanan harus milik pemanggil.
 router.post("/create", requireAuth, requireRole(ROLES.USER), async (req, res) => {
@@ -36,8 +24,8 @@ router.post("/create", requireAuth, requireRole(ROLES.USER), async (req, res) =>
     });
     res.json(transaction); // { token, redirect_url }
   } catch (err) {
-    console.error("Midtrans create transaction:", err.message);
-    res.status(err.status || 500).json({ error: err.status ? err.message : "Gagal membuat transaksi pembayaran. Periksa konfigurasi Midtrans backend." });
+    console.error(err);
+    res.status(500).json({ error: "Gagal membuat transaksi pembayaran." });
   }
 });
 
@@ -47,8 +35,8 @@ router.post("/notification", async (req, res) => {
     const result = await handleNotification(req.body);
     res.json(result);
   } catch (err) {
-    console.error("Midtrans notification:", err.message);
-    res.status(err.status || 500).json({ error: "Gagal memproses notifikasi." });
+    console.error(err);
+    res.status(500).json({ error: "Gagal memproses notifikasi." });
   }
 });
 
