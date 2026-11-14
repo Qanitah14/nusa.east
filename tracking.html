@@ -1,11 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="id">
-<link rel="icon" type="image/png" href="img/logo.png">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>tracking — Nusa East</title>
-<meta name="description" content="Nusa East membantu brand handmade, fashion, dan produk lokal membangun media sosial, konten visual, dan toko digital yang lebih profesional.">
+<title>Tracking — Nusa East</title>
+<meta name="description" content="Pantau perkembangan project pesanan Nusa East.">
+<link rel="icon" type="image/png" href="img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
@@ -22,12 +23,19 @@
 
 <section class="section">
   <div class="container">
-    <div class="form-card mb-32" style="max-width:420px;">
+    <div class="form-card mb-32" style="max-width:520px;">
       <div class="form-group" style="margin-bottom:0;">
-        <label>Cari berdasarkan Nomor Order</label>
+        <label for="searchOrder">Cari berdasarkan Nomor Order</label>
         <div style="display:flex; gap:10px;">
-          <input type="text" class="form-control" id="searchOrder" placeholder="Contoh: NE-2026-0091">
-          <button class="btn btn-primary" onclick="loadOrder()">Cari</button>
+          <input
+            type="text"
+            class="form-control"
+            id="searchOrder"
+            placeholder="Contoh: NE-2026-8418"
+          >
+          <button class="btn btn-primary" id="searchButton" onclick="loadOrder()">
+            Cari
+          </button>
         </div>
       </div>
     </div>
@@ -38,131 +46,318 @@
 
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
-<script src="js/orders.js"></script>
+<script src="js/api.js"></script>
 <script src="js/layout.js"></script>
+
 <script>
-  renderHeader('tracking');
-  renderFooter();
+renderHeader("tracking");
+renderFooter();
 
-  const DEMO_MODE = new URLSearchParams(location.search).get("demo") === "1";
-  const resultBox = document.getElementById("trackingResult");
+const resultBox = document.getElementById("trackingResult");
+const searchInput = document.getElementById("searchOrder");
+const searchButton = document.getElementById("searchButton");
 
-  function fmtDate(iso) {
-    return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-  }
+const STATUS_STEPS = [
+  "Pesanan Dibuat",
+  "Pembayaran Berhasil",
+  "Brief Diisi",
+  "Brief & Bahan Lengkap",
+  "Project Dimulai",
+  "Produksi",
+  "Preview Dikirim",
+  "Revisi",
+  "Finalisasi",
+  "Project Selesai"
+];
 
-  function renderOrder(order) {
-    const currentStatus = STATUS_STEPS[order.statusIndex];
-    const isDone = order.statusIndex === STATUS_STEPS.length - 1;
+function formatDate(value) {
+  if (!value) return "Menunggu";
 
-    const timelineHTML = STATUS_STEPS.map((step, idx) => {
-      const logEntry = order.log.find(l => l.step === step);
-      let cls = "";
-      if (idx < order.statusIndex) cls = "done";
-      else if (idx === order.statusIndex) cls = "active";
-      return `
-        <div class="timeline-item ${cls}">
-          <div class="t-date">${logEntry ? fmtDate(logEntry.date) : "Menunggu"}</div>
-          <div class="t-title">${step}</div>
-        </div>
-      `;
-    }).join("");
+  const date = new Date(value);
 
-    resultBox.innerHTML = `
-      <div class="grid-2" style="align-items:start;">
-        <div class="card">
-          <div class="flex-between mb-24">
-            <div>
-              <span class="badge badge-gray">Order ${order.id}</span>
-              <p class="hint mt-8">Dipesan ${fmtDate(order.createdAt)}</p>
-            </div>
-            <span class="status-pill"><span class="dot"></span>${currentStatus}</span>
-          </div>
-          <div class="timeline">${timelineHTML}</div>
+  if (Number.isNaN(date.getTime())) return "Menunggu";
 
-          ${!isDone ? (DEMO_MODE ? `
-  <div class="card mt-24" style="background:var(--color-cream-card); border:none;">
-    <strong>Simulasi Admin (Demo)</strong>
-    <p class="hint mt-8">
-      Tombol ini mensimulasikan update status oleh tim Nusa East.
-      Pada penggunaan normal, status diperbarui oleh admin lewat panel admin.
-    </p>
-    <button class="btn btn-primary btn-sm mt-16"
-      onclick="simulateAdvance('${order.id}')">
-      Lanjutkan ke Tahap Berikutnya →
-    </button>
-  </div>
-` : ``) : `
-  <div class="card mt-24" style="background:#DCEAE0; border:none;">
-    <strong>🎉 Project Selesai!</strong>
-    <p class="mt-8">
-      Terima kasih sudah menggunakan layanan Nusa East.
-    </p>
-  </div>
-`}
-
-${currentStatus === "Preview Dikirim" || currentStatus === "Revisi" ? `
-  <a href="review.html?order=${encodeURIComponent(order.id)}"
-     class="btn btn-accent btn-block mt-16">
-    Lihat Preview & Ajukan Revisi
-  </a>
-` : ""}
-
-${currentStatus === "Finalisasi" ? `
-  <a href="finalize.html?order=${encodeURIComponent(order.id)}"
-     class="btn btn-accent btn-block mt-16">
-    Finalisasi Project
-  </a>
-` : ""}
-</div>
-
-<div class="card summary-box">
-  <h3 class="mb-16">Detail Pesanan</h3>
-  ${order.items.map(i => `
-    <div class="summary-row">
-      <span>${i.name}</span>
-      <span>${formatIDR(i.lineTotal)}</span>
-    </div>
-  `).join("")}
-  <div class="summary-row total">
-    <span>Total</span>
-    <span>${formatIDR(order.total)}</span>
-  </div>
-</div>
-</div>
-`;
+  return date.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
 }
 
-  function loadOrder() {
-    const id = document.getElementById("searchOrder").value.trim();
-    const order = getOrder(id);
-    if (!order) {
-      resultBox.innerHTML = `<div class="empty-state"><h3>Order tidak ditemukan</h3><p class="mt-8">Periksa kembali nomor order kamu.</p></div>`;
-      return;
-    }
-    history.replaceState(null, "", "tracking.html?order=" + order.id + (DEMO_MODE ? "&demo=1" : ""));
+function formatMoney(value) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0
+  }).format(Number(value) || 0);
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[char]);
+}
+
+function getStatusIndex(order) {
+  const status = order.status;
+
+  if (status === "Dibatalkan") return -1;
+
+  const index = STATUS_STEPS.indexOf(status);
+  if (index >= 0) return index;
+
+  if (order.payment_status === "paid") return 1;
+
+  return 0;
+}
+
+function renderOrder(order) {
+  const statusIndex = getStatusIndex(order);
+  const isCancelled = order.status === "Dibatalkan";
+  const isDone = statusIndex === STATUS_STEPS.length - 1;
+
+  const logs = Array.isArray(order.log) ? order.log : [];
+  const items = Array.isArray(order.items) ? order.items : [];
+
+  const timelineHTML = STATUS_STEPS.map((step, index) => {
+    const logEntry = logs.find(log => log.step === step);
+
+    let className = "";
+
+    if (!isCancelled && index < statusIndex) className = "done";
+    else if (!isCancelled && index === statusIndex) className = "active";
+
+    return `
+      <div class="timeline-item ${className}">
+        <div class="t-date">
+          ${logEntry ? formatDate(logEntry.created_at || logEntry.createdAt) : "Menunggu"}
+        </div>
+        <div class="t-title">${escapeHTML(step)}</div>
+      </div>
+    `;
+  }).join("");
+
+  const itemHTML = items.map(item => `
+    <div class="summary-row">
+      <span>${escapeHTML(item.name)}</span>
+      <span>${formatMoney(item.line_total ?? item.lineTotal)}</span>
+    </div>
+  `).join("");
+
+  let extraHTML = "";
+
+  if (isCancelled) {
+    extraHTML = `
+      <div class="card mt-24" style="background:#F8E1DF;border:none;">
+        <strong>Pesanan Dibatalkan</strong>
+        <p class="mt-8">Pesanan ini telah dibatalkan.</p>
+      </div>
+    `;
+  } else if (isDone) {
+    extraHTML = `
+      <div class="card mt-24" style="background:#DCEAE0;border:none;">
+        <strong>🎉 Project Selesai!</strong>
+        <p class="mt-8">Terima kasih sudah menggunakan layanan Nusa East.</p>
+      </div>
+    `;
+  } else if (order.payment_status !== "paid") {
+    extraHTML = `
+      <div class="card mt-24" style="background:var(--color-cream-card);border:none;">
+        <strong>Pembayaran Belum Terverifikasi</strong>
+        <p class="hint mt-8">
+          Tracking project akan berjalan setelah pembayaran berhasil diverifikasi.
+        </p>
+      </div>
+    `;
+  }
+
+  if (
+    !isCancelled &&
+    (order.status === "Preview Dikirim" || order.status === "Revisi")
+  ) {
+    extraHTML += `
+      <a href="review.html?order=${encodeURIComponent(order.id)}"
+         class="btn btn-accent btn-block mt-16">
+        Lihat Preview & Ajukan Revisi
+      </a>
+    `;
+  }
+
+  if (!isCancelled && order.status === "Finalisasi") {
+    extraHTML += `
+      <a href="finalize.html?order=${encodeURIComponent(order.id)}"
+         class="btn btn-accent btn-block mt-16">
+        Finalisasi Project
+      </a>
+    `;
+  }
+
+  const currentStatus = isCancelled
+    ? "Dibatalkan"
+    : (order.status || "Pesanan Dibuat");
+
+  resultBox.innerHTML = `
+    <div class="grid-2" style="align-items:start;">
+      <div class="card">
+        <div class="flex-between mb-24">
+          <div>
+            <span class="badge badge-gray">
+              Order ${escapeHTML(order.id)}
+            </span>
+            <p class="hint mt-8">
+              Dipesan ${formatDate(order.created_at)}
+            </p>
+          </div>
+          <span class="status-pill">
+            <span class="dot"></span>
+            ${escapeHTML(currentStatus)}
+          </span>
+        </div>
+
+        <div class="timeline">
+          ${timelineHTML}
+        </div>
+
+        ${extraHTML}
+      </div>
+
+      <div class="card summary-box">
+        <h3 class="mb-16">Detail Pesanan</h3>
+        ${itemHTML}
+        <div class="summary-row total">
+          <span>Total</span>
+          <span>${formatMoney(order.total)}</span>
+        </div>
+        <div class="summary-row">
+          <span>Status Pembayaran</span>
+          <strong>${escapeHTML(order.payment_status || "pending")}</strong>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function loadOrder() {
+  const id = searchInput.value.trim();
+
+  if (!id) {
+    resultBox.innerHTML = `
+      <div class="empty-state">
+        <h3>Nomor order belum diisi</h3>
+        <p class="mt-8">Masukkan nomor order terlebih dahulu.</p>
+      </div>
+    `;
+    return;
+  }
+
+  if (!getAuthToken()) {
+    resultBox.innerHTML = `
+      <div class="empty-state">
+        <h3>Silakan login terlebih dahulu</h3>
+        <p class="mt-8">
+          Login menggunakan akun pelanggan yang digunakan saat melakukan pemesanan.
+        </p>
+        <a href="login.html" class="btn btn-primary mt-24">
+          Login Pelanggan
+        </a>
+      </div>
+    `;
+    return;
+  }
+
+  searchButton.disabled = true;
+  searchButton.textContent = "Memuat...";
+  resultBox.innerHTML = `
+    <div class="empty-state">
+      <p>Memuat data pesanan...</p>
+    </div>
+  `;
+
+  try {
+    const order = await apiFetch(
+      `/orders/${encodeURIComponent(id)}`
+    );
+
+    history.replaceState(
+      null,
+      "",
+      "tracking.html?order=" + encodeURIComponent(order.id)
+    );
+
     renderOrder(order);
-  }
 
-  window.simulateAdvance = function(id) {
-    advanceOrder(id);
-    renderOrder(getOrder(id));
-  };
+  } catch (error) {
+    console.error("Tracking error:", error);
 
-  const params = new URLSearchParams(location.search);
-  const preId = params.get("order");
-  if (preId) {
-    document.getElementById("searchOrder").value = preId;
-    loadOrder();
-  } else {
-    const orders = getOrders();
-    if (orders.length > 0) {
-      document.getElementById("searchOrder").value = orders[orders.length - 1].id;
-      loadOrder();
-    } else {
-      resultBox.innerHTML = `<div class="empty-state"><h3>Belum ada project</h3><p class="mt-8">Pesan paket terlebih dahulu untuk melihat tracking di sini.</p><a href="packages.html" class="btn btn-primary mt-24">Lihat Paket</a></div>`;
-    }
+    const message = error.message.includes("tidak ditemukan")
+      ? "Nomor order tidak ditemukan atau bukan milik akun ini."
+      : error.message;
+
+    resultBox.innerHTML = `
+      <div class="empty-state">
+        <h3>Pesanan tidak dapat ditampilkan</h3>
+        <p class="mt-8">${escapeHTML(message)}</p>
+      </div>
+    `;
+
+  } finally {
+    searchButton.disabled = false;
+    searchButton.textContent = "Cari";
   }
+}
+
+searchInput.addEventListener("keydown", event => {
+  if (event.key === "Enter") loadOrder();
+});
+
+const params = new URLSearchParams(location.search);
+const orderId = params.get("order");
+
+if (orderId) {
+  searchInput.value = orderId;
+  loadOrder();
+} else if (getAuthToken()) {
+  apiFetch("/orders/mine")
+    .then(orders => {
+      if (orders.length > 0) {
+        searchInput.value = orders[0].id;
+        loadOrder();
+      } else {
+        resultBox.innerHTML = `
+          <div class="empty-state">
+            <h3>Belum ada project</h3>
+            <p class="mt-8">Pesan paket terlebih dahulu untuk melihat tracking.</p>
+            <a href="packages.html" class="btn btn-primary mt-24">
+              Lihat Paket
+            </a>
+          </div>
+        `;
+      }
+    })
+    .catch(error => {
+      resultBox.innerHTML = `
+        <div class="empty-state">
+          <h3>Gagal mengambil pesanan</h3>
+          <p class="mt-8">${escapeHTML(error.message)}</p>
+        </div>
+      `;
+    });
+} else {
+  resultBox.innerHTML = `
+    <div class="empty-state">
+      <h3>Silakan login terlebih dahulu</h3>
+      <p class="mt-8">Login untuk melihat daftar pesanan kamu.</p>
+      <a href="login.html" class="btn btn-primary mt-24">
+        Login Pelanggan
+      </a>
+    </div>
+  `;
+}
 </script>
+
 </body>
 </html>
