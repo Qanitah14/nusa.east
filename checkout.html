@@ -394,156 +394,120 @@
 
 
                     // Membuka halaman pembayaran Midtrans
-                    window.snap.pay(transaction.token, {
+                    
+window.snap.pay(transaction.token, {
+
+    // PEMBAYARAN BERHASIL
+    onSuccess: function (result) {
+
+        const now = new Date().toISOString();
+
+        const localOrders = getOrders().filter(
+            order => order.id !== orderId
+        );
+
+        localOrders.push({
+            id: orderId,
+            items: breakdown.map(item => ({
+                ...item,
+                lineTotal: Number(item.lineTotal)
+            })),
+            total: Number(total),
+            paymentMethod: "va",
+            paymentStatus: "paid",
+            createdAt: now,
+            statusIndex: 0,
+            revisionsUsed: 0,
+            log: [{
+                step: "Pembayaran Berhasil",
+                date: now
+            }],
+            brief: null,
+            midtransResult: result
+        });
+
+        saveOrders(localOrders);
+
+        removeCartItems(
+            checkoutItems.map(item => item.id)
+        );
+
+        // Hanya pembayaran berhasil yang masuk konfirmasi
+        location.href =
+            "confirmation.html?order=" +
+            encodeURIComponent(orderId);
+    },
 
 
-                        // Jika pembayaran berhasil
-                        onSuccess: function (result) {
+    // PEMBAYARAN MASIH MENUNGGU
+    onPending: function (result) {
 
-                            const now = new Date().toISOString();
+        const now = new Date().toISOString();
 
-                            const localOrders = getOrders().filter(
-                                order => order.id !== orderId
-                            );
+        const localOrders = getOrders().filter(
+            order => order.id !== orderId
+        );
 
-                            localOrders.push({
+        localOrders.push({
+            id: orderId,
+            items: breakdown.map(item => ({
+                ...item,
+                lineTotal: Number(item.lineTotal)
+            })),
+            total: Number(total),
+            paymentMethod: "va",
+            paymentStatus: "pending",
+            createdAt: now,
+            statusIndex: 0,
+            revisionsUsed: 0,
+            log: [{
+                step: "Menunggu Pembayaran",
+                date: now
+            }],
+            brief: null,
+            midtransResult: result
+        });
 
-                                id: orderId,
+        saveOrders(localOrders);
 
-                                items: breakdown.map(item => ({
-                                    ...item,
-                                    lineTotal: Number(item.lineTotal)
-                                })),
+        removeCartItems(
+            checkoutItems.map(item => item.id)
+        );
 
-                                total: Number(total),
-
-                                paymentMethod: "va",
-
-                                paymentStatus: "pending",
-
-                                createdAt: now,
-
-                                statusIndex: 0,
-
-                                revisionsUsed: 0,
-
-                                log: [
-                                    {
-                                        step: "Pesanan Dibuat",
-                                        date: now
-                                    }
-                                ],
-
-                                brief: null,
-
-                                midtransResult: result
-
-                            });
+        // Arahkan ke halaman menunggu pembayaran
+        location.href =
+            "waiting-payment.html?order=" +
+            encodeURIComponent(orderId);
+    },
 
 
-                            saveOrders(localOrders);
+    // PEMBAYARAN ERROR
+    onError: function (result) {
 
-                            removeCartItems(
-                                checkoutItems.map(item => item.id)
-                            );
+        console.error("Midtrans error:", result);
 
-                            location.href =
-                                "confirmation.html?order=" +
-                                encodeURIComponent(orderId);
+        alert(
+            "Pembayaran gagal diproses. Silakan coba kembali."
+        );
 
-                        },
-
-
-                        // Jika pembayaran masih menunggu
-                        onPending: function (result) {
-
-                            const now = new Date().toISOString();
-
-                            const localOrders = getOrders().filter(
-                                order => order.id !== orderId
-                            );
-
-                            localOrders.push({
-
-                                id: orderId,
-
-                                items: breakdown.map(item => ({
-                                    ...item,
-                                    lineTotal: Number(item.lineTotal)
-                                })),
-
-                                total: Number(total),
-
-                                paymentMethod: "va",
-
-                                paymentStatus: "pending",
-
-                                createdAt: now,
-
-                                statusIndex: 0,
-
-                                revisionsUsed: 0,
-
-                                log: [
-                                    {
-                                        step: "Pesanan Dibuat",
-                                        date: now
-                                    }
-                                ],
-
-                                brief: null,
-
-                                midtransResult: result
-
-                            });
+        payButton.disabled = false;
+        payButton.textContent = "Bayar Sekarang";
+    },
 
 
-                            saveOrders(localOrders);
+    // PELANGGAN MENEKAN TOMBOL X
+    onClose: function () {
 
-                            removeCartItems(
-                                checkoutItems.map(item => item.id)
-                            );
+        payButton.disabled = false;
+        payButton.textContent = "Bayar Sekarang";
 
-                            location.href =
-                                "confirmation.html?order=" +
-                                encodeURIComponent(orderId);
+        alert(
+            "Pembayaran belum diselesaikan. Silakan lanjutkan jika sudah siap."
+        );
+    }
 
-                        },
+});
 
-
-                        // Jika terjadi kesalahan pembayaran
-                       
-                        // Jika terjadi kesalahan pembayaran
-                        onError: function (result) {
-
-                            console.error(
-                                "Midtrans payment error:",
-                                result
-                            );
-
-                            alert(
-                                "Pembayaran belum berhasil diproses. Silakan coba kembali."
-                            );
-
-                            payButton.disabled = false;
-                            payButton.textContent = "Bayar Sekarang";
-
-                        },
-
-
-                        // Jika pelanggan menekan tombol X
-                        onClose: function () {
-
-                            payButton.disabled = false;
-                            payButton.textContent = "Bayar Sekarang";
-
-                            alert(
-                                "Pembayaran belum diselesaikan. Silakan lanjutkan pembayaran jika sudah siap."
-                            );
-
-                        }
-
-                    });
 
 
                 } catch (error) {

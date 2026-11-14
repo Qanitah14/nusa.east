@@ -1,0 +1,189 @@
+
+/* =========================================
+   WAITING PAYMENT PAGE
+   NUSA EAST
+========================================= */
+
+.waiting-section {
+    padding-top: 64px;
+    padding-bottom: 80px;
+}
+
+.waiting-container {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+
+/* Kartu Utama */
+
+.waiting-card {
+    background: #ffffff;
+    border: 1px solid #e8d9c8;
+    border-radius: 18px;
+    padding: 40px;
+    text-align: center;
+}
+
+
+/* Ikon Menunggu Pembayaran */
+
+.waiting-icon {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 22px;
+
+    border-radius: 50%;
+
+    background: #fff3df;
+    color: #bd8540;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 32px;
+}
+
+
+/* Judul */
+
+.waiting-card h1 {
+    color: #174b3a;
+    margin-bottom: 12px;
+}
+
+
+/* Deskripsi */
+
+.waiting-description {
+    color: #536273;
+    line-height: 1.8;
+    max-width: 540px;
+    margin: 0 auto;
+}
+
+
+/* Informasi Pesanan */
+
+.waiting-info {
+    background: #faf6f0;
+    border: 1px solid #e8d9c8;
+    border-radius: 12px;
+
+    padding: 20px;
+    margin-top: 28px;
+
+    text-align: left;
+}
+
+
+/* Baris Informasi */
+
+.waiting-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+    margin-bottom: 14px;
+
+    color: #536273;
+    font-size: 0.95rem;
+}
+
+.waiting-info-row:last-child {
+    margin-bottom: 0;
+}
+
+
+/* Nilai Informasi */
+
+.waiting-info-row strong {
+    color: #174b3a;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+
+/* Status Pembayaran */
+
+.waiting-status {
+    color: #bd8540 !important;
+}
+
+
+/* Kotak Perhatian */
+
+.waiting-note {
+    margin-top: 24px;
+    padding: 16px;
+
+    background: #fff8e9;
+    border-radius: 10px;
+
+    color: #795b2c;
+    text-align: left;
+
+    line-height: 1.7;
+    font-size: 0.92rem;
+}
+
+.waiting-note strong {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.waiting-note-spacing {
+    margin-top: 8px;
+}
+
+
+/* Tombol Kembali */
+
+.waiting-home-button {
+    margin-top: 24px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+    .waiting-section {
+        padding-top: 40px;
+        padding-bottom: 56px;
+    }
+
+    .waiting-card {
+        padding: 30px 22px;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .waiting-card {
+        padding: 24px 18px;
+    }
+
+    .waiting-icon {
+        width: 66px;
+        height: 66px;
+        font-size: 28px;
+    }
+
+    .waiting-info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .waiting-info-row strong {
+        text-align: left;
+    }
+
+}

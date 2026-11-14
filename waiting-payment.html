@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Menunggu Pembayaran — Nusa East</title>
+
+    <link rel="icon" href="img/logo.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/waiting-payment.css">
+
+    <script defer src="js/icons.js"></script>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <script src="js/data.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/layout.js"></script>
+
+    <script>
+        renderHeader();
+    </script>
+
+
+    <!-- Halaman Menunggu Pembayaran -->
+    <main class="section waiting-section">
+
+        <div class="container waiting-container">
+
+            <div class="waiting-card">
+
+                <!-- Ikon Status -->
+                <div class="waiting-icon">
+                    <i class="fa-regular fa-clock"></i>
+                </div>
+
+                <span class="eyebrow">
+                    STATUS PEMBAYARAN
+                </span>
+
+                <h1>Menunggu Pembayaran</h1>
+
+                <p class="waiting-description">
+                    Pesananmu sudah dibuat, tetapi pembayaran
+                    belum dikonfirmasi. Silakan selesaikan
+                    pembayaran melalui Virtual Account yang
+                    diberikan oleh Midtrans.
+                </p>
+
+
+                <!-- Informasi Pesanan -->
+                <div class="waiting-info">
+
+                    <div class="waiting-info-row">
+                        <span>Nomor Pesanan</span>
+                        <strong id="orderId">-</strong>
+                    </div>
+
+                    <div class="waiting-info-row">
+                        <span>Total Pembayaran</span>
+                        <strong id="orderTotal">-</strong>
+                    </div>
+
+                    <div class="waiting-info-row">
+                        <span>Status</span>
+                        <strong
+                            id="paymentStatus"
+                            class="waiting-status"
+                        >
+                            Menunggu Pembayaran
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <!-- Informasi Tambahan -->
+                <div class="waiting-note">
+
+                    <strong>Perhatian:</strong>
+
+                    <p>
+                        Kamu belum dapat melanjutkan ke pengisian
+                        brief project sebelum pembayaran berhasil
+                        diverifikasi oleh sistem Nusa East.
+                    </p>
+
+                    <p class="waiting-note-spacing">
+                        Simpan nomor pesanan dan bukti pembayaran
+                        sebagai referensi.
+                    </p>
+
+                </div>
+
+
+                <!-- Tombol Kembali -->
+                <a
+                    href="index.html"
+                    class="btn btn-primary btn-block waiting-home-button"
+                >
+                    Kembali ke Beranda
+                </a>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- Footer -->
+    <script>
+        renderFooter();
+    </script>
+
+
+    <!-- Mengambil Informasi Pesanan -->
+    <script>
+
+        const params = new URLSearchParams(location.search);
+
+        const orderId = params.get("order");
+
+        const orderIdElement =
+            document.getElementById("orderId");
+
+        const orderTotalElement =
+            document.getElementById("orderTotal");
+
+        const paymentStatusElement =
+            document.getElementById("paymentStatus");
+
+
+        // Menampilkan nomor pesanan
+        orderIdElement.textContent = orderId || "-";
+
+
+        // Mengambil data pesanan lokal
+        if (orderId && typeof getOrders === "function") {
+
+            const orders = getOrders();
+
+            const order = orders.find(
+                item => String(item.id) === String(orderId)
+            );
+
+            if (order) {
+
+                // Menampilkan total pembayaran
+                orderTotalElement.textContent =
+                    typeof formatIDR === "function"
+                        ? formatIDR(order.total)
+                        : "Rp" + Number(order.total).toLocaleString("id-ID");
+
+
+                // Menampilkan status
+                paymentStatusElement.textContent =
+                    "Menunggu Pembayaran";
+
+            } else {
+
+                orderTotalElement.textContent =
+                    "Data pesanan tidak ditemukan";
+
+            }
+
+        } else {
+
+            orderTotalElement.textContent =
+                "Data pesanan tidak ditemukan";
+
+        }
+
+    </script>
+
+</body>
+</html>
