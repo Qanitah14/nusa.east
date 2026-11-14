@@ -60,7 +60,7 @@
           <a class="single-product-title" href="single-detail.html?id=${encodeURIComponent(item.id)}">${esc(item.name)}</a>
           <p class="single-product-unit">${esc(item.unit || "Layanan satuan")}</p>
           <div class="single-product-rating"><span aria-label="Rating ${rating.toFixed(1)} dari 5">${rating ? "★".repeat(Math.round(rating))+"☆".repeat(5-Math.round(rating)) : "☆☆☆☆☆"}</span><small>${rating ? rating.toFixed(1) : "Belum ada rating"}${count ? ` · ${count} ulasan` : ""}</small></div>
-          <div class="single-product-bottom"><strong>${formatIDR(item.price)}</strong><button class="btn btn-primary btn-sm" data-add="${esc(item.id)}">+ Keranjang</button></div>
+          <div class="single-product-bottom"><strong>${formatIDR(item.price)}</strong><button class="btn btn-primary-cari btn-sm" data-add="${esc(item.id)}">+ Keranjang</button></div>
           <a class="single-product-detail-link" href="single-detail.html?id=${encodeURIComponent(item.id)}">Lihat detail produk <span aria-hidden="true">→</span></a>
         </div>
       </article>`;
