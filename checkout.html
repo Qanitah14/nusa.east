@@ -1,538 +1,211 @@
-
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Pembayaran Pesanan — Nusa East</title>
-
-    <meta
-        name="description"
-        content="Selesaikan pembayaran pesanan layanan Nusa East dengan aman melalui Midtrans."
-    >
-
-    <link rel="icon" type="image/png" href="img/logo.png">
-
+    <link rel="icon" href="img/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-    >
-
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-
+    <link rel="stylesheet" href="css/checkout-payment.css">
     <script defer src="js/icons.js"></script>
 </head>
-
 <body>
-
-    <!-- Header -->
     <script src="js/data.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/api.js"></script>
     <script src="js/orders.js"></script>
     <script src="js/layout.js"></script>
+    <script>renderHeader('services');</script>
 
-    <script>
-        renderHeader('services');
-    </script>
-
-
-    <!-- Hero Pembayaran -->
-    <section class="page-hero checkout-hero">
-        <div class="container">
-
-            <div class="checkout-hero-content">
-
-                <div class="checkout-hero-title">
-                    <span class="eyebrow">LANGKAH 2</span>
-                    <h1>Pembayaran Pesanan</h1>
-                </div>
-
-                <p>
-                    Selesaikan pembayaran pesananmu dengan aman melalui
-                    Midtrans. Pilih metode pembayaran yang tersedia dan
-                    periksa kembali total biaya sebelum melanjutkan.
-                </p>
-
+    <main class="checkout-page">
+        <div class="container checkout-container">
+            <div class="checkout-heading">
+                <span class="eyebrow">LANGKAH 2</span>
+                <h1>Selesaikan Pembayaran</h1>
+                <p>Periksa pesananmu sebelum melanjutkan.</p>
             </div>
 
+            <div id="checkoutLayout" class="checkout-layout">
+                <div class="checkout-loading">Memuat ringkasan pesanan...</div>
+            </div>
         </div>
-    </section>
+    </main>
 
+    <script>renderFooter();</script>
 
-    <!-- Konten Checkout -->
-    <section class="section">
-        <div class="container">
-
-            <div class="cart-layout" id="checkoutLayout"></div>
-
-        </div>
-    </section>
-
-
-    <!-- Footer -->
     <script>
-        renderFooter();
-    </script>
-
-
-    <!-- Logika Checkout dan Midtrans -->
-    <script>
-        const checkoutItems = getSelectedCart();
-
-        const {
-            cart,
-            breakdown,
-            base,
-            percentExtra,
-            total
-        } = calculateCartTotals(checkoutItems);
-
+    (async function () {
         const layout = document.getElementById("checkoutLayout");
+        const checkoutItems = getSelectedCart();
+        const { cart, breakdown, base, percentExtra, total } =
+            calculateCartTotals(checkoutItems);
 
-
-        // Jika keranjang kosong
-        if (cart.length === 0) {
-
+        if (!cart.length) {
             layout.innerHTML = `
-                <div class="empty-state" style="grid-column:1/-1;">
-
-                    <h3>Keranjang kosong</h3>
-
-                    <p class="mt-8">
-                        Tidak ada item yang dapat dibayar.
-                    </p>
-
-                    <a
-                        href="packages.html"
-                        class="btn btn-primary mt-24"
-                    >
-                        Lihat Paket
-                    </a>
-
-                </div>
-            `;
-
-        } else {
-
-            // Tampilan halaman pembayaran
-            layout.innerHTML = `
-
-                <div>
-
-                    <!-- Metode Pembayaran -->
-                    <div class="card mb-24">
-
-                        <h3 class="mb-16">
-                            Metode Pembayaran
-                        </h3>
-
-                        <div class="payment-methods">
-
-                            <div class="payment-method selected">
-
-                                <i
-                                    class="fa-solid fa-building-columns"
-                                    aria-hidden="true"
-                                ></i>
-
-                                <span>
-                                    Virtual Account
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                        <p class="hint mt-16">
-                            Pembayaran diproses secara aman melalui
-                            sistem pembayaran Midtrans.
-                        </p>
-
-                    </div>
-
-
-                    <!-- Informasi Pembayaran -->
-                    <div class="card" id="paymentDetail">
-
-                        <h3 class="mb-16">
-                            Pembayaran Virtual Account
-                        </h3>
-
-                        <p class="hint">
-                            Setelah menekan tombol Bayar Sekarang,
-                            kamu akan diarahkan ke halaman pembayaran
-                            resmi Midtrans.
-                        </p>
-
-                        <p class="hint mt-16">
-                            Pilihan bank dan nomor Virtual Account
-                            akan ditampilkan sesuai kanal pembayaran
-                            yang tersedia pada akun Midtrans Nusa East.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Ringkasan Pembayaran -->
-                <div class="card summary-box">
-
-                    <h3 class="mb-16">
-                        Ringkasan Pembayaran
-                    </h3>
-
-                    <div class="summary-row">
-                        <span>Subtotal</span>
-                        <span>${formatIDR(base)}</span>
-                    </div>
-
-                    ${
-                        percentExtra > 0
-                            ? `
-                                <div class="summary-row">
-                                    <span>Express/Priority</span>
-                                    <span>${formatIDR(percentExtra)}</span>
-                                </div>
-                            `
-                            : ""
-                    }
-
-                    <div class="summary-row total">
-                        <span>Total Bayar</span>
-                        <span>${formatIDR(total)}</span>
-                    </div>
-
-                    <button
-                        class="btn btn-primary btn-block mt-24"
-                        id="payBtn"
-                    >
-                        Bayar Sekarang
-                    </button>
-
-                    <p class="hint mt-16">
-                        Dengan menekan tombol Bayar Sekarang,
-                        pesanan akan dibuat dan kamu akan melanjutkan
-                        ke proses pembayaran Midtrans.
-                    </p>
-
-                </div>
-
-            `;
-
-
-            // Memuat Midtrans Snap.js
-            function loadMidtransSnap(clientKey, isProduction) {
-
-                return new Promise((resolve, reject) => {
-
-                    if (window.snap) {
-                        resolve();
-                        return;
-                    }
-
-                    const script = document.createElement("script");
-
-                    script.src = isProduction
-                        ? "https://app.midtrans.com/snap/snap.js"
-                        : "https://app.sandbox.midtrans.com/snap/snap.js";
-
-                    script.setAttribute(
-                        "data-client-key",
-                        clientKey
-                    );
-
-                    script.onload = resolve;
-
-                    script.onerror = () => {
-                        reject(
-                            new Error(
-                                "Gagal memuat layanan pembayaran Midtrans. Periksa koneksi internet atau konfigurasi Midtrans."
-                            )
-                        );
-                    };
-
-                    document.head.appendChild(script);
-
-                });
-
-            }
-
-
-            // Tombol pembayaran
-            const payButton = document.getElementById("payBtn");
-
-
-            payButton.addEventListener("click", async () => {
-
-                // Memeriksa item checkout
-                if (!checkoutItems.length) {
-
-                    alert(
-                        "Pilih item yang ingin dibayar dari keranjang."
-                    );
-
-                    location.href = "cart.html";
-                    return;
-
-                }
-
-
-                // Memeriksa login pelanggan
-                if (!localStorage.getItem("nusaeast_token")) {
-
-                    alert(
-                        "Silakan login terlebih dahulu sebelum membuat pesanan."
-                    );
-
-                    location.href = "login.html";
-                    return;
-
-                }
-
-
-                payButton.disabled = true;
-                payButton.textContent = "Menghubungkan ke Midtrans...";
-
-
-                try {
-
-                    // Mengambil konfigurasi Midtrans
-                    const config = await apiFetch("/payment/config");
-
-                    if (!config.clientKey) {
-
-                        throw new Error(
-                            "Client Key Midtrans belum dikonfigurasi pada backend Vercel."
-                        );
-
-                    }
-
-
-                    // Memuat Midtrans Snap
-                    await loadMidtransSnap(
-                        config.clientKey,
-                        config.isProduction === true
-                    );
-
-
-                    // Membuat pesanan di database
-                    const payload = {
-
-                        items: breakdown.map(item => ({
-
-                            id: String(item.id),
-
-                            type: String(item.type || ""),
-
-                            name: String(item.name || ""),
-
-                            price: Number(item.price),
-
-                            qty: Number(item.qty || 1),
-
-                            lineTotal: Number(item.lineTotal)
-
-                        })),
-
-                        total: Number(total),
-
-                        paymentMethod: "va"
-
-                    };
-
-
-                    const orderResult = await apiFetch("/orders", {
-
-                        method: "POST",
-
-                        body: JSON.stringify(payload)
-
-                    });
-
-
-                    const orderId =
-                        orderResult.orderId || orderResult.id;
-
-
-                    if (!orderId) {
-
-                        throw new Error(
-                            "Backend tidak mengembalikan nomor pesanan."
-                        );
-
-                    }
-
-
-                    payButton.textContent = "Membuka pembayaran...";
-
-
-                    // Meminta token transaksi Midtrans
-                    const transaction = await apiFetch(
-                        "/payment/create",
-                        {
-                            method: "POST",
-
-                            body: JSON.stringify({
-                                orderId
-                            })
-                        }
-                    );
-
-
-                    if (!transaction.token) {
-
-                        throw new Error(
-                            "Midtrans tidak mengembalikan token pembayaran."
-                        );
-
-                    }
-
-
-                    // Membuka halaman pembayaran Midtrans
-                    
-window.snap.pay(transaction.token, {
-
-    // PEMBAYARAN BERHASIL
-    onSuccess: function (result) {
-
-        const now = new Date().toISOString();
-
-        const localOrders = getOrders().filter(
-            order => order.id !== orderId
-        );
-
-        localOrders.push({
-            id: orderId,
-            items: breakdown.map(item => ({
-                ...item,
-                lineTotal: Number(item.lineTotal)
-            })),
-            total: Number(total),
-            paymentMethod: "va",
-            paymentStatus: "paid",
-            createdAt: now,
-            statusIndex: 0,
-            revisionsUsed: 0,
-            log: [{
-                step: "Pembayaran Berhasil",
-                date: now
-            }],
-            brief: null,
-            midtransResult: result
-        });
-
-        saveOrders(localOrders);
-
-        removeCartItems(
-            checkoutItems.map(item => item.id)
-        );
-
-        // Hanya pembayaran berhasil yang masuk konfirmasi
-        location.href =
-            "confirmation.html?order=" +
-            encodeURIComponent(orderId);
-    },
-
-
-    // PEMBAYARAN MASIH MENUNGGU
-    onPending: function (result) {
-
-        const now = new Date().toISOString();
-
-        const localOrders = getOrders().filter(
-            order => order.id !== orderId
-        );
-
-        localOrders.push({
-            id: orderId,
-            items: breakdown.map(item => ({
-                ...item,
-                lineTotal: Number(item.lineTotal)
-            })),
-            total: Number(total),
-            paymentMethod: "va",
-            paymentStatus: "pending",
-            createdAt: now,
-            statusIndex: 0,
-            revisionsUsed: 0,
-            log: [{
-                step: "Menunggu Pembayaran",
-                date: now
-            }],
-            brief: null,
-            midtransResult: result
-        });
-
-        saveOrders(localOrders);
-
-        removeCartItems(
-            checkoutItems.map(item => item.id)
-        );
-
-        // Arahkan ke halaman menunggu pembayaran
-        location.href =
-            "waiting-payment.html?order=" +
-            encodeURIComponent(orderId);
-    },
-
-
-    // PEMBAYARAN ERROR
-    onError: function (result) {
-
-        console.error("Midtrans error:", result);
-
-        alert(
-            "Pembayaran gagal diproses. Silakan coba kembali."
-        );
-
-        payButton.disabled = false;
-        payButton.textContent = "Bayar Sekarang";
-    },
-
-
-    // PELANGGAN MENEKAN TOMBOL X
-    onClose: function () {
-
-        payButton.disabled = false;
-        payButton.textContent = "Bayar Sekarang";
-
-        alert(
-            "Pembayaran belum diselesaikan. Silakan lanjutkan jika sudah siap."
-        );
-    }
-
-});
-
-
-
-                } catch (error) {
-
-                    console.error(
-                        "Gagal menghubungkan Midtrans:",
-                        error
-                    );
-
-                    alert(
-                        error.message ||
-                        "Gagal menghubungkan pembayaran. Silakan coba kembali."
-                    );
-
-                    payButton.disabled = false;
-
-                    payButton.textContent = "Bayar Sekarang";
-
-                }
-
-            });
-
+                <section class="checkout-card checkout-empty">
+                    <h2>Keranjang kosong</h2>
+                    <p>Pilih layanan terlebih dahulu sebelum checkout.</p>
+                    <a href="packages.html" class="btn btn-primary">Lihat Paket</a>
+                </section>`;
+            return;
         }
 
-    </script>
+        if (!localStorage.getItem("nusaeast_token")) {
+            location.href = "login.html?redirect=checkout.html";
+            return;
+        }
 
+        const itemRows = breakdown.map(item => `
+            <div class="checkout-item">
+                <div>
+                    <strong>${escapeHTML(item.name || "Layanan")}</strong>
+                    <small>${Number(item.qty || 1)} × ${formatIDR(item.price)}</small>
+                </div>
+                <strong>${formatIDR(item.lineTotal)}</strong>
+            </div>
+        `).join("");
+
+        layout.innerHTML = `
+            <section class="checkout-card checkout-items-card">
+                <div class="checkout-card-heading">
+                    <div>
+                        <span class="checkout-step">RINGKASAN</span>
+                        <h2>Pesananmu</h2>
+                    </div>
+                    <span class="checkout-secure"><i class="fa-solid fa-lock"></i> Aman</span>
+                </div>
+                <div class="checkout-items">${itemRows}</div>
+                <div class="checkout-payment-info">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Pembayaran diproses secara aman melalui Midtrans.</span>
+                </div>
+            </section>
+
+            <aside class="checkout-card checkout-summary">
+                <h2>Ringkasan Biaya</h2>
+                <div class="checkout-summary-row">
+                    <span>Subtotal</span><strong>${formatIDR(base)}</strong>
+                </div>
+                ${percentExtra > 0 ? `
+                <div class="checkout-summary-row">
+                    <span>Express / Priority</span><strong>${formatIDR(percentExtra)}</strong>
+                </div>` : ""}
+                <div class="checkout-total">
+                    <span>Total Pembayaran</span>
+                    <strong>${formatIDR(total)}</strong>
+                </div>
+                <button id="payBtn" class="btn btn-primary checkout-pay-button">
+                    Lanjutkan Pembayaran <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <p class="checkout-footnote">Status pesanan diperbarui setelah Midtrans mengonfirmasi pembayaran.</p>
+                <a href="cart.html" class="checkout-back">Kembali ke keranjang</a>
+            </aside>`;
+
+        function escapeHTML(value) {
+            return String(value ?? "").replace(/[&<>"']/g, c => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+            }[c]));
+        }
+
+        function loadSnap(clientKey, isProduction) {
+            return new Promise((resolve, reject) => {
+                if (window.snap) return resolve();
+                const script = document.createElement("script");
+                script.src = isProduction
+                    ? "https://app.midtrans.com/snap/snap.js"
+                    : "https://app.sandbox.midtrans.com/snap/snap.js";
+                script.setAttribute("data-client-key", clientKey);
+                script.onload = resolve;
+                script.onerror = () => reject(new Error("Midtrans gagal dimuat. Periksa koneksi internet."));
+                document.head.appendChild(script);
+            });
+        }
+
+        async function waitForPaid(orderId) {
+            for (let attempt = 0; attempt < 15; attempt++) {
+                const status = await apiFetch("/payment/order/" + encodeURIComponent(orderId));
+                if (status.paymentStatus === "paid") return true;
+                if (status.paymentStatus === "failed" || status.paymentStatus === "expired") return false;
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+            return false;
+        }
+
+        const payButton = document.getElementById("payBtn");
+        payButton.addEventListener("click", async () => {
+            payButton.disabled = true;
+            payButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan pembayaran...';
+
+            try {
+                const config = await apiFetch("/payment/config");
+                await loadSnap(config.clientKey, config.isProduction === true);
+
+                const orderResult = await apiFetch("/orders", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        items: breakdown.map(item => ({
+                            id: String(item.id),
+                            type: String(item.type || ""),
+                            name: String(item.name || ""),
+                            price: Number(item.price),
+                            qty: Number(item.qty || 1),
+                            lineTotal: Number(item.lineTotal)
+                        })),
+                        total: Number(total),
+                        paymentMethod: "va"
+                    })
+                });
+
+                const orderId = orderResult.orderId || orderResult.id;
+                if (!orderId) throw new Error("Nomor pesanan tidak diterima dari server.");
+
+                localStorage.setItem("nusaeast_last_pending_order", orderId);
+
+                const transaction = await apiFetch("/payment/create", {
+                    method: "POST",
+                    body: JSON.stringify({ orderId })
+                });
+                if (!transaction.token) throw new Error("Token pembayaran Midtrans tidak tersedia.");
+
+                window.snap.pay(transaction.token, {
+                    onSuccess: async function () {
+                        payButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi pembayaran...';
+                        try {
+                            const paid = await waitForPaid(orderId);
+                            if (paid) {
+                                removeCartItems(checkoutItems.map(item => item.id));
+                                location.href = "confirmation.html?order=" + encodeURIComponent(orderId);
+                            } else {
+                                location.href = "waiting-payment.html?order=" + encodeURIComponent(orderId);
+                            }
+                        } catch (_) {
+                            location.href = "waiting-payment.html?order=" + encodeURIComponent(orderId);
+                        }
+                    },
+                    onPending: function () {
+                        location.href = "waiting-payment.html?order=" + encodeURIComponent(orderId);
+                    },
+                    onError: function (result) {
+                        console.error("Midtrans error:", result);
+                        alert("Pembayaran belum berhasil diproses. Silakan coba lagi.");
+                        payButton.disabled = false;
+                        payButton.innerHTML = 'Lanjutkan Pembayaran <i class="fa-solid fa-arrow-right"></i>';
+                    },
+                    onClose: function () {
+                        // Pesanan tetap tersimpan di database dan dapat dibuka dari Profil > Riwayat Pesanan.
+                        location.href = "waiting-payment.html?order=" + encodeURIComponent(orderId);
+                    }
+                });
+            } catch (error) {
+                console.error("Checkout error:", error);
+                alert(error.message || "Tidak dapat memulai pembayaran.");
+                payButton.disabled = false;
+                payButton.innerHTML = 'Lanjutkan Pembayaran <i class="fa-solid fa-arrow-right"></i>';
+            }
+        });
+    })();
+    </script>
 </body>
 </html>

@@ -1,0 +1,150 @@
+/* CHECKOUT — NUSA EAST */
+.checkout-page {
+    background: #fbf3e9;
+    padding: 54px 0 76px;
+    min-height: 55vh;
+}
+.checkout-container { max-width: 1080px; }
+.checkout-heading { margin-bottom: 28px; }
+.checkout-heading h1 {
+    color: #174b3a;
+    font-family: "Fraunces", serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin: 8px 0;
+}
+.checkout-heading p { color: #68716d; margin: 0; }
+.checkout-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(300px, .9fr);
+    gap: 22px;
+    align-items: start;
+}
+.checkout-card {
+    background: #fff;
+    border: 1px solid #eadccd;
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 8px 28px rgba(42, 54, 45, .04);
+}
+.checkout-card h2 {
+    color: #174b3a;
+    font-family: "Fraunces", serif;
+    font-size: 1.35rem;
+    margin: 0;
+}
+.checkout-card-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+.checkout-step {
+    display: block;
+    color: #c97859;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    margin-bottom: 5px;
+}
+.checkout-secure {
+    color: #39745d;
+    background: #edf5ef;
+    border-radius: 30px;
+    padding: 8px 12px;
+    font-size: .8rem;
+    white-space: nowrap;
+}
+.checkout-items { border-top: 1px solid #eee4da; }
+.checkout-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid #eee4da;
+    color: #283c32;
+}
+.checkout-item > div { display: grid; gap: 5px; }
+.checkout-item strong { font-size: .94rem; }
+.checkout-item small { color: #7a817d; }
+.checkout-item > strong { white-space: nowrap; }
+.checkout-payment-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #547263;
+    background: #f4f8f4;
+    border-radius: 10px;
+    padding: 13px 15px;
+    margin-top: 20px;
+    font-size: .88rem;
+    line-height: 1.5;
+}
+.checkout-payment-info i { color: #347354; }
+.checkout-summary { position: sticky; top: 24px; }
+.checkout-summary h2 { margin-bottom: 22px; }
+.checkout-summary-row, .checkout-total {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    color: #68716d;
+    padding: 12px 0;
+    font-size: .94rem;
+}
+.checkout-summary-row strong { color: #34483d; font-weight: 600; }
+.checkout-total {
+    border-top: 1px solid #e9ded2;
+    margin-top: 8px;
+    padding-top: 20px;
+    align-items: center;
+    color: #174b3a;
+    font-weight: 700;
+}
+.checkout-total strong {
+    color: #174b3a;
+    font-size: 1.3rem;
+    white-space: nowrap;
+}
+.checkout-pay-button {
+    width: 100%;
+    min-height: 50px;
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.checkout-pay-button:disabled { opacity: .7; cursor: wait; }
+.checkout-footnote {
+    color: #818984;
+    font-size: .78rem;
+    line-height: 1.6;
+    text-align: center;
+    margin: 13px 0 0;
+}
+.checkout-back {
+    display: block;
+    text-align: center;
+    color: #547263;
+    font-size: .88rem;
+    margin-top: 18px;
+    text-decoration: none;
+}
+.checkout-back:hover { color: #174b3a; text-decoration: underline; }
+.checkout-loading, .checkout-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #68716d;
+}
+.checkout-empty p { margin: 10px 0 20px; }
+@media (max-width: 760px) {
+    .checkout-page { padding: 38px 0 54px; }
+    .checkout-layout { grid-template-columns: 1fr; }
+    .checkout-summary { position: static; }
+}
+@media (max-width: 480px) {
+    .checkout-card { padding: 21px 18px; border-radius: 14px; }
+    .checkout-item { gap: 10px; }
+    .checkout-item strong { font-size: .88rem; }
+    .checkout-total strong { font-size: 1.12rem; }
+}

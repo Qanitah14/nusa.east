@@ -1,0 +1,24 @@
+.profile-order-status.payment-pending {
+    display: inline-block;
+    color: #9a6a22;
+    background: #fff4df;
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-size: .82rem;
+}
+.profile-order-status.payment-paid {
+    display: inline-block;
+    color: #26734d;
+    background: #eaf5ee;
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-size: .82rem;
+}
+.profile-order-status.payment-failed {
+    display: inline-block;
+    color: #a94438;
+    background: #fff0ed;
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-size: .82rem;
+}

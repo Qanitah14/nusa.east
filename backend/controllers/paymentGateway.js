@@ -48,9 +48,12 @@ async function createTransaction({ orderId, grossAmount, customer }) {
   const transaction = await snap.createTransaction(parameter);
 
   await pool.query(
-    `INSERT INTO payments (order_id, gateway, amount, status)
-     VALUES ($1, 'midtrans', $2, 'pending')`,
-    [orderId, grossAmount]
+    `INSERT INTO payments (order_id, gateway, amount, status, raw_payload)
+     VALUES ($1, 'midtrans', $2, 'pending', $3::jsonb)`,
+    [orderId, grossAmount, JSON.stringify({
+      snap_token: transaction.token,
+      redirect_url: transaction.redirect_url
+    })]
   );
 
   return transaction; // berisi { token, redirect_url }
@@ -69,22 +72,47 @@ async function handleNotification(notificationBody) {
   let paymentStatus = "pending";
   if (transactionStatus === "capture" || transactionStatus === "settlement") {
     paymentStatus = fraudStatus === "accept" || !fraudStatus ? "paid" : "pending";
-  } else if (["cancel", "deny", "expire"].includes(transactionStatus)) {
+  } else if (transactionStatus === "expire") {
+    paymentStatus = "expired";
+  } else if (["cancel", "deny"].includes(transactionStatus)) {
     paymentStatus = "failed";
   }
 
   await pool.query(
-    `UPDATE payments SET status = $1, gateway_ref = $2, raw_payload = $3 WHERE order_id = $4`,
-    [paymentStatus, statusResponse.transaction_id, statusResponse, orderId]
+    `UPDATE payments
+        SET status = $1,
+            gateway_ref = $2,
+            raw_payload = COALESCE(raw_payload, '{}'::jsonb) || $3::jsonb
+      WHERE order_id = $4`,
+    [paymentStatus, statusResponse.transaction_id, JSON.stringify({
+      transaction_status: transactionStatus,
+      payment_type: statusResponse.payment_type || null,
+      transaction_time: statusResponse.transaction_time || null,
+      expiry_time: statusResponse.expiry_time || null
+    }), orderId]
+  );
+
+  const orderStatus = paymentStatus === "paid"
+    ? "Pembayaran Berhasil"
+    : paymentStatus === "expired"
+      ? "Pembayaran Kedaluwarsa"
+      : paymentStatus === "failed"
+        ? "Pembayaran Gagal"
+        : "Menunggu Pembayaran";
+
+  await pool.query(
+    `UPDATE orders SET payment_status = $1, status = $2 WHERE id = $3`,
+    [paymentStatus, orderStatus, orderId]
   );
 
   if (paymentStatus === "paid") {
     await pool.query(
-      `UPDATE orders SET payment_status = 'paid', status = 'Pembayaran Berhasil' WHERE id = $1`,
-      [orderId]
-    );
-    await pool.query(
-      `INSERT INTO project_status_log (order_id, step) VALUES ($1, 'Pembayaran Berhasil')`,
+      `INSERT INTO project_status_log (order_id, step)
+       SELECT $1, 'Pembayaran Berhasil'
+       WHERE NOT EXISTS (
+         SELECT 1 FROM project_status_log
+         WHERE order_id = $1 AND step = 'Pembayaran Berhasil'
+       )`,
       [orderId]
     );
   }

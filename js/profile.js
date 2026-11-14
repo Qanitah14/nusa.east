@@ -170,13 +170,25 @@
       orderBox.innerHTML = `<div class="profile-empty"><strong>Belum ada pesanan</strong><p>Pesanan yang sudah dibuat akan muncul di sini.</p><a href="packages.html" class="btn btn-primary btn-sm">Lihat Paket</a></div>`;
       return;
     }
-    orderBox.innerHTML = list.map(order => `
+    orderBox.innerHTML = list.map(order => {
+      const payment = String(order.payment_status || "pending").toLowerCase();
+      const paymentLabel = payment === "paid" ? "Sudah Dibayar"
+        : payment === "failed" || payment === "expired" ? "Gagal / Kedaluwarsa"
+        : "Menunggu Pembayaran";
+      const paymentClass = payment === "paid" ? "paid"
+        : payment === "failed" || payment === "expired" ? "failed" : "pending";
+      const action = payment === "paid"
+        ? `<a href="tracking.html?order=${encodeURIComponent(order.id)}">Lihat Tracking →</a>`
+        : `<a href="waiting-payment.html?order=${encodeURIComponent(order.id)}">Lihat Detail &amp; Bayar →</a>`;
+      return `
       <article class="profile-order-card">
         <div><small>ID Pesanan</small><strong>${esc(order.id)}</strong></div>
-        <div><small>Status</small><span class="profile-order-status">${esc(order.status || "Pesanan Dibuat")}</span></div>
+        <div><small>Status Pembayaran</small><span class="profile-order-status payment-${paymentClass}">${paymentLabel}</span></div>
         <div><small>Total</small><strong>${money(Number(order.total))}</strong></div>
-        <a href="tracking.html?order=${encodeURIComponent(order.id)}">Lihat Tracking →</a>
-      </article>`).join("");
+        <div><small>Status Pesanan</small><span>${esc(order.status || "Pesanan Dibuat")}</span></div>
+        ${action}
+      </article>`;
+    }).join("");
   }
   // Sumber utama: database (hanya pesanan milik akun ini). Cadangan: pesanan demo lokal bila backend tidak terjangkau.
   profileApi("/orders/mine").then(renderOrders).catch(() => {

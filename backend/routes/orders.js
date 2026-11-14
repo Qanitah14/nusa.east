@@ -175,7 +175,13 @@ router.get("/:id", requireAuth, requireCustomer, async (req, res) => {
 // sesuai aturan: tenggat dihitung setelah pembayaran + brief + bahan lengkap.
 router.post("/:id/brief", requireAuth, requireCustomer, async (req, res) => {
   try {
-    if (!(await ownOrder(req, res))) return;
+    const ownedOrder = await ownOrder(req, res);
+    if (!ownedOrder) return;
+    if (ownedOrder.payment_status !== "paid") {
+      return res.status(409).json({
+        error: "Brief belum dapat diisi karena pembayaran belum berhasil diverifikasi."
+      });
+    }
     const { brandName, contactName, whatsapp, audience, tone, briefDetail } = req.body;
     await pool.query(
       `INSERT INTO project_briefs (order_id, brand_name, contact_name, whatsapp, audience, tone, brief_detail, materials_received)

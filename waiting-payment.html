@@ -1,184 +1,182 @@
-
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Menunggu Pembayaran — Nusa East</title>
-
+    <title>Status Pembayaran — Nusa East</title>
     <link rel="icon" href="img/logo.png">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/waiting-payment.css">
-
     <script defer src="js/icons.js"></script>
 </head>
-
 <body>
-
-    <!-- Header -->
     <script src="js/data.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/api.js"></script>
     <script src="js/orders.js"></script>
     <script src="js/layout.js"></script>
+    <script>renderHeader('profile');</script>
 
-    <script>
-        renderHeader();
-    </script>
-
-
-    <!-- Halaman Menunggu Pembayaran -->
     <main class="section waiting-section">
-
         <div class="container waiting-container">
-
             <div class="waiting-card">
-
-                <!-- Ikon Status -->
-                <div class="waiting-icon">
-                    <i class="fa-regular fa-clock"></i>
-                </div>
-
-                <span class="eyebrow">
-                    STATUS PEMBAYARAN
-                </span>
-
-                <h1>Menunggu Pembayaran</h1>
-
-                <p class="waiting-description">
-                    Pesananmu sudah dibuat, tetapi pembayaran
-                    belum dikonfirmasi. Silakan selesaikan
-                    pembayaran melalui Virtual Account yang
-                    diberikan oleh Midtrans.
+                <div class="waiting-icon" id="waitingIcon"><i class="fa-regular fa-clock"></i></div>
+                <span class="eyebrow">STATUS PEMBAYARAN</span>
+                <h1 id="waitingTitle">Menunggu Pembayaran</h1>
+                <p class="waiting-description" id="waitingDescription">
+                    Selesaikan pembayaran untuk melanjutkan pesananmu.
                 </p>
 
-
-                <!-- Informasi Pesanan -->
                 <div class="waiting-info">
-
-                    <div class="waiting-info-row">
-                        <span>Nomor Pesanan</span>
-                        <strong id="orderId">-</strong>
-                    </div>
-
-                    <div class="waiting-info-row">
-                        <span>Total Pembayaran</span>
-                        <strong id="orderTotal">-</strong>
-                    </div>
-
-                    <div class="waiting-info-row">
-                        <span>Status</span>
-                        <strong
-                            id="paymentStatus"
-                            class="waiting-status"
-                        >
-                            Menunggu Pembayaran
-                        </strong>
-                    </div>
-
+                    <div class="waiting-info-row"><span>Nomor Pesanan</span><strong id="orderId">-</strong></div>
+                    <div class="waiting-info-row"><span>Total Pembayaran</span><strong id="orderTotal">-</strong></div>
+                    <div class="waiting-info-row"><span>Status Pembayaran</span><strong id="paymentStatus" class="waiting-status">Memuat...</strong></div>
                 </div>
 
-
-                <!-- Informasi Tambahan -->
-                <div class="waiting-note">
-
-                    <strong>Perhatian:</strong>
-
-                    <p>
-                        Kamu belum dapat melanjutkan ke pengisian
-                        brief project sebelum pembayaran berhasil
-                        diverifikasi oleh sistem Nusa East.
-                    </p>
-
-                    <p class="waiting-note-spacing">
-                        Simpan nomor pesanan dan bukti pembayaran
-                        sebagai referensi.
-                    </p>
-
+                <div class="waiting-note" id="waitingNote">
+                    Pesanan dan status pembayaran tersimpan di akunmu. Kamu dapat membuka kembali halaman ini melalui Profil → Riwayat Pesanan.
                 </div>
 
-
-                <!-- Tombol Kembali -->
-                <a
-                    href="index.html"
-                    class="btn btn-primary btn-block waiting-home-button"
-                >
-                    Kembali ke Beranda
+                <button type="button" id="resumePayment" class="btn btn-primary btn-block waiting-home-button" hidden>
+                    Lanjutkan Pembayaran
+                </button>
+                <a href="profile.html" class="btn btn-outline btn-block waiting-secondary-button">
+                    Buka Riwayat Pesanan
                 </a>
-
+                <a href="index.html" class="waiting-home-link">Kembali ke Beranda</a>
             </div>
-
         </div>
-
     </main>
 
+    <script>renderFooter();</script>
 
-    <!-- Footer -->
     <script>
-        renderFooter();
-    </script>
+    (async function () {
+        const orderId = new URLSearchParams(location.search).get("order");
+        const $ = id => document.getElementById(id);
+        const button = $("resumePayment");
 
-
-    <!-- Mengambil Informasi Pesanan -->
-    <script>
-
-        const params = new URLSearchParams(location.search);
-
-        const orderId = params.get("order");
-
-        const orderIdElement =
-            document.getElementById("orderId");
-
-        const orderTotalElement =
-            document.getElementById("orderTotal");
-
-        const paymentStatusElement =
-            document.getElementById("paymentStatus");
-
-
-        // Menampilkan nomor pesanan
-        orderIdElement.textContent = orderId || "-";
-
-
-        // Mengambil data pesanan lokal
-        if (orderId && typeof getOrders === "function") {
-
-            const orders = getOrders();
-
-            const order = orders.find(
-                item => String(item.id) === String(orderId)
-            );
-
-            if (order) {
-
-                // Menampilkan total pembayaran
-                orderTotalElement.textContent =
-                    typeof formatIDR === "function"
-                        ? formatIDR(order.total)
-                        : "Rp" + Number(order.total).toLocaleString("id-ID");
-
-
-                // Menampilkan status
-                paymentStatusElement.textContent =
-                    "Menunggu Pembayaran";
-
-            } else {
-
-                orderTotalElement.textContent =
-                    "Data pesanan tidak ditemukan";
-
-            }
-
-        } else {
-
-            orderTotalElement.textContent =
-                "Data pesanan tidak ditemukan";
-
+        if (!orderId) {
+            $("waitingTitle").textContent = "Pesanan Tidak Ditemukan";
+            $("waitingDescription").textContent = "Nomor pesanan tidak tersedia.";
+            $("paymentStatus").textContent = "Tidak diketahui";
+            return;
         }
 
-    </script>
+        $("orderId").textContent = orderId;
 
+        function money(value) {
+            return new Intl.NumberFormat("id-ID", {
+                style: "currency", currency: "IDR", maximumFractionDigits: 0
+            }).format(Number(value || 0));
+        }
+
+        async function refreshStatus() {
+            const data = await apiFetch("/payment/order/" + encodeURIComponent(orderId));
+            $("orderTotal").textContent = money(data.total);
+
+            if (data.paymentStatus === "paid") {
+                $("waitingIcon").innerHTML = '<i class="fa-solid fa-check"></i>';
+                $("waitingTitle").textContent = "Pembayaran Berhasil";
+                $("waitingDescription").textContent = "Pembayaran telah diverifikasi. Kamu sudah dapat melanjutkan ke brief project.";
+                $("paymentStatus").textContent = "Sudah Dibayar";
+                $("paymentStatus").className = "waiting-status is-paid";
+                $("waitingNote").textContent = "Pembayaran telah dikonfirmasi oleh Midtrans.";
+                button.hidden = true;
+                $("briefContinue").hidden = false;
+                return data;
+            }
+
+            if (data.paymentStatus === "failed" || data.paymentStatus === "expired") {
+                $("waitingTitle").textContent = "Pembayaran Tidak Selesai";
+                $("waitingDescription").textContent = "Transaksi ini gagal atau telah kedaluwarsa. Buat pesanan baru untuk mencoba kembali.";
+                $("paymentStatus").textContent = "Gagal / Kedaluwarsa";
+                $("paymentStatus").className = "waiting-status is-failed";
+                $("waitingNote").textContent = "Pesanan ini tidak dapat dilanjutkan melalui sesi pembayaran sebelumnya.";
+                button.hidden = true;
+                return data;
+            }
+
+            $("paymentStatus").textContent = "Menunggu Pembayaran";
+            button.hidden = !data.token;
+            return data;
+        }
+
+        // Tambahkan tombol brief hanya saat pembayaran terverifikasi.
+        const briefLink = document.createElement("a");
+        briefLink.id = "briefContinue";
+        briefLink.href = "confirmation.html?order=" + encodeURIComponent(orderId);
+        briefLink.className = "btn btn-primary btn-block waiting-home-button";
+        briefLink.textContent = "Lanjutkan ke Brief Project";
+        briefLink.hidden = true;
+        button.insertAdjacentElement("afterend", briefLink);
+
+        let paymentData;
+        try {
+            paymentData = await refreshStatus();
+        } catch (error) {
+            $("waitingDescription").textContent = error.message || "Gagal mengambil status pesanan. Silakan login dan coba kembali.";
+            $("paymentStatus").textContent = "Tidak dapat diperiksa";
+            return;
+        }
+
+        button.addEventListener("click", async () => {
+            try {
+                button.disabled = true;
+                button.textContent = "Membuka pembayaran...";
+                const config = await apiFetch("/payment/config");
+                const script = document.createElement("script");
+                script.src = config.isProduction
+                    ? "https://app.midtrans.com/snap/snap.js"
+                    : "https://app.sandbox.midtrans.com/snap/snap.js";
+                script.setAttribute("data-client-key", config.clientKey);
+                await new Promise((resolve, reject) => {
+                    if (window.snap) return resolve();
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error("Midtrans gagal dimuat."));
+                    document.head.appendChild(script);
+                });
+
+                let token = paymentData && paymentData.token;
+                if (!token) {
+                    const tx = await apiFetch("/payment/create", {
+                        method: "POST",
+                        body: JSON.stringify({ orderId })
+                    });
+                    token = tx.token;
+                }
+                if (!token) throw new Error("Sesi pembayaran tidak tersedia.");
+
+                window.snap.pay(token, {
+                    onSuccess: async () => {
+                        $("paymentStatus").textContent = "Memverifikasi...";
+                        for (let i = 0; i < 15; i++) {
+                            const result = await refreshStatus();
+                            if (result.paymentStatus === "paid") {
+                                location.href = "confirmation.html?order=" + encodeURIComponent(orderId);
+                                return;
+                            }
+                            await new Promise(resolve => setTimeout(resolve, 2000));
+                        }
+                        $("waitingDescription").textContent = "Pembayaran diterima oleh Midtrans dan sedang menunggu verifikasi. Periksa kembali beberapa saat lagi.";
+                    },
+                    onPending: async () => {
+                        await refreshStatus();
+                        alert("Pembayaran masih menunggu. Selesaikan transfer untuk melanjutkan.");
+                    },
+                    onError: () => alert("Pembayaran belum berhasil. Silakan coba kembali."),
+                    onClose: () => {
+                        button.disabled = false;
+                        button.textContent = "Lanjutkan Pembayaran";
+                    }
+                });
+            } catch (error) {
+                alert(error.message || "Tidak dapat membuka pembayaran.");
+                button.disabled = false;
+                button.textContent = "Lanjutkan Pembayaran";
+            }
+        });
+    })();
+    </script>
 </body>
 </html>
