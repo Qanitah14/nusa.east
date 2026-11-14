@@ -124,7 +124,7 @@
         }
 
         async function waitForPaid(orderId) {
-            for (let attempt = 0; attempt < 15; attempt++) {
+            for (let attempt = 0; attempt < 30; attempt++) {
                 const status = await apiFetch("/payment/order/" + encodeURIComponent(orderId));
                 if (status.paymentStatus === "paid") return true;
                 if (status.paymentStatus === "failed" || status.paymentStatus === "expired") return false;

@@ -18,7 +18,7 @@
     <main class="section">
         <div class="container">
             <div class="form-card text-center" style="max-width:620px;margin:0 auto;" id="confirmBox">
-                <p>Memeriksa status pembayaran...</p>
+                <p>Memeriksa status pembayaran langsung ke Midtrans...</p>
             </div>
         </div>
     </main>
@@ -28,11 +28,14 @@
     <script>
     (async function () {
         const params = new URLSearchParams(location.search);
-
-const orderId =
-    params.get("order") ||
-    params.get("order_id");
+        const orderId = params.get("order") || params.get("order_id");
         const box = document.getElementById("confirmBox");
+
+        function safe(value) {
+            return String(value ?? "").replace(/[&<>"']/g, char => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+            }[char]));
+        }
 
         if (!orderId) {
             box.textContent = "Nomor pesanan tidak ditemukan.";
@@ -40,8 +43,15 @@ const orderId =
         }
 
         try {
-            const order = await apiFetch("/orders/" + encodeURIComponent(orderId));
+            // Endpoint ini melakukan sinkronisasi status ke API Midtrans sebelum mengembalikan status database.
+            const payment = await apiFetch("/payment/order/" + encodeURIComponent(orderId));
 
+            if (payment.paymentStatus !== "paid") {
+                location.replace("waiting-payment.html?order=" + encodeURIComponent(orderId));
+                return;
+            }
+
+            const order = await apiFetch("/orders/" + encodeURIComponent(orderId));
             if (order.payment_status !== "paid") {
                 location.replace("waiting-payment.html?order=" + encodeURIComponent(orderId));
                 return;
@@ -56,24 +66,26 @@ const orderId =
                 </div>
                 <span class="confirmation-label">PEMBAYARAN TERKONFIRMASI</span>
                 <h2 class="confirmation-title">Pembayaran Berhasil!</h2>
-                <p class="confirmation-description">Terima kasih. Pesananmu sudah terverifikasi oleh Nusa East.</p>
+                <p class="confirmation-description">Terima kasih. Pembayaranmu telah dikonfirmasi oleh Midtrans dan Nusa East.</p>
                 <div class="confirmation-order">
                     <span class="confirmation-order-label">Nomor Pesanan</span>
-                    <strong>${String(order.id).replace(/[&<>"']/g, "")}</strong>
+                    <strong>${safe(order.id)}</strong>
                 </div>
                 <div class="confirmation-total">
                     <span>Total Dibayar</span>
-                    <strong>${new Intl.NumberFormat("id-ID", {style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(order.total))}</strong>
+                    <strong>${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(order.total))}</strong>
                 </div>
                 <div class="confirmation-actions">
                     <a href="brief.html?order=${encodeURIComponent(order.id)}" class="btn btn-primary">Isi Brief Project →</a>
                     <a href="profile.html" class="btn btn-outline">Riwayat Pesanan</a>
                 </div>`;
         } catch (error) {
+            console.error("Konfirmasi pembayaran:", error);
             box.innerHTML = `
                 <h2>Status pembayaran belum dapat diperiksa</h2>
-                <p>${String(error.message || "Silakan coba kembali.").replace(/[&<>"']/g, "")}</p>
-                <a href="profile.html" class="btn btn-primary mt-24">Kembali ke Profil</a>`;
+                <p>${safe(error.message || "Silakan coba kembali beberapa saat lagi.")}</p>
+                <a href="waiting-payment.html?order=${encodeURIComponent(orderId)}" class="btn btn-primary mt-24">Periksa Status Pembayaran</a>
+                <a href="profile.html" class="btn btn-outline mt-24">Kembali ke Profil</a>`;
         }
     })();
     </script>
