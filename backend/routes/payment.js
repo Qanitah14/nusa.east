@@ -106,8 +106,9 @@ router.post("/notification", async (req, res) => {
     const result = await handleNotification(req.body);
     res.json(result);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Gagal memproses notifikasi." });
+    console.error("[MIDTRANS] Notification error:", err);
+    // Midtrans akan mencoba mengirim ulang jika menerima respons non-2xx.
+    res.status(400).json({ error: err.message || "Gagal memproses notifikasi." });
   }
 });
 

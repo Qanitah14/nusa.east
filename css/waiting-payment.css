@@ -10,7 +10,7 @@
 }
 
 .waiting-container {
-    max-width: 720px;
+    max-width: 640px;
     margin: 0 auto;
 }
 
@@ -21,8 +21,9 @@
     background: #ffffff;
     border: 1px solid #e8d9c8;
     border-radius: 18px;
-    padding: 40px;
+    padding: 36px 34px;
     text-align: center;
+    box-shadow: 0 12px 34px rgba(23, 75, 58, 0.045);
 }
 
 
@@ -170,6 +171,14 @@
         padding: 24px 18px;
     }
 
+    .waiting-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .waiting-actions .waiting-history-button {
+        grid-column: auto;
+    }
+
     .waiting-icon {
         width: 66px;
         height: 66px;
@@ -261,10 +270,11 @@
     background: #fff5f3;
 }
 
-/* Tombol Riwayat Pesanan */
+/* Tombol Riwayat Pesanan mengisi satu baris penuh */
 .waiting-actions .waiting-history-button {
     color: #174b3a;
     border-color: #174b3a;
+    grid-column: 1 / -1;
 }
 
 /* Tombol tersembunyi */

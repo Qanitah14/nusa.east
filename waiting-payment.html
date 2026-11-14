@@ -247,6 +247,19 @@
     }
 
 
+    // Periksa status secara berkala. Webhook Midtrans akan memperbarui database,
+    // lalu halaman ini otomatis menampilkan status terbaru tanpa perlu di-refresh.
+    const statusPolling = window.setInterval(async () => {
+        try {
+            const latest = await refreshStatus();
+            if (latest && latest.paymentStatus !== "pending") {
+                window.clearInterval(statusPolling);
+            }
+        } catch (error) {
+            console.warn("Pemeriksaan status otomatis belum berhasil:", error);
+        }
+    }, 5000);
+
     // MEMUAT MIDTRANS SNAP
     async function loadMidtrans() {
 
@@ -365,7 +378,7 @@
                     try {
 
                         // Menunggu notifikasi backend
-                        for (let i = 0; i < 15; i++) {
+                        for (let i = 0; i < 30; i++) {
 
                             const result =
                                 await refreshStatus();
@@ -373,7 +386,7 @@
                             if (
                                 result.paymentStatus === "paid"
                             ) {
-
+                                window.clearInterval(statusPolling);
                                 location.href =
                                     "confirmation.html?order=" +
                                     encodeURIComponent(orderId);
