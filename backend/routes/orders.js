@@ -153,6 +153,164 @@ router.get("/mine", requireAuth, requireCustomer, async (req, res) => {
   }
 });
 
+
+// PATCH /api/orders/:id/cancel
+// Membatalkan pesanan yang belum dibayar.
+router.patch("/:id/cancel", requireAuth, requireCustomer, async (req, res) => {
+    const orderId = req.params.id;
+    const serverKey = process.env.MIDTRANS_SERVER_KEY;
+
+    try {
+        // Periksa kepemilikan dan status pesanan.
+        const orderResult = await pool.query(
+            `SELECT id, payment_status
+             FROM orders
+             WHERE id = $1 AND user_id = $2`,
+            [orderId, req.user.userId]
+        );
+
+        if (!orderResult.rows.length) {
+            return res.status(404).json({
+                error: "Pesanan tidak ditemukan."
+            });
+        }
+
+        const order = orderResult.rows[0];
+
+        if (order.payment_status === "paid") {
+            return res.status(409).json({
+                error: "Pesanan sudah dibayar dan tidak dapat dibatalkan melalui fitur ini."
+            });
+        }
+
+        if (order.payment_status !== "pending") {
+            return res.status(409).json({
+                error: "Pesanan tidak dapat dibatalkan karena status pembayarannya sudah berubah."
+            });
+        }
+
+        // Periksa apakah transaksi Midtrans sudah dibuat.
+        const paymentResult = await pool.query(
+            `SELECT id
+             FROM payments
+             WHERE order_id = $1 AND status = 'pending'
+             ORDER BY created_at DESC
+             LIMIT 1`,
+            [orderId]
+        );
+
+        // Jika transaksi Midtrans sudah ada, batalkan di Midtrans.
+        if (paymentResult.rows.length) {
+            if (!serverKey) {
+                return res.status(503).json({
+                    error: "Konfigurasi Midtrans belum tersedia."
+                });
+            }
+
+            const isProduction =
+                process.env.MIDTRANS_IS_PRODUCTION === "true";
+
+            const midtransBaseUrl = isProduction
+                ? "https://api.midtrans.com"
+                : "https://api.sandbox.midtrans.com";
+
+            const authorization =
+                Buffer.from(serverKey + ":").toString("base64");
+
+            const midtransResponse = await fetch(
+                `${midtransBaseUrl}/v2/${encodeURIComponent(orderId)}/cancel`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Basic ${authorization}`,
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            const midtransData = await midtransResponse.json();
+
+            if (
+                !midtransResponse.ok ||
+                midtransData.transaction_status !== "cancel"
+            ) {
+                console.error(
+                    "Midtrans cancel response:",
+                    midtransData
+                );
+
+                return res.status(409).json({
+                    error: "Transaksi tidak dapat dibatalkan di Midtrans. Periksa status pembayaran terlebih dahulu."
+                });
+            }
+        }
+
+        // Perbarui database hanya jika status masih pending.
+        const client = await pool.connect();
+
+        try {
+            await client.query("BEGIN");
+
+            const updated = await client.query(
+                `UPDATE orders
+                 SET payment_status = 'cancelled',
+                     status = 'Dibatalkan'
+                 WHERE id = $1
+                   AND user_id = $2
+                   AND payment_status = 'pending'
+                 RETURNING id`,
+                [orderId, req.user.userId]
+            );
+
+            if (!updated.rows.length) {
+                await client.query("ROLLBACK");
+
+                return res.status(409).json({
+                    error: "Status pesanan sudah berubah. Silakan periksa kembali riwayat pesanan."
+                });
+            }
+
+            // Tandai transaksi pending sebagai cancelled.
+            await client.query(
+                `UPDATE payments
+                 SET status = 'cancelled'
+                 WHERE order_id = $1
+                   AND status = 'pending'`,
+                [orderId]
+            );
+
+            // Catat riwayat pembatalan.
+            await client.query(
+                `INSERT INTO project_status_log (order_id, step, note)
+                 VALUES ($1, 'Dibatalkan', 'Pesanan dibatalkan oleh pelanggan.')`,
+                [orderId]
+            );
+
+            await client.query("COMMIT");
+
+            return res.json({
+                success: true,
+                message: "Pesanan berhasil dibatalkan.",
+                orderId
+            });
+
+        } catch (dbError) {
+            await client.query("ROLLBACK");
+            throw dbError;
+        } finally {
+            client.release();
+        }
+
+    } catch (err) {
+        console.error("Gagal membatalkan pesanan:", err);
+
+        return res.status(500).json({
+            error: "Terjadi kesalahan saat membatalkan pesanan."
+        });
+    }
+});
+
+
 // GET /api/orders/:id — detail order + timeline (hanya pemilik)
 router.get("/:id", requireAuth, requireCustomer, async (req, res) => {
   try {
