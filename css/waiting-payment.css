@@ -254,3 +254,75 @@
 .waiting-button[hidden] {
     display: none;
 }
+
+/* Tombol pembayaran sejajar */
+.waiting-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+/* Desain dasar tombol */
+.waiting-button {
+    min-height: 48px;
+    padding: 12px 14px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #ffffff;
+    color: #174b3a;
+
+    border: 1px solid #174b3a;
+    border-radius: 30px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Hover tombol pembayaran */
+.waiting-button:hover {
+    background: #f4f8f5;
+}
+
+/* Tombol batalkan */
+.waiting-cancel-button {
+    color: #b94b42;
+    border-color: #b94b42;
+    background: #ffffff;
+}
+
+.waiting-cancel-button:hover {
+    background: #fff5f3;
+}
+
+/* Riwayat pesanan */
+.waiting-history-button {
+    margin-top: 12px;
+    width: 100%;
+}
+
+/* Tombol tersembunyi */
+.waiting-button[hidden] {
+    display: none;
+}
+
+/* Tampilan HP */
+@media (max-width: 480px) {
+    .waiting-actions {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .waiting-button {
+        font-size: 12px;
+        padding: 10px 8px;
+    }
+}
