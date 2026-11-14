@@ -326,3 +326,85 @@
         padding: 10px 8px;
     }
 }
+
+/* =====================================
+   TOMBOL STATUS PEMBAYARAN
+===================================== */
+
+.waiting-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 24px;
+    width: 100%;
+}
+
+.waiting-button {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #ffffff;
+    color: #174b3a;
+
+    border: 1px solid #174b3a;
+    border-radius: 30px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+
+    transition: background 0.2s ease;
+}
+
+.waiting-button:hover {
+    background: #f4f8f5;
+}
+
+/* Tombol Batalkan Pesanan */
+.waiting-cancel-button {
+    color: #c0392b;
+    border-color: #c0392b;
+    background: #ffffff;
+}
+
+.waiting-cancel-button:hover {
+    background: #fff5f3;
+}
+
+/* Tombol Riwayat Pesanan */
+.waiting-history-button {
+    color: #174b3a;
+    border-color: #174b3a;
+}
+
+/* Tombol tersembunyi */
+.waiting-button[hidden] {
+    display: none;
+}
+
+/* Tombol saat sedang diproses */
+.waiting-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Tampilan HP */
+@media (max-width: 480px) {
+    .waiting-actions {
+        gap: 8px;
+    }
+
+    .waiting-button {
+        font-size: 11px;
+        padding: 10px 6px;
+    }
+}
