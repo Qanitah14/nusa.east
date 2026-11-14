@@ -26,20 +26,26 @@ async function createTransaction({ orderId, grossAmount, customer }) {
         throw new Error("Nominal pembayaran tidak valid.");
     }
 
-    const parameter = {
-        transaction_details: {
-            order_id: String(orderId),
-            gross_amount: amount
-        },
-        customer_details: {
-            first_name: customer.name,
-            email: customer.email,
-            phone: customer.phone || ""
-        },
-        credit_card: {
-            secure: true
-        }
-    };
+   const parameter = {
+    transaction_details: {
+        order_id: String(orderId),
+        gross_amount: amount
+    },
+
+    customer_details: {
+        first_name: customer.name,
+        email: customer.email,
+        phone: customer.phone || ""
+    },
+
+    credit_card: {
+        secure: true
+    },
+
+    callbacks: {
+        finish: `https://nusa-east.vercel.app/confirmation.html?order=${encodeURIComponent(orderId)}`
+    }
+};
 
     const transaction = await snap.createTransaction(parameter);
 
