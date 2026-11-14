@@ -326,13 +326,13 @@ p {
   white-space: nowrap;
 }
 .btn-primary-cari {
-  background: #FAF1E6;
+  background: #fff;
   color: #1d3b2d;
   border: 1px solid #1d3b2d;
 }
 .btn-primary-cari:hover {
   background: #1d3b2d;
-  color: #FAF1E6;
+  color: #Fff;
   border-color: #1d3b2d;
   transform: translateY(-1px);
 }
