@@ -37,13 +37,26 @@
                     Pesanan dan status pembayaran tersimpan di akunmu. Kamu dapat membuka kembali halaman ini melalui Profil → Riwayat Pesanan.
                 </div>
 
-                <button type="button" id="resumePayment" class="btn btn-primary btn-block waiting-home-button" hidden>
-                    Lanjutkan Pembayaran
-                </button>
-                <a href="profile.html" class="btn btn-outline btn-block waiting-secondary-button">
-                    Buka Riwayat Pesanan
-                </a>
-                <a href="index.html" class="waiting-home-link">Kembali ke Beranda</a>
+                <!-- Tombol Aksi -->
+<div class="waiting-actions">
+
+    <button
+        type="button"
+        id="resumePayment"
+        class="waiting-button"
+        hidden
+    >
+        Lanjutkan Pembayaran
+    </button>
+
+    <a
+        href="profile.html"
+        class="waiting-button"
+    >
+        Buka Riwayat Pesanan
+    </a>
+
+</div>
             </div>
         </div>
     </main>
@@ -76,16 +89,29 @@
             $("orderTotal").textContent = money(data.total);
 
             if (data.paymentStatus === "paid") {
-                $("waitingIcon").innerHTML = '<i class="fa-solid fa-check"></i>';
-                $("waitingTitle").textContent = "Pembayaran Berhasil";
-                $("waitingDescription").textContent = "Pembayaran telah diverifikasi. Kamu sudah dapat melanjutkan ke brief project.";
-                $("paymentStatus").textContent = "Sudah Dibayar";
-                $("paymentStatus").className = "waiting-status is-paid";
-                $("waitingNote").textContent = "Pembayaran telah dikonfirmasi oleh Midtrans.";
-                button.hidden = true;
-                $("briefContinue").hidden = false;
-                return data;
-            }
+
+    $("waitingIcon").innerHTML =
+        '<i class="fa-solid fa-check"></i>';
+
+    $("waitingTitle").textContent =
+        "Pembayaran Berhasil";
+
+    $("waitingDescription").textContent =
+        "Pembayaran telah diverifikasi. Pesananmu siap dilanjutkan.";
+
+    $("paymentStatus").textContent =
+        "Sudah Dibayar";
+
+    $("paymentStatus").className =
+        "waiting-status is-paid";
+
+    $("waitingNote").textContent =
+        "Pembayaran telah dikonfirmasi oleh Midtrans.";
+
+    button.hidden = true;
+
+    return data;
+}
 
             if (data.paymentStatus === "failed" || data.paymentStatus === "expired") {
                 $("waitingTitle").textContent = "Pembayaran Tidak Selesai";
@@ -102,14 +128,7 @@
             return data;
         }
 
-        // Tambahkan tombol brief hanya saat pembayaran terverifikasi.
-        const briefLink = document.createElement("a");
-        briefLink.id = "briefContinue";
-        briefLink.href = "confirmation.html?order=" + encodeURIComponent(orderId);
-        briefLink.className = "btn btn-primary btn-block waiting-home-button";
-        briefLink.textContent = "Lanjutkan ke Brief Project";
-        briefLink.hidden = true;
-        button.insertAdjacentElement("afterend", briefLink);
+       
 
         let paymentData;
         try {

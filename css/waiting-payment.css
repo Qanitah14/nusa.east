@@ -199,3 +199,58 @@
     font-size: .9rem;
 }
 .waiting-home-link:hover { text-decoration: underline; color: #174b3a; }
+
+/* =====================================
+   WAITING PAYMENT BUTTONS
+===================================== */
+
+.waiting-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+/* Semua tombol putih */
+.waiting-button {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #ffffff;
+    color: #174b3a;
+
+    border: 1px solid #174b3a;
+    border-radius: 30px;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+
+    text-decoration: none;
+    cursor: pointer;
+
+    transition: background 0.2s ease,
+                color 0.2s ease;
+}
+
+/* Hover */
+.waiting-button:hover {
+    background: #f4f8f5;
+    color: #174b3a;
+}
+
+/* Tombol disabled */
+.waiting-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Sembunyikan tombol */
+.waiting-button[hidden] {
+    display: none;
+}

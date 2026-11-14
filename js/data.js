@@ -166,7 +166,7 @@ const NUSAEAST_DATA = {
     { id: "single-story", service: "content", name: "Story Design", price: 25000, unit: "1 desain" },
     { id: "single-foto", service: "content", name: "Foto Produk", price: 50000, unit: "3 foto" },
     { id: "single-caption", service: "smm", name: "Copywriting / Caption", price: 25000, unit: "per konten" },
-    { id: "single-hashtag", service: "smm", name: "Riset Hashtag", price: 20000, unit: "per riset" },
+    { id: "single-hashtag", service: "smm", name: "Riset Hashtag", price: 19000, unit: "per riset" },
     { id: "single-upload", service: "ecommerce", name: "Upload & Optimasi Produk", price: 35000, unit: "1 produk" },
     { id: "single-banner", service: "ecommerce", name: "Iklan PPC (Pay-Per-Click)", price: 45000, unit: "1 banner" },
     { id: "single-logo", service: "brand", name: "Logo Development", price: 100000, unit: "1 logo" },
