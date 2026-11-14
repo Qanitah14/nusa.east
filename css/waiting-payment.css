@@ -200,132 +200,6 @@
 }
 .waiting-home-link:hover { text-decoration: underline; color: #174b3a; }
 
-/* =====================================
-   WAITING PAYMENT BUTTONS
-===================================== */
-
-.waiting-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 28px;
-}
-
-/* Semua tombol putih */
-.waiting-button {
-    width: 100%;
-    min-height: 48px;
-    padding: 12px 20px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: #ffffff;
-    color: #174b3a;
-
-    border: 1px solid #174b3a;
-    border-radius: 30px;
-
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
-
-    text-decoration: none;
-    cursor: pointer;
-
-    transition: background 0.2s ease,
-                color 0.2s ease;
-}
-
-/* Hover */
-.waiting-button:hover {
-    background: #f4f8f5;
-    color: #174b3a;
-}
-
-/* Tombol disabled */
-.waiting-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* Sembunyikan tombol */
-.waiting-button[hidden] {
-    display: none;
-}
-
-/* Tombol pembayaran sejajar */
-.waiting-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 24px;
-}
-
-/* Desain dasar tombol */
-.waiting-button {
-    min-height: 48px;
-    padding: 12px 14px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: #ffffff;
-    color: #174b3a;
-
-    border: 1px solid #174b3a;
-    border-radius: 30px;
-
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-
-    text-decoration: none;
-    text-align: center;
-    cursor: pointer;
-}
-
-/* Hover tombol pembayaran */
-.waiting-button:hover {
-    background: #f4f8f5;
-}
-
-/* Tombol batalkan */
-.waiting-cancel-button {
-    color: #b94b42;
-    border-color: #b94b42;
-    background: #ffffff;
-}
-
-.waiting-cancel-button:hover {
-    background: #fff5f3;
-}
-
-/* Riwayat pesanan */
-.waiting-history-button {
-    margin-top: 12px;
-    width: 100%;
-}
-
-/* Tombol tersembunyi */
-.waiting-button[hidden] {
-    display: none;
-}
-
-/* Tampilan HP */
-@media (max-width: 480px) {
-    .waiting-actions {
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-    }
-
-    .waiting-button {
-        font-size: 12px;
-        padding: 10px 8px;
-    }
-}
 
 /* =====================================
    TOMBOL STATUS PEMBAYARAN
@@ -335,14 +209,19 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
-    margin-top: 24px;
     width: 100%;
+    margin-top: 24px;
+    align-items: stretch;
 }
 
-.waiting-button {
+/* Ukuran semua tombol dibuat sama */
+.waiting-actions .waiting-button {
+    box-sizing: border-box;
     width: 100%;
-    min-height: 46px;
-    padding: 10px 12px;
+    min-width: 0;
+    height: 48px;
+    padding: 0 12px;
+    margin: 0;
 
     display: flex;
     align-items: center;
@@ -357,6 +236,7 @@
     font-family: inherit;
     font-size: 13px;
     font-weight: 600;
+    line-height: 1.2;
 
     text-align: center;
     text-decoration: none;
@@ -365,26 +245,35 @@
     transition: background 0.2s ease;
 }
 
-.waiting-button:hover {
+/* Hover */
+.waiting-actions .waiting-button:hover {
     background: #f4f8f5;
 }
 
 /* Tombol Batalkan Pesanan */
+.waiting-actions .waiting-cancel-button {
+    background: #ffffff;
+    color: #b94b42;
+    border-color: #b94b42;
+}
 
+.waiting-actions .waiting-cancel-button:hover {
+    background: #fff5f3;
+}
 
 /* Tombol Riwayat Pesanan */
-.waiting-history-button {
+.waiting-actions .waiting-history-button {
     color: #174b3a;
     border-color: #174b3a;
 }
 
 /* Tombol tersembunyi */
-.waiting-button[hidden] {
+.waiting-actions .waiting-button[hidden] {
     display: none;
 }
 
-/* Tombol saat sedang diproses */
-.waiting-button:disabled {
+/* Tombol sedang diproses */
+.waiting-actions .waiting-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
@@ -395,8 +284,9 @@
         gap: 8px;
     }
 
-    .waiting-button {
+    .waiting-actions .waiting-button {
+        height: 46px;
+        padding: 0 6px;
         font-size: 11px;
-        padding: 10px 6px;
     }
 }
