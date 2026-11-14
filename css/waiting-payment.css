@@ -370,15 +370,7 @@
 }
 
 /* Tombol Batalkan Pesanan */
-.waiting-cancel-button {
-    color: #c0392b;
-    border-color: #c0392b;
-    background: #ffffff;
-}
 
-.waiting-cancel-button:hover {
-    background: #fff5f3;
-}
 
 /* Tombol Riwayat Pesanan */
 .waiting-history-button {
