@@ -162,8 +162,9 @@
         const closeForm = () => { editor.hidden = true; };
         $("#cancel").onclick = closeForm;
         $("#cancelTop").onclick = closeForm;
-        const rich = $("#field-content");
-        if (rich) {
+       const rich = $("#field-content");
+
+if (rich && rich.classList.contains("rich-editor")) {
           editor.querySelectorAll("[data-cmd]").forEach(btn => btn.onclick = () => { rich.focus(); document.execCommand(btn.dataset.cmd, false, null); });
           const uploadInline = async (asSlide) => {
             const input = $("#inlineImageFile"); input.onchange = async () => {
@@ -189,14 +190,24 @@
           const f = ev.target.files[0], p = $("#imagePreview");
           if (f) { p.src = URL.createObjectURL(f); p.style.display = "block"; }
         };
-        $("#contentForm").onsubmit = async ev => {
-          ev.preventDefault();
-          const form = ev.currentTarget, data = {};
-          for (const [n] of defs) {
-            const el = form.elements[n];
-            if (n === "content" && rich) data[n] = rich.innerHTML;
-            else data[n] = el.type === "checkbox" ? el.checked : el.value;
-          }
+        
+const richEditor = form.querySelector(".rich-editor");
+
+for (const [n] of defs) {
+  if (n === "content" && richEditor) {
+    data[n] = richEditor.innerHTML;
+    continue;
+  }
+
+  const el = form.elements[n];
+
+  if (!el) continue;
+
+  data[n] = el.type === "checkbox"
+    ? el.checked
+    : el.value;
+}
+
           try {
             const file = $("#imageFile").files[0];
             if (file) {
