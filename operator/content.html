@@ -190,7 +190,10 @@ if (rich && rich.classList.contains("rich-editor")) {
           const f = ev.target.files[0], p = $("#imagePreview");
           if (f) { p.src = URL.createObjectURL(f); p.style.display = "block"; }
         };
-        
+        $("#contentForm").onsubmit = async ev => {
+          ev.preventDefault();
+          const form = ev.currentTarget, data = {};
+          
 const richEditor = form.querySelector(".rich-editor");
 
 for (const [n] of defs) {
