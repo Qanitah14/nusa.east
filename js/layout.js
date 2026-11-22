@@ -100,19 +100,27 @@ document.body.appendChild(overlay);
 const nav = document.getElementById("navMain");
 const toggle = document.getElementById("navToggle");
 
+
 function closeMenu() {
   nav.classList.remove("open");
   overlay.classList.remove("open");
   document.body.classList.remove("nav-open");
+
   toggle.setAttribute("aria-expanded", "false");
+  toggle.setAttribute("aria-label", "Buka menu");
+  toggle.innerHTML = "☰";
 }
 
 function openMenu() {
   nav.classList.add("open");
   overlay.classList.add("open");
   document.body.classList.add("nav-open");
+
   toggle.setAttribute("aria-expanded", "true");
+  toggle.setAttribute("aria-label", "Tutup menu");
+  toggle.innerHTML = "×";
 }
+
 
 toggle.addEventListener("click", () => {
   nav.classList.contains("open") ? closeMenu() : openMenu();
