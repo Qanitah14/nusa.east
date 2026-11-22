@@ -77,7 +77,7 @@
                     <span class="checkout-secure"><i class="fa-solid fa-lock"></i> Aman</span>
                 </div>
                 <div class="checkout-items">${itemRows}</div>
-                <div class="checkout-payment-info">
+                <div class="checkout-payment-info" id="paymentMethodInfo">
                     <i class="fa-solid fa-shield-halved"></i>
                     <span>Pembayaran diproses secara aman melalui Midtrans.</span>
                 </div>
@@ -96,10 +96,29 @@
                     <span>Total Pembayaran</span>
                     <strong>${formatIDR(total)}</strong>
                 </div>
+                <div class="checkout-methods" role="radiogroup" aria-label="Metode pembayaran">
+                    <label class="checkout-method selected" for="methodMidtrans">
+                        <input type="radio" name="paymentChoice" id="methodMidtrans" value="midtrans" checked>
+                        <span class="checkout-method-copy"><strong>Midtrans</strong><small>QRIS, Virtual Account, e-wallet, dan metode tersedia</small></span>
+                    </label>
+                    <label class="checkout-method" for="methodManual">
+                        <input type="radio" name="paymentChoice" id="methodManual" value="manual_transfer">
+                        <span class="checkout-method-copy"><strong>Transfer Rekening BSI</strong><small>Transfer langsung dan unggah bukti pembayaran</small></span>
+                    </label>
+                </div>
+                <div id="manualTransferDetails" class="manual-transfer-details" hidden>
+                    <h3>Transfer ke rekening Nusa East</h3>
+                    <p class="manual-bank-name">Bank Syariah Indonesia (BSI)</p>
+                    <div class="manual-account-row"><span>Nomor rekening</span><strong id="manualAccountNumber">3344241105</strong><button type="button" id="copyAccountBtn" class="btn btn-outline btn-sm">Salin</button></div>
+                    <div class="manual-account-row"><span>Atas nama</span><strong>Nailah Nurfadhillah</strong></div>
+                    <p class="manual-bank-warning">Transfer sesuai total pembayaran di atas. Setelah transfer, wajib unggah bukti agar dapat diverifikasi.</p>
+                    <label class="manual-proof-label" for="manualProof">Bukti transfer (JPG, PNG, WebP · maks. 3 MB)</label>
+                    <input type="file" id="manualProof" class="form-control" accept="image/jpeg,image/png,image/webp">
+                </div>
                 <button id="payBtn" class="btn btn-primary checkout-pay-button">
                     Lanjutkan Pembayaran <i class="fa-solid fa-arrow-right"></i>
                 </button>
-                <p class="checkout-footnote">Status pesanan diperbarui setelah Midtrans mengonfirmasi pembayaran.</p>
+                <p class="checkout-footnote" id="checkoutFootnote">Status pembayaran akan diperbarui setelah Midtrans mengonfirmasi transaksi.</p>
                 <a href="cart.html" class="checkout-back">Kembali ke keranjang</a>
             </aside>`;
 
@@ -134,15 +153,48 @@
         }
 
         const payButton = document.getElementById("payBtn");
+        let pendingManualOrderId = null;
+        const methodRadios = document.querySelectorAll('input[name="paymentChoice"]');
+        const manualDetails = document.getElementById("manualTransferDetails");
+        const paymentInfo = document.getElementById("paymentMethodInfo");
+        const footnote = document.getElementById("checkoutFootnote");
+        methodRadios.forEach(radio => radio.addEventListener("change", () => {
+            if (!radio.checked) return;
+            const manual = radio.value === "manual_transfer";
+            document.querySelectorAll(".checkout-method").forEach(el => el.classList.toggle("selected", el.querySelector("input").checked));
+            manualDetails.hidden = !manual;
+            paymentInfo.innerHTML = manual
+                ? '<i class="fa-solid fa-building-columns"></i><span>Transfer bank diverifikasi manual oleh Admin Penjualan.</span>'
+                : '<i class="fa-solid fa-shield-halved"></i><span>Pembayaran diproses secara aman melalui Midtrans.</span>';
+            footnote.textContent = manual ? "Pesanan diproses setelah bukti transfer diverifikasi Admin Penjualan." : "Status pembayaran diperbarui setelah Midtrans mengonfirmasi transaksi.";
+            payButton.innerHTML = manual ? 'Kirim Bukti Transfer <i class="fa-solid fa-arrow-right"></i>' : 'Lanjutkan Pembayaran <i class="fa-solid fa-arrow-right"></i>';
+        }));
+        document.getElementById("copyAccountBtn").addEventListener("click", async () => {
+            try { await navigator.clipboard.writeText("3344241105"); document.getElementById("copyAccountBtn").textContent = "Tersalin"; }
+            catch (_) { alert("Nomor rekening: 3344241105"); }
+        });
+
         payButton.addEventListener("click", async () => {
+            const selectedMethod = document.querySelector('input[name="paymentChoice"]:checked')?.value || "midtrans";
+            const proofInput = document.getElementById("manualProof");
+            if (selectedMethod === "manual_transfer" && !proofInput.files.length) {
+                alert("Unggah bukti transfer terlebih dahulu."); proofInput.focus(); return;
+            }
+            if (selectedMethod === "manual_transfer" && proofInput.files[0].size > 3 * 1024 * 1024) {
+                alert("Ukuran bukti transfer maksimal 3 MB."); return;
+            }
             payButton.disabled = true;
             payButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyiapkan pembayaran...';
 
             try {
-                const config = await apiFetch("/payment/config");
-                await loadSnap(config.clientKey, config.isProduction === true);
+                if (selectedMethod === "midtrans") {
+                    const config = await apiFetch("/payment/config");
+                    await loadSnap(config.clientKey, config.isProduction === true);
+                }
 
-                const orderResult = await apiFetch("/orders", {
+                const orderResult = (selectedMethod === "manual_transfer" && pendingManualOrderId)
+                    ? { orderId: pendingManualOrderId }
+                    : await apiFetch("/orders", {
                     method: "POST",
                     body: JSON.stringify({
                         items: breakdown.map(item => ({
@@ -154,14 +206,29 @@
                             lineTotal: Number(item.lineTotal)
                         })),
                         total: Number(total),
-                        paymentMethod: "va"
+                        paymentMethod: selectedMethod === "manual_transfer" ? "manual_transfer" : "va"
                     })
                 });
 
                 const orderId = orderResult.orderId || orderResult.id;
                 if (!orderId) throw new Error("Nomor pesanan tidak diterima dari server.");
+                if (selectedMethod === "manual_transfer") pendingManualOrderId = orderId;
 
                 localStorage.setItem("nusaeast_last_pending_order", orderId);
+
+                if (selectedMethod === "manual_transfer") {
+                    const formData = new FormData();
+                    formData.append("proof", proofInput.files[0]);
+                    const token = localStorage.getItem("nusaeast_token");
+                    const uploadResponse = await fetch(`${NUSAEAST_API_BASE}/payment/manual/${encodeURIComponent(orderId)}/proof`, {
+                        method: "POST", headers: token ? { Authorization: `Bearer ${token}` } : {}, body: formData
+                    });
+                    const uploadData = await uploadResponse.json().catch(() => ({}));
+                    if (!uploadResponse.ok) throw new Error(uploadData.error || "Bukti transfer gagal dikirim.");
+                    removeCartItems(checkoutItems.map(item => item.id));
+                    location.href = "waiting-payment.html?order=" + encodeURIComponent(orderId);
+                    return;
+                }
 
                 const transaction = await apiFetch("/payment/create", {
                     method: "POST",

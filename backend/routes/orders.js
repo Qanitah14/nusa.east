@@ -65,7 +65,7 @@ router.post("/", requireAuth, requireCustomer, async (req, res) => {
   let inTransaction = false;
   try {
     const { items, total, paymentMethod } = req.body || {};
-    const allowedMethods = ["va", "ewallet", "qris"];
+    const allowedMethods = ["va", "ewallet", "qris", "manual_transfer"];
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: "Keranjang kosong atau item pesanan tidak valid." });
@@ -117,6 +117,13 @@ router.post("/", requireAuth, requireCustomer, async (req, res) => {
       `INSERT INTO project_status_log (order_id, step) VALUES ($1, 'Pesanan Dibuat')`,
       [orderId]
     );
+    if (paymentMethod === "manual_transfer") {
+      await client.query(
+        `INSERT INTO payments (order_id, gateway, amount, status, raw_payload)
+         VALUES ($1, 'manual', $2, 'pending', $3::jsonb)`,
+        [orderId, Number(total), JSON.stringify({ method: "bank_transfer", bank: "BSI" })]
+      );
+    }
     await client.query("COMMIT");
     inTransaction = false;
 
@@ -183,7 +190,7 @@ router.patch("/:id/cancel", requireAuth, requireCustomer, async (req, res) => {
             });
         }
 
-        if (order.payment_status !== "pending") {
+        if (!["pending", "pending_verification"].includes(order.payment_status)) {
             return res.status(409).json({
                 error: "Pesanan tidak dapat dibatalkan karena status pembayarannya sudah berubah."
             });
@@ -191,9 +198,9 @@ router.patch("/:id/cancel", requireAuth, requireCustomer, async (req, res) => {
 
         // Periksa apakah transaksi Midtrans sudah dibuat.
         const paymentResult = await pool.query(
-            `SELECT id
+            `SELECT id, gateway
              FROM payments
-             WHERE order_id = $1 AND status = 'pending'
+             WHERE order_id = $1 AND gateway = 'midtrans' AND status = 'pending'
              ORDER BY created_at DESC
              LIMIT 1`,
             [orderId]
@@ -257,7 +264,7 @@ router.patch("/:id/cancel", requireAuth, requireCustomer, async (req, res) => {
                      status = 'Dibatalkan'
                  WHERE id = $1
                    AND user_id = $2
-                   AND payment_status = 'pending'
+                   AND payment_status IN ('pending', 'pending_verification')
                  RETURNING id`,
                 [orderId, req.user.userId]
             );
@@ -275,7 +282,7 @@ router.patch("/:id/cancel", requireAuth, requireCustomer, async (req, res) => {
                 `UPDATE payments
                  SET status = 'cancelled'
                  WHERE order_id = $1
-                   AND status = 'pending'`,
+                   AND status IN ('pending', 'pending_verification')`,
                 [orderId]
             );
 

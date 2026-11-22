@@ -127,6 +127,13 @@ const NAV = PORTAL.nav || [
     },
     {
       group: "PENGELOLAAN",
+      key: "payments",
+      href: "manual-payments.html",
+      label: "Verifikasi Transfer",
+      icon: "fa-money-check-alt"
+    },
+    {
+      group: "PENGELOLAAN",
       key: "services",
       href: "services.html",
       label: "Layanan",

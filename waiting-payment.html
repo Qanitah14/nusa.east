@@ -151,8 +151,9 @@
             $("paymentStatus").className =
                 "waiting-status is-paid";
 
-            $("waitingNote").textContent =
-                "Pembayaran telah dikonfirmasi oleh Midtrans.";
+            $("waitingNote").textContent = data.gateway === "manual"
+                ? "Transfer rekening telah diverifikasi oleh Admin Penjualan."
+                : "Pembayaran telah dikonfirmasi oleh Midtrans.";
 
             button.hidden = true;
             cancelButton.hidden = true;
@@ -192,6 +193,55 @@
             button.hidden = true;
             cancelButton.hidden = true;
 
+            return data;
+        }
+
+
+        // Transfer manual: status bukti transfer
+        if (data.gateway === "manual") {
+            button.hidden = true;
+            cancelButton.hidden = data.proofStatus === "pending_verification";
+            if (data.proofStatus === "pending_verification") {
+                $("waitingTitle").textContent = "Menunggu Verifikasi Transfer";
+                $("waitingDescription").textContent = "Bukti transfer sudah diterima. Admin Penjualan akan memeriksa pembayaran.";
+                $("paymentStatus").textContent = "Menunggu Verifikasi";
+                $("paymentStatus").className = "waiting-status";
+                $("waitingNote").textContent = "Pesanan tidak akan mulai dikerjakan sebelum pembayaran diverifikasi.";
+                return data;
+            }
+            if (data.proofStatus === "rejected") {
+                $("waitingTitle").textContent = "Bukti Transfer Perlu Diperbaiki";
+                $("waitingDescription").textContent = "Admin belum dapat menerima bukti transfer. Silakan unggah bukti baru.";
+                $("paymentStatus").textContent = "Bukti Ditolak";
+                $("paymentStatus").className = "waiting-status is-failed";
+                $("waitingNote").textContent = data.proofNote || "Pastikan bukti terlihat jelas, nominal dan tanggal transaksi terbaca.";
+                let retry = document.getElementById("retryProofPanel");
+                if (!retry) {
+                    retry = document.createElement("div"); retry.id = "retryProofPanel"; retry.className = "waiting-note";
+                    retry.innerHTML = '<label for="retryProof">Unggah bukti baru (JPG, PNG, WebP, maks. 3 MB)</label><input id="retryProof" type="file" accept="image/jpeg,image/png,image/webp"><button id="retryProofSend" class="waiting-button" type="button">Kirim Bukti Baru</button>';
+                    document.querySelector(".waiting-actions").before(retry);
+                    document.getElementById("retryProofSend").addEventListener("click", async () => {
+                        const file = document.getElementById("retryProof").files[0];
+                        if (!file) { alert("Pilih file bukti terlebih dahulu."); return; }
+                        if (file.size > 3*1024*1024) { alert("File maksimal 3 MB."); return; }
+                        const fd = new FormData(); fd.append("proof", file);
+                        const token = localStorage.getItem("nusaeast_token");
+                        const sendBtn = document.getElementById("retryProofSend"); sendBtn.disabled = true; sendBtn.textContent = "Mengirim...";
+                        try {
+                            const r = await fetch(`${NUSAEAST_API_BASE}/payment/manual/${encodeURIComponent(orderId)}/proof`, { method:"POST", headers: token ? { Authorization: `Bearer ${token}` } : {}, body: fd });
+                            const j = await r.json().catch(()=>({})); if (!r.ok) throw new Error(j.error || "Upload gagal."); location.reload();
+                        } catch (e) { alert(e.message); sendBtn.disabled=false; sendBtn.textContent="Kirim Bukti Baru"; }
+                    });
+                }
+                retry.hidden = false;
+                return data;
+            }
+            $("waitingTitle").textContent = "Menunggu Bukti Transfer";
+            $("waitingDescription").textContent = "Silakan buka kembali checkout untuk menyelesaikan transfer dan mengunggah bukti.";
+            $("paymentStatus").textContent = "Menunggu Bukti";
+            $("paymentStatus").className = "waiting-status";
+            button.hidden = true;
+            cancelButton.hidden = false;
             return data;
         }
 
@@ -252,7 +302,8 @@
     const statusPolling = window.setInterval(async () => {
         try {
             const latest = await refreshStatus();
-            if (latest && latest.paymentStatus !== "pending") {
+            if (latest && latest.paymentStatus !== "pending" &&
+                !(latest.gateway === "manual" && latest.proofStatus === "pending_verification")) {
                 window.clearInterval(statusPolling);
             }
         } catch (error) {

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Verifikasi Transfer — Nusa East</title>
+<link rel="icon" type="image/png" href="../img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<script defer src="../js/icons.js"></script>
+<style>
+.manual-pay-list{display:grid;gap:16px}.manual-pay-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;background:var(--color-bg-card,#fff);border:1px solid var(--color-border,#e6d9ca);border-radius:16px;padding:20px}.manual-pay-meta{display:grid;gap:7px}.manual-pay-meta h3{margin:0;font-family:Fraunces,serif;color:var(--color-primary,#174b3a)}.manual-pay-meta p{margin:0;color:#68716d}.manual-pay-actions{display:flex;gap:8px;flex-wrap:wrap}.manual-proof-preview{position:fixed;inset:0;z-index:9999;background:rgba(10,20,15,.78);display:flex;align-items:center;justify-content:center;padding:24px}.manual-proof-preview img{max-width:min(92vw,1000px);max-height:88vh;object-fit:contain;background:white;border-radius:12px}.manual-proof-preview button{position:absolute;right:20px;top:20px}.manual-payment-empty{text-align:center;padding:35px;color:#68716d;background:#fff;border:1px solid #e8ded3;border-radius:15px}
+@media(max-width:720px){.manual-pay-card{grid-template-columns:1fr}.manual-pay-actions{width:100%}.manual-pay-actions .btn{flex:1}}
+</style>
+</head>
+<body class="admin-body">
+<div class="admin-app" id="adminApp"><main class="admin-main"><div class="admin-content">
+  <div class="a-page-head"><div><span class="eyebrow">Pembayaran Manual</span><h1 style="font-size:clamp(1.8rem,3.4vw,2.6rem);">Verifikasi Transfer</h1><p>Periksa bukti transfer pelanggan sebelum mengaktifkan tracking project.</p></div><div class="a-actions"><button class="btn btn-outline btn-sm" id="reloadBtn">Muat ulang</button></div></div>
+  <div id="notice"></div><div id="pendingList" class="manual-pay-list"></div>
+</div></main></div>
+<script src="../js/admin.js"></script>
+<script>
+if (Admin.init("payments")) loadPending();
+const listEl=document.getElementById("pendingList");
+const apiBase="https://nusa-east-vsxf.vercel.app/api";function esc(v){return Admin.esc(v)}
+function money(v){return Admin.idr(v)}
+function token(){return sessionStorage.getItem("nusaeast_admin_token")||""}
+async function loadPending(){
+ listEl.innerHTML=Admin.loading("Memuat bukti transfer...");
+ try{
+  const rows=await Admin.api.get("/payment/manual/admin/pending");
+  if(!rows.length){listEl.innerHTML='<div class="manual-payment-empty"><h3>Tidak ada bukti transfer yang menunggu</h3><p>Semua pembayaran manual sudah diproses.</p></div>';return;}
+  listEl.innerHTML=rows.map(row=>`<article class="manual-pay-card"><div class="manual-pay-meta"><h3>Order ${esc(row.order_id)}</h3><p><strong>${esc(row.customer||"Pelanggan")}</strong> · ${esc(row.email||"")}</p><p>Total transfer: <strong>${money(row.total)}</strong></p><p>Dikirim: ${Admin.dateID(row.submitted_at)} · ${Math.ceil(Number(row.file_size)/1024)} KB</p></div><div class="manual-pay-actions"><button class="btn btn-outline btn-sm" data-proof="${esc(row.order_id)}">Lihat Bukti</button><button class="btn btn-primary btn-sm" data-approve="${esc(row.order_id)}">Verifikasi</button><button class="btn btn-outline btn-sm" data-reject="${esc(row.order_id)}">Tolak</button></div></article>`).join("");
+  listEl.querySelectorAll("[data-proof]").forEach(b=>b.addEventListener("click",()=>showProof(b.dataset.proof)));
+  listEl.querySelectorAll("[data-approve]").forEach(b=>b.addEventListener("click",()=>review(b.dataset.approve,"approve")));
+  listEl.querySelectorAll("[data-reject]").forEach(b=>b.addEventListener("click",()=>review(b.dataset.reject,"reject")));
+ }catch(e){listEl.innerHTML=Admin.errorBox(e.message);}
+}
+async function showProof(orderId){
+ try{
+  const response=await fetch(`${apiBase}/payment/manual/admin/${encodeURIComponent(orderId)}/proof`,{headers:{Authorization:`Bearer ${token()}`}});
+  if(!response.ok)throw new Error("Bukti transfer tidak dapat diakses.");
+  const blob=await response.blob();const url=URL.createObjectURL(blob);
+  const overlay=document.createElement("div");overlay.className="manual-proof-preview";overlay.innerHTML=`<button class="btn btn-outline btn-sm" type="button">Tutup</button><img alt="Bukti transfer order ${esc(orderId)}">`;
+  overlay.querySelector("img").src=url;overlay.querySelector("button").onclick=()=>{URL.revokeObjectURL(url);overlay.remove();};overlay.addEventListener("click",e=>{if(e.target===overlay){URL.revokeObjectURL(url);overlay.remove();}});document.body.appendChild(overlay);
+ }catch(e){Admin.toast(e.message);}
+}
+async function review(orderId,decision){
+ let note="";
+ if(decision==="reject"){note=prompt("Alasan penolakan bukti transfer (wajib): ")||"";if(!note.trim()){Admin.toast("Alasan penolakan perlu diisi.");return;}}
+ if(decision==="approve"&&!confirm(`Konfirmasi pembayaran order ${orderId} sudah diterima sesuai nominal?`))return;
+ try{await Admin.api.post(`/payment/manual/admin/${encodeURIComponent(orderId)}/review`,{decision,note});Admin.toast(decision==="approve"?"Pembayaran diverifikasi dan tracking diaktifkan.":"Bukti ditolak. Pelanggan dapat mengunggah ulang.");loadPending();}
+ catch(e){Admin.toast(e.message);}
+}
+document.getElementById("reloadBtn").addEventListener("click",loadPending);
+</script>
+</body></html>

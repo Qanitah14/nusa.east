@@ -148,3 +148,30 @@
     .checkout-item strong { font-size: .88rem; }
     .checkout-total strong { font-size: 1.12rem; }
 }
+
+/* Payment method selection + manual bank transfer */
+.checkout-methods { display: grid; gap: 12px; margin: 22px 0 14px; }
+.checkout-method {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px; border: 1px solid #e7d9c8; border-radius: 13px;
+  cursor: pointer; transition: border-color .18s ease, background .18s ease;
+  background: #fff;
+}
+.checkout-method.selected { border-color: #174b3a; background: #f2f7f2; box-shadow: 0 0 0 1px #174b3a inset; }
+.checkout-method input { margin-top: 3px; accent-color: #174b3a; }
+.checkout-method-copy { display: grid; gap: 5px; color: #244437; }
+.checkout-method-copy small { color: #6b7770; line-height: 1.5; }
+.manual-transfer-details { border: 1px solid #e7d9c8; background: #fbf7f1; border-radius: 14px; padding: 18px; margin: 16px 0; }
+.manual-transfer-details h3 { font: 600 1.1rem "Fraunces", serif; color: #174b3a; margin: 0 0 8px; }
+.manual-bank-name { color: #67736d; margin: 0 0 15px; }
+.manual-account-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 0; border-top: 1px solid #e8ded3; }
+.manual-account-row span { color: #707a73; flex: 1 1 130px; }
+.manual-account-row strong { color: #244437; }
+.manual-bank-warning { background: #fff; border-radius: 9px; padding: 12px; color: #6b7770; font-size: .88rem; line-height: 1.55; }
+.manual-proof-label { display: block; font-weight: 600; color: #244437; margin: 16px 0 8px; }
+.manual-transfer-details input[type=file] { background: white; }
+@media (max-width: 480px) {
+  .checkout-method { padding: 14px; }
+  .manual-transfer-details { padding: 15px; }
+  .manual-account-row { align-items: flex-start; }
+}

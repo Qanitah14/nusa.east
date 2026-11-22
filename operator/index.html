@@ -49,6 +49,19 @@
         </div>
 
         <!-- TUJUH KOTAK STATISTIK -->
+        <!-- Pintasan Verifikasi Transfer -->
+        <div class="a-card op-payment-shortcut" style="margin-bottom:22px;">
+          <div class="a-card-head" style="align-items:center;">
+            <div>
+              <h3 style="margin-bottom:6px;">Verifikasi Transfer BSI</h3>
+              <p class="hint" style="margin:0;">Periksa bukti transfer pelanggan dan verifikasi pembayaran manual.</p>
+              <div id="operatorPendingTransferCount" class="sub" style="margin-top:8px;">Memeriksa pembayaran yang menunggu...</div>
+            </div>
+            <a href="manual-payments.html" class="btn btn-primary btn-sm">Buka Verifikasi <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+          </div>
+        </div>
+
+
         <div id="stats"></div>
 
         <!-- AKTIVITAS DAN PENGGUNA TERBARU -->
@@ -115,6 +128,16 @@
       `;
 
       async function load() {
+        const pendingTransferCount = document.getElementById("operatorPendingTransferCount");
+        if (pendingTransferCount) {
+          Admin.api.get("/payment/manual/admin/pending")
+            .then(rows => {
+              pendingTransferCount.textContent = `${rows.length} pembayaran menunggu verifikasi`;
+            })
+            .catch(() => {
+              pendingTransferCount.textContent = "Daftar verifikasi transfer tersedia";
+            });
+        }
         const stats = document.getElementById("stats");
 
         if (!stats.innerHTML) {

@@ -132,7 +132,7 @@
           ${kv("Telepon", Admin.esc(o.phone || "-"))}
           ${kv("Alamat", Admin.esc(o.address || "-"))}
           ${kv("Tanggal pesan", AdminOrders.fmtDate(o.createdAt))}
-          ${kv("Metode bayar", Admin.esc(String(o.paymentMethod).toUpperCase()))}
+          ${kv("Metode bayar", Admin.esc(AdminOrders.paymentMethodLabel(o.paymentMethod)))}
           ${kv("Pembayaran", AdminOrders.payBadge(o))}
           ${kv("Tahap project", AdminOrders.statusBadge(o))}
         </div>

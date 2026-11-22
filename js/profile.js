@@ -173,6 +173,7 @@
     orderBox.innerHTML = list.map(order => {
       const payment = String(order.payment_status || "pending").toLowerCase();
       const paymentLabel = payment === "paid" ? "Sudah Dibayar"
+        : payment === "pending_verification" ? "Menunggu Verifikasi Transfer"
         : payment === "failed" || payment === "expired" ? "Gagal / Kedaluwarsa"
         : "Menunggu Pembayaran";
       const paymentClass = payment === "paid" ? "paid"

@@ -88,9 +88,11 @@ const AdminOrders = (() => {
   }
 
   /* ---------- tampilan ---------- */
+  const paymentMethodLabel = (method) => ({ va: "Midtrans", ewallet: "Midtrans · E-Wallet", qris: "Midtrans · QRIS", manual_transfer: "Transfer BSI" }[String(method || "").toLowerCase()] || String(method || "-").replace(/_/g, " "));
   const payBadge = (o) => {
     if (isPaid(o)) return `<span class="badge badge-green">Lunas</span>`;
     if (o.paymentStatus === "failed" || o.paymentStatus === "expired") return `<span class="badge badge-red">${o.paymentStatus === "failed" ? "Gagal" : "Kedaluwarsa"}</span>`;
+    if (o.paymentStatus === "pending_verification") return `<span class="badge badge-orange">Menunggu verifikasi</span>`;
     return `<span class="badge badge-orange">Menunggu bayar</span>`;
   };
   const statusBadge = (o) => isDone(o) && isPaid(o)
@@ -106,5 +108,5 @@ const AdminOrders = (() => {
     return `<button type="button" class="btn btn-outline btn-sm ${extraClass}" disabled title="Tersedia setelah pembayaran berhasil" aria-disabled="true"><i class="fas fa-lock" aria-hidden="true"></i> Tracking Project</button>`;
   }
 
-  return { STEPS, fmtDate, fmtDateTime, fromApi, fromLocal, loadAll, loadOne, isPaid, isDone, nextStep, advance, payBadge, statusBadge, sourceTag, trackingBtn };
+  return { STEPS, fmtDate, fmtDateTime, paymentMethodLabel, fromApi, fromLocal, loadAll, loadOne, isPaid, isDone, nextStep, advance, payBadge, statusBadge, sourceTag, trackingBtn };
 })();

@@ -11,13 +11,13 @@ const pool = require("./pool");
   client.on("notice", (n) => console.log(`[${n.severity}] ${n.message}`));
   try {
     await client.query("BEGIN");
-    for (const file of ["005_rbac_sessions_reset.sql", "006_auth_compatibility.sql", "007_cms_content.sql"]) {
+    for (const file of ["005_rbac_sessions_reset.sql", "006_auth_compatibility.sql", "007_cms_content.sql", "008_manual_bank_transfer.sql"]) {
       const sql = fs.readFileSync(path.join(__dirname, "migrations", file), "utf8");
       await client.query(sql);
     }
     await client.query("COMMIT");
     const c = await client.query("SELECT role, COUNT(*)::int AS n FROM users GROUP BY role ORDER BY role");
-    console.log("Migrasi 005 + 006 + 007 selesai. Jumlah akun per role:", c.rows.map((r) => `${r.role}=${r.n}`).join(", ") || "(kosong)");
+    console.log("Migrasi 005 + 006 + 007 + 008 selesai. Jumlah akun per role:", c.rows.map((r) => `${r.role}=${r.n}`).join(", ") || "(kosong)");
   } catch (err) {
     await client.query("ROLLBACK");
     console.error("Migrasi gagal, semua perubahan dibatalkan:", err.message);
