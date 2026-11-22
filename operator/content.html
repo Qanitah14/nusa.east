@@ -78,13 +78,50 @@
         hero_sections:"Hero Section",
         about_sections:"About / Tentang Kami"
       };
-      const fields = {
-        articles:[["title","Judul","text"],["slug","Slug","text"],["author","Penulis","text"],["content","Isi Artikel","richtext"],["image","Path Gambar","text"],["is_published","Terbitkan","checkbox"]],
-        terms_and_conditions:[["title","Judul","text"],["slug","Slug","text"],["author","Penulis","text"],["content","Isi Syarat dan Ketentuan","textarea"]],
-        privacy_policies:[["title","Judul","text"],["slug","Slug","text"],["author","Penulis","text"],["content","Isi Kebijakan Privasi","textarea"]],
-        hero_sections:[["title","Judul","text"],["subtitle","Subjudul","textarea"],["image","Path Gambar","text"],["button_text","Teks Tombol","text"],["button_link","Link Tombol","text"],["is_active","Aktifkan","checkbox"]],
-        about_sections:[["title","Judul","text"],["subtitle","Subjudul","textarea"],["content","Deskripsi","textarea"],["image","Path Gambar","text"],["vision","Visi","textarea"],["mission","Misi","textarea"]]
-      };
+      
+const fields = {
+  articles: [
+    ["title", "Judul", "text"],
+    ["slug", "Slug", "text"],
+    ["author", "Penulis", "text"],
+    ["content", "Isi Artikel", "richtext"],
+    ["image", "Path Gambar", "text"],
+    ["is_published", "Terbitkan", "checkbox"]
+  ],
+
+  terms_and_conditions: [
+    ["title", "Judul", "text"],
+    ["slug", "Slug", "text"],
+    ["author", "Penulis", "text"],
+    ["content", "Isi Syarat dan Ketentuan", "richtext"]
+  ],
+
+  privacy_policies: [
+    ["title", "Judul", "text"],
+    ["slug", "Slug", "text"],
+    ["author", "Penulis", "text"],
+    ["content", "Isi Kebijakan Privasi", "richtext"]
+  ],
+
+  hero_sections: [
+    ["title", "Judul", "text"],
+    ["subtitle", "Subjudul", "richtext"],
+    ["image", "Path Gambar", "text"],
+    ["button_text", "Teks Tombol", "text"],
+    ["button_link", "Link Tombol", "text"],
+    ["is_active", "Aktifkan", "checkbox"]
+  ],
+
+  about_sections: [
+    ["title", "Judul", "text"],
+    ["subtitle", "Subjudul", "richtext"],
+    ["content", "Deskripsi", "richtext"],
+    ["image", "Path Gambar", "text"],
+    ["vision", "Visi", "richtext"],
+    ["mission", "Misi", "richtext"]
+  ]
+};
+
 
       async function load() {
         notice.hidden = true;
@@ -148,85 +185,414 @@
         Admin.toast(msg);
       }
 
-      function openForm(record = {}) {
-        const defs = fields[kind.value];
-        editor.hidden = false;
-        editor.innerHTML = `
-          <div class="content-editor-heading"><div><span class="content-eyebrow">FORMULIR KONTEN</span><h2>${record.id ? "Edit" : "Tambah"} ${labels[kind.value]}</h2><p>Lengkapi informasi berikut, lalu simpan perubahan.</p></div><button class="content-close-btn" type="button" id="cancelTop" aria-label="Tutup formulir"><i class="fa-solid fa-xmark"></i></button></div>
-          <form id="contentForm" class="content-form">
-            <div class="content-form-grid">${defs.map(([name,label,type]) => `<div class="form-group ${["textarea","richtext"].includes(type) ? "content-field-wide" : ""} ${type === "checkbox" ? "content-checkbox-field" : ""}>${type === "checkbox" ? "" : `<label for="field-${name}">${label}</label>`}${type === "richtext" ? `<div class="rich-editor-wrap"><div class="rich-toolbar" role="toolbar" aria-label="Pemformatan artikel"><button type="button" data-cmd="bold" title="Tebal"><b>B</b></button><button type="button" data-cmd="italic" title="Miring"><i>I</i></button><button type="button" data-cmd="underline" title="Garis bawah"><u>U</u></button><button type="button" data-cmd="insertUnorderedList" title="Daftar berpoin">• List</button><button type="button" data-cmd="insertOrderedList" title="Daftar bernomor">1. List</button><button type="button" id="insertPhoto" title="Sisipkan foto di paragraf"><i class="fa-regular fa-image"></i> Foto</button><button type="button" id="insertSlide" title="Sisipkan slide foto"><i class="fa-regular fa-images"></i> Slide foto</button></div><div id="field-content" class="rich-editor" contenteditable="true" data-placeholder="Tulis artikel di sini...">${record[name] ?? ""}</div><input type="file" id="inlineImageFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden><small>Gunakan toolbar untuk format teks dan sisipkan foto/slide di posisi kursor.</small></div>` : type === "textarea" ? `<textarea class="form-control" id="field-${name}" name="${name}" rows="6">${esc(record[name] ?? "")}</textarea>` : type === "checkbox" ? `<label class="content-check-label"><input id="field-${name}" type="checkbox" name="${name}" ${record[name] ? "checked" : ""}><span>${label}</span></label>` : `<input class="form-control" id="field-${name}" name="${name}" value="${esc(record[name] ?? "")}" ${name === "slug" ? 'placeholder="Dibuat otomatis dari judul jika kosong"' : ""}>`}</div>`).join("")}</div>
-            <div class="form-group content-upload-field"><label for="imageFile">Unggah gambar <span>(maks. 5 MB)</span></label><input class="form-control" type="file" id="imageFile" accept="image/png,image/jpeg,image/webp,image/gif"><img id="imagePreview" src="${record.image ? Admin.assetUrl(record.image) : ""}" alt="Preview gambar" style="display:${record.image ? "block" : "none"}"></div>
-            <div class="content-form-actions"><button class="btn btn-primary" type="submit"><i class="fa-regular fa-floppy-disk"></i> Simpan Konten</button><button class="btn btn-outline" type="button" id="cancel">Batal</button></div>
-          </form>`;
-        editor.scrollIntoView({behavior:"smooth", block:"start"});
-        const closeForm = () => { editor.hidden = true; };
-        $("#cancel").onclick = closeForm;
-        $("#cancelTop").onclick = closeForm;
-       const rich = $("#field-content");
+      
+function openForm(record = {}) {
+  const defs = fields[kind.value];
 
-if (rich && rich.classList.contains("rich-editor")) {
-          editor.querySelectorAll("[data-cmd]").forEach(btn => btn.onclick = () => { rich.focus(); document.execCommand(btn.dataset.cmd, false, null); });
-          const uploadInline = async (asSlide) => {
-            const input = $("#inlineImageFile"); input.onchange = async () => {
-              const file = input.files[0]; if (!file) return;
-              try {
-                const fd = new FormData(); fd.append("image", file);
-                const uploaded = await Admin.api.post("/content/upload", fd);
-                rich.focus();
-                const url = uploaded.image;
-                const html = asSlide
-                  ? `<figure class="article-slide"><img src="${esc(url)}" alt="${esc(file.name)}"><figcaption>${esc(file.name.replace(/\.[^.]+$/, ""))}</figcaption></figure><p><br></p>`
-                  : `<img src="${esc(url)}" alt="${esc(file.name)}"><p><br></p>`;
-                document.execCommand("insertHTML", false, html);
-                Admin.toast("Foto berhasil disisipkan ke artikel.");
-              } catch (err) { showError(err.message); }
-              input.value = "";
-            }; input.click();
-          };
-          $("#insertPhoto").onclick = () => uploadInline(false);
-          $("#insertSlide").onclick = () => uploadInline(true);
+  editor.hidden = false;
+
+  const toolbarHTML = `
+    <div class="rich-toolbar" role="toolbar">
+      <select data-format title="Format paragraf">
+        <option value="P">Paragraf</option>
+        <option value="H1">Heading 1</option>
+        <option value="H2">Heading 2</option>
+        <option value="H3">Heading 3</option>
+        <option value="BLOCKQUOTE">Kutipan</option>
+      </select>
+
+      <button type="button" data-cmd="bold" title="Tebal"><b>B</b></button>
+      <button type="button" data-cmd="italic" title="Miring"><i>I</i></button>
+      <button type="button" data-cmd="underline" title="Garis bawah"><u>U</u></button>
+
+      <button type="button" data-cmd="insertUnorderedList" title="Bullet">
+        • List
+      </button>
+
+      <button type="button" data-cmd="insertOrderedList" title="List bernomor">
+        1. List
+      </button>
+
+      <button type="button" data-align="left" title="Rata kiri">
+        <i class="fa-solid fa-align-left"></i>
+      </button>
+
+      <button type="button" data-align="center" title="Rata tengah">
+        <i class="fa-solid fa-align-center"></i>
+      </button>
+
+      <button type="button" data-align="right" title="Rata kanan">
+        <i class="fa-solid fa-align-right"></i>
+      </button>
+
+      <button type="button" data-cmd="insertHorizontalRule" title="Garis pemisah">
+        <i class="fa-solid fa-minus"></i>
+      </button>
+
+      <button type="button" data-link title="Tambah link">
+        <i class="fa-solid fa-link"></i>
+      </button>
+
+      ${kind.value === "articles" ? `
+        <button type="button" id="insertPhoto" title="Sisipkan foto">
+          <i class="fa-regular fa-image"></i> Foto
+        </button>
+
+        <button type="button" id="insertSlide" title="Sisipkan slide foto">
+          <i class="fa-regular fa-images"></i> Slide
+        </button>
+      ` : ""}
+    </div>
+  `;
+
+  editor.innerHTML = `
+    <div class="content-editor-heading">
+      <div>
+        <span class="content-eyebrow">FORMULIR KONTEN</span>
+        <h2>${record.id ? "Edit" : "Tambah"} ${labels[kind.value]}</h2>
+        <p>Lengkapi informasi berikut, lalu simpan perubahan.</p>
+      </div>
+      <button class="content-close-btn" type="button" id="cancelTop">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form id="contentForm" class="content-form">
+      <div class="content-form-grid">
+        ${defs.map(([name, label, type]) => `
+          <div class="form-group ${
+            ["textarea", "richtext"].includes(type)
+              ? "content-field-wide"
+              : ""
+          } ${
+            type === "checkbox"
+              ? "content-checkbox-field"
+              : ""
+          }">
+
+            ${
+              type === "checkbox"
+                ? ""
+                : `<label for="field-${name}">${label}</label>`
+            }
+
+            ${
+              type === "richtext"
+                ? `
+                  <div class="rich-editor-wrap">
+                    ${toolbarHTML}
+
+                    <div
+                      id="field-${name}"
+                      class="rich-editor"
+                      contenteditable="true"
+                      data-field="${name}"
+                      data-placeholder="Tulis ${label.toLowerCase()} di sini..."
+                    >${record[name] ?? ""}</div>
+
+                    ${
+                      kind.value === "articles"
+                        ? `
+                          <input
+                            type="file"
+                            id="inlineImageFile"
+                            accept="image/png,image/jpeg,image/webp,image/gif"
+                            hidden
+                          >
+                        `
+                        : ""
+                    }
+
+                    <small>
+                      Gunakan toolbar untuk memformat teks,
+                      membuat paragraf, daftar, heading, dan link.
+                    </small>
+                  </div>
+                `
+                : type === "textarea"
+                  ? `
+                    <textarea
+                      class="form-control"
+                      id="field-${name}"
+                      name="${name}"
+                      rows="6"
+                    >${esc(record[name] ?? "")}</textarea>
+                  `
+                  : type === "checkbox"
+                    ? `
+                      <label class="content-check-label">
+                        <input
+                          id="field-${name}"
+                          type="checkbox"
+                          name="${name}"
+                          ${record[name] ? "checked" : ""}
+                        >
+                        <span>${label}</span>
+                      </label>
+                    `
+                    : `
+                      <input
+                        class="form-control"
+                        id="field-${name}"
+                        name="${name}"
+                        value="${esc(record[name] ?? "")}"
+                        ${
+                          name === "slug"
+                            ? 'placeholder="Dibuat otomatis dari judul jika kosong"'
+                            : ""
+                        }
+                      >
+                    `
+            }
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="form-group content-upload-field">
+        <label for="imageFile">
+          Unggah gambar <span>(maks. 5 MB)</span>
+        </label>
+
+        <input
+          class="form-control"
+          type="file"
+          id="imageFile"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+        >
+
+        <img
+          id="imagePreview"
+          src="${record.image ? Admin.assetUrl(record.image) : ""}"
+          alt="Preview gambar"
+          style="display:${record.image ? "block" : "none"}"
+        >
+      </div>
+
+      <div class="content-form-actions">
+        <button class="btn btn-primary" type="submit">
+          <i class="fa-regular fa-floppy-disk"></i>
+          Simpan Konten
+        </button>
+
+        <button class="btn btn-outline" type="button" id="cancel">
+          Batal
+        </button>
+      </div>
+    </form>
+  `;
+
+  editor.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+  const closeForm = () => {
+    editor.hidden = true;
+  };
+
+  $("#cancel").onclick = closeForm;
+  $("#cancelTop").onclick = closeForm;
+
+  // ===============================
+  // FORMAT TEKS / RICH EDITOR
+  // ===============================
+
+  editor.querySelectorAll(".rich-editor").forEach(rich => {
+    const toolbar = rich.previousElementSibling;
+
+    toolbar.querySelectorAll("[data-cmd]").forEach(btn => {
+      btn.onmousedown = ev => ev.preventDefault();
+
+      btn.onclick = () => {
+        rich.focus();
+        document.execCommand(btn.dataset.cmd, false, null);
+      };
+    });
+
+    toolbar.querySelector("[data-format]").onchange = ev => {
+      rich.focus();
+      document.execCommand(
+        "formatBlock",
+        false,
+        ev.target.value
+      );
+    };
+
+    toolbar.querySelectorAll("[data-align]").forEach(btn => {
+      btn.onmousedown = ev => ev.preventDefault();
+
+      btn.onclick = () => {
+        rich.focus();
+       const commands = {
+  left: "justifyLeft",
+  center: "justifyCenter",
+  right: "justifyRight"
+};
+
+rich.focus();
+
+document.execCommand(
+  commands[btn.dataset.align],
+  false,
+  null
+);
+      };
+    });
+
+    const linkButton = toolbar.querySelector("[data-link]");
+
+    linkButton.onmousedown = ev => ev.preventDefault();
+
+    linkButton.onclick = () => {
+      rich.focus();
+
+      const url = prompt("Masukkan URL link:");
+
+      if (url) {
+        document.execCommand("createLink", false, url);
+      }
+    };
+  });
+
+  // ===============================
+  // FOTO / SLIDE ARTIKEL
+  // ===============================
+
+  const richArticle = $("#field-content");
+  const inlineInput = $("#inlineImageFile");
+
+  if (richArticle && inlineInput) {
+    const uploadInline = async (asSlide) => {
+      inlineInput.onchange = async () => {
+        const file = inlineInput.files[0];
+        if (!file) return;
+
+        try {
+          const fd = new FormData();
+          fd.append("image", file);
+
+          const uploaded = await Admin.api.post(
+            "/content/upload",
+            fd
+          );
+
+          richArticle.focus();
+
+          const url = uploaded.image;
+
+          const html = asSlide
+            ? `
+              <figure class="article-slide">
+                <img src="${esc(url)}" alt="${esc(file.name)}">
+                <figcaption>
+                  ${esc(file.name.replace(/\.[^.]+$/, ""))}
+                </figcaption>
+              </figure>
+              <p><br></p>
+            `
+            : `
+              <img src="${esc(url)}" alt="${esc(file.name)}">
+              <p><br></p>
+            `;
+
+          document.execCommand("insertHTML", false, html);
+
+          Admin.toast("Foto berhasil disisipkan.");
+        } catch (err) {
+          showError(err.message);
         }
-        $("#imageFile").onchange = ev => {
-          const f = ev.target.files[0], p = $("#imagePreview");
-          if (f) { p.src = URL.createObjectURL(f); p.style.display = "block"; }
-        };
-        $("#contentForm").onsubmit = async ev => {
-          ev.preventDefault();
-          const form = ev.currentTarget, data = {};
-          
-const richEditor = form.querySelector(".rich-editor");
 
-for (const [n] of defs) {
-  if (n === "content" && richEditor) {
-    data[n] = richEditor.innerHTML;
-    continue;
+        inlineInput.value = "";
+      };
+
+      inlineInput.click();
+    };
+
+    $("#insertPhoto").onclick = () => uploadInline(false);
+    $("#insertSlide").onclick = () => uploadInline(true);
   }
 
-  const el = form.elements[n];
+  // ===============================
+  // PREVIEW GAMBAR UTAMA
+  // ===============================
 
-  if (!el) continue;
+  $("#imageFile").onchange = ev => {
+    const file = ev.target.files[0];
+    const preview = $("#imagePreview");
 
-  data[n] = el.type === "checkbox"
-    ? el.checked
-    : el.value;
+    if (file) {
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = "block";
+    }
+  };
+
+  // ===============================
+  // SIMPAN KONTEN
+  // ===============================
+
+  $("#contentForm").onsubmit = async ev => {
+    ev.preventDefault();
+
+    const form = ev.currentTarget;
+    const data = {};
+
+    for (const [name] of defs) {
+      const rich = form.querySelector(
+        `.rich-editor[data-field="${name}"]`
+      );
+
+      if (rich) {
+        data[name] = rich.innerHTML;
+        continue;
+      }
+
+      const el = form.elements[name];
+
+      if (!el) continue;
+
+      data[name] = el.type === "checkbox"
+        ? el.checked
+        : el.value;
+    }
+
+    try {
+      const file = $("#imageFile").files[0];
+
+      if (file) {
+        const fd = new FormData();
+        fd.append("image", file);
+
+        const uploaded = await Admin.api.post(
+          "/content/upload",
+          fd
+        );
+
+        data.image = uploaded.image;
+      }
+
+      if (record.id) {
+        await Admin.api.put(
+          `/content/${kind.value}/${record.id}`,
+          data
+        );
+      } else {
+        await Admin.api.post(
+          `/content/${kind.value}`,
+          data
+        );
+      }
+
+      Admin.toast("Konten berhasil disimpan.");
+
+      editor.hidden = true;
+      await load();
+
+    } catch (e) {
+      showError(e.message);
+    }
+  };
 }
 
-          try {
-            const file = $("#imageFile").files[0];
-            if (file) {
-              const fd = new FormData();
-              fd.append("image", file);
-              const uploaded = await Admin.api.post("/content/upload", fd);
-              data.image = uploaded.image;
-            }
-            if (record.id) await Admin.api.put(`/content/${kind.value}/${record.id}`, data);
-            else await Admin.api.post(`/content/${kind.value}`, data);
-            Admin.toast("Konten berhasil disimpan.");
-            editor.hidden = true;
-            await load();
-          } catch (e) { showError(e.message); }
-        };
-      }
 
       $("#add").onclick = () => { if (!["terms_and_conditions","privacy_policies","hero_sections","about_sections"].includes(kind.value)) openForm(); };
       $("#reload").onclick = load;

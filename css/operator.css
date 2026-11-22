@@ -1381,3 +1381,129 @@ body.operator-login-page {
     margin-top: 18px;
   }
 }
+
+
+/* Rich Text Editor untuk seluruh konten website */
+.rich-editor-wrap {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.rich-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  background: #f7eee4;
+  border: 1px solid #e7d8c8;
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+}
+
+.rich-toolbar button,
+.rich-toolbar select {
+  min-width: 36px;
+  padding: 7px 10px;
+  border: 1px solid #ddcbbb;
+  border-radius: 7px;
+  background: #fff;
+  color: #193b2c;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.rich-toolbar button:hover {
+  background: #e9ded0;
+}
+
+.rich-toolbar button.active {
+  background: #193b2c;
+  color: #fff;
+}
+
+.rich-editor {
+  min-height: 260px;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid #ddcbbb;
+  border-radius: 0 0 10px 10px;
+  outline: none;
+  line-height: 1.8;
+  overflow-wrap: break-word;
+}
+
+.rich-editor:focus {
+  border-color: #1d3d2e;
+  box-shadow: 0 0 0 2px #1d3d2e18;
+}
+
+.rich-editor:empty:before {
+  content: attr(data-placeholder);
+  color: #999;
+}
+
+.rich-editor h1 {
+  font-size: 2em;
+  line-height: 1.25;
+}
+
+.rich-editor h2 {
+  font-size: 1.6em;
+  line-height: 1.35;
+}
+
+.rich-editor h3 {
+  font-size: 1.3em;
+  line-height: 1.4;
+}
+
+.rich-editor p {
+  margin: 0 0 1em;
+}
+
+.rich-editor ul,
+.rich-editor ol {
+  padding-left: 28px;
+  margin: 12px 0;
+}
+
+.rich-editor blockquote {
+  border-left: 4px solid #c78a63;
+  margin: 16px 0;
+  padding: 10px 16px;
+  background: #faf3eb;
+}
+
+.rich-editor a {
+  color: #b46f48;
+  text-decoration: underline;
+}
+
+.rich-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+  margin: 18px auto;
+}
+
+.rich-editor figure {
+  margin: 22px 0;
+  padding: 10px;
+  background: #faf1e6;
+  border-radius: 12px;
+}
+
+.rich-editor figure img {
+  width: 100%;
+  max-height: 520px;
+  object-fit: contain;
+  margin: 0;
+}
+
+.rich-editor figcaption {
+  text-align: center;
+  color: #667;
+  font-size: .85rem;
+  padding: 8px;
+}

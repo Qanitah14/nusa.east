@@ -91,11 +91,44 @@ function renderHeader(activePage) {
   `;
   document.body.prepend(header);
 
-  document.getElementById("navToggle").addEventListener("click", (event) => {
-    const nav = document.getElementById("navMain");
-    const open = nav.classList.toggle("open");
-    event.currentTarget.setAttribute("aria-expanded", String(open));
-  });
+  // Overlay sidebar mobile
+const overlay = document.createElement("div");
+overlay.className = "nav-overlay";
+overlay.id = "navOverlay";
+document.body.appendChild(overlay);
+
+const nav = document.getElementById("navMain");
+const toggle = document.getElementById("navToggle");
+
+function closeMenu() {
+  nav.classList.remove("open");
+  overlay.classList.remove("open");
+  document.body.classList.remove("nav-open");
+  toggle.setAttribute("aria-expanded", "false");
+}
+
+function openMenu() {
+  nav.classList.add("open");
+  overlay.classList.add("open");
+  document.body.classList.add("nav-open");
+  toggle.setAttribute("aria-expanded", "true");
+}
+
+toggle.addEventListener("click", () => {
+  nav.classList.contains("open") ? closeMenu() : openMenu();
+});
+
+overlay.addEventListener("click", closeMenu);
+
+// Tutup sidebar setelah menu dipilih
+nav.querySelectorAll("a").forEach(link => {
+  link.addEventListener("click", closeMenu);
+});
+
+// Tutup dengan tombol Escape
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeMenu();
+});
 
   const searchForm = document.getElementById("headerSearchForm");
   const searchInput = document.getElementById("headerSearchInput");

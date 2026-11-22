@@ -1103,25 +1103,94 @@ textarea.form-control {
   }
 }
 @media (max-width: 860px) {
+  /* Sidebar navigation untuk tablet dan mobile */
+@media (max-width: 860px) {
   .nav-main {
     position: fixed;
-    top: 78px;
-    left: 0;
+    top: 0;
     right: 0;
+    left: auto;
     bottom: 0;
+
+    width: min(340px, 85vw);
+    height: 100dvh;
+
     background: var(--color-bg);
     flex-direction: column;
     align-items: flex-start;
-    padding: 30px 24px;
-    gap: 22px;
-    transform: translateX(-100%);
-    transition: transform 0.25s ease;
-    z-index: 99;
+    gap: 24px;
+
+    padding: 100px 28px 32px;
+
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+
+    z-index: 1001;
     overflow-y: auto;
+    box-shadow: -8px 0 30px rgba(0, 0, 0, 0.08);
+    border-left: 1px solid var(--color-border);
   }
+
   .nav-main.open {
     transform: translateX(0);
   }
+
+  .nav-main a {
+    display: block;
+    width: 100%;
+    font-size: 1.05rem;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .nav-toggle {
+    display: block;
+    position: relative;
+    z-index: 1002;
+  }
+
+  .hero .container {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-visual {
+    order: -1;
+    min-height: 300px;
+  }
+
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-methods {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Background ketika sidebar terbuka */
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  z-index: 1000;
+}
+
+.nav-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+body.nav-open {
+  overflow: hidden;
+}
   .nav-main a {
     font-size: 1.1rem;
   }
