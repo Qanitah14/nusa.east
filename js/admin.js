@@ -109,7 +109,17 @@ const Admin = (() => {
   }
 
   /* ---------- Kerangka halaman ---------- */
-  
+  /* ---------- Font Awesome global ---------- */
+function loadFontAwesome() {
+  if (document.querySelector('link[data-fontawesome]')) return;
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css";
+  link.dataset.fontawesome = "true";
+  document.head.appendChild(link);
+}
+
 const NAV = PORTAL.nav || [
     {
       group: "MENU UTAMA",
@@ -168,6 +178,7 @@ const NAV = PORTAL.nav || [
 
   function init(activeKey) {
     if (!getToken() || !getUser() || getUser().role !== PORTAL.role) { sessionStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(USER_KEY); location.replace("login.html"); return false; }
+      loadFontAwesome();
     const user = getUser();
     document.body.classList.add("portal-" + PORTAL.role);
     const app = document.getElementById("adminApp");
