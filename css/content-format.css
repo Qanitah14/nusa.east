@@ -1,0 +1,25 @@
+/* Nusa East shared rich-content typography: article, About, and legal pages */
+.content-body, .legal-content, .public-content {
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--color-primary, #243c32);
+  overflow-wrap: anywhere;
+}
+.content-body p, .legal-content p, .public-content p { margin: 0 0 1.1em; line-height: 1.8; }
+.content-body h1, .legal-content h1, .public-content h1 { font-family: "Fraunces", serif; font-weight: 600; line-height: 1.25; font-size: clamp(28px, 4vw, 40px); margin: 1.35em 0 .65em; }
+.content-body h2, .legal-content h2, .public-content h2 { font-family: "Fraunces", serif; font-weight: 600; line-height: 1.4; font-size: clamp(22px, 3vw, 28px); margin: 1.5em 0 .6em; }
+.content-body h3, .legal-content h3, .public-content h3 { font-family: "Inter", sans-serif; font-size: 18px; font-weight: 700; line-height: 1.5; margin: 1.25em 0 .5em; }
+.content-body strong, .legal-content strong, .public-content strong, .content-body b, .legal-content b, .public-content b { font-weight: 700; }
+.content-body em, .legal-content em, .public-content em, .content-body i, .legal-content i, .public-content i { font-style: italic; }
+.content-body u, .legal-content u, .public-content u { text-decoration: underline; text-underline-offset: 3px; }
+.content-body ul, .legal-content ul, .public-content ul { list-style: disc; padding-left: 1.75em; margin: .75em 0 1.25em; }
+.content-body ol, .legal-content ol, .public-content ol { list-style: decimal; padding-left: 1.75em; margin: .75em 0 1.25em; }
+.content-body li, .legal-content li, .public-content li { margin-bottom: .45em; line-height: 1.8; padding-left: .15em; }
+.content-body blockquote, .legal-content blockquote, .public-content blockquote { margin: 1.5em 0; padding: 1em 1.4em; border-left: 3px solid var(--color-accent, #bd7657); background: var(--color-cream-card, #f8f0e5); border-radius: 0 10px 10px 0; }
+.content-body a, .legal-content a, .public-content a { color: var(--color-accent, #bd7657); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.content-body hr, .legal-content hr, .public-content hr { border: 0; border-top: 1px solid var(--color-border, #e3d6c6); margin: 1.75em 0; }
+.content-body img, .legal-content img, .public-content img { max-width: 100%; height: auto; display: block; margin: 1.5em auto; border-radius: 14px; }
+.content-body figure, .legal-content figure, .public-content figure { margin: 1.5em 0; }
+.content-body figcaption, .legal-content figcaption, .public-content figcaption { font-size: 13px; line-height: 1.6; color: var(--color-muted, #6b7a70); text-align: center; margin-top: .5em; }
+@media (max-width: 600px) { .content-body, .legal-content, .public-content { font-size: 15px; } .content-body h1, .legal-content h1, .public-content h1 { font-size: 28px; } .content-body h2, .legal-content h2, .public-content h2 { font-size: 22px; } .content-body ul, .content-body ol, .legal-content ul, .legal-content ol, .public-content ul, .public-content ol { padding-left: 1.45em; } }
