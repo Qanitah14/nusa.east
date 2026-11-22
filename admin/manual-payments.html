@@ -24,8 +24,11 @@
 </div></main></div>
 <script src="../js/admin.js"></script>
 <script>
-if (Admin.init("payments")) loadPending();
-const listEl=document.getElementById("pendingList");
+const listEl = document.getElementById("pendingList");
+
+if (Admin.init("payments")) {
+  loadPending();
+}
 const apiBase="https://nusa-east-vsxf.vercel.app/api";function esc(v){return Admin.esc(v)}
 function money(v){return Admin.idr(v)}
 function token(){return sessionStorage.getItem("nusaeast_admin_token")||""}
