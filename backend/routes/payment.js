@@ -420,7 +420,17 @@ router.post("/manual/admin/:orderId/review", requireAuth, requireRole(ROLES.SALE
         await client.query(`UPDATE payments SET status=$2,raw_payload=COALESCE(raw_payload,'{}'::jsonb) || $3::jsonb WHERE order_id=$1 AND gateway='manual'`, [orderId, paid ? "paid" : "rejected", JSON.stringify({ reviewed_at: new Date().toISOString(), reviewed_by: req.user.userId, review_note: note || null })]);
         if (paid) {
             await client.query(`UPDATE orders SET payment_status='paid',status='Pembayaran Berhasil' WHERE id=$1`, [orderId]);
-            await client.query(`INSERT INTO project_status_log(order_id,step,note) SELECT $1,'Pembayaran Berhasil',$2 WHERE NOT EXISTS (SELECT 1 FROM project_status_log WHERE order_id=$1 AND step='Pembayaran Berhasil')`, [orderId, "Transfer bank diverifikasi oleh Admin Penjualan."]);
+            await client.query(
+    `INSERT INTO project_status_log(order_id,step,note)
+     SELECT $1::varchar, 'Pembayaran Berhasil', $2::text
+     WHERE NOT EXISTS (
+       SELECT 1
+       FROM project_status_log
+       WHERE order_id = $1::varchar
+         AND step = 'Pembayaran Berhasil'
+     )`,
+    [orderId, "Transfer bank diverifikasi oleh Admin Penjualan."]
+);
         } else {
             await client.query(`UPDATE orders SET payment_status='pending',status='Bukti Transfer Ditolak' WHERE id=$1 AND payment_status <> 'paid'`, [orderId]);
         }
