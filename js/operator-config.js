@@ -32,13 +32,6 @@ nav: [
     group: "PENGELOLAAN"
   },
   {
-    key: "payments",
-    href: "manual-payments.html",
-    label: "Verifikasi Transfer",
-    icon: "fa-money-check-alt",
-    group: "PENGELOLAAN"
-  },
-  {
     key: "accounts",
     href: "accounts.html",
     label: "Manajemen Akun",
