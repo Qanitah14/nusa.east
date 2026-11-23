@@ -358,6 +358,17 @@ p {
   border: 1px solid #1d3b2d;
   transform: translateY(-1px);
 }
+.btn-primary-about{
+  background: #1d3b2d;
+  color: #FAF1E6;
+  border-color: #1d3b2d;
+}
+.btn-primary-about {
+  background: #FAF1E6;
+  color: #1d3b2d;
+  border: 1px solid #1d3b2d;
+  transform: translateY(-1px);
+}
 .btn-primary-login {
   background: #fff;
   color: #1d3b2d;
@@ -3847,4 +3858,55 @@ body:has(#checkoutLayout) .summary-box .btn-primary:hover:not(:disabled) {
   body.nav-open {
     overflow: auto;
   }
+}
+
+/* =========================================
+   ABOUT PAGE — REDUCE EXCESSIVE NEGATIVE SPACE
+========================================= */
+
+/* Mengurangi jarak antar section About */
+.public-content > .section {
+    padding-top: 60px;
+    padding-bottom: 60px;
+}
+
+/* Section statistik */
+.public-content > .section.bg-alt {
+    padding-top: 55px;
+    padding-bottom: 55px;
+}
+
+/* Section CTA terakhir */
+.public-content > .section.text-center {
+    padding-top: 55px;
+    padding-bottom: 65px;
+}
+
+/* Merapikan jarak heading CTA */
+.public-content > .section.text-center h2 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* Mengurangi jarak tombol dari heading */
+.public-content > .section.text-center .btn {
+    margin-top: 20px;
+}
+
+/* Responsive mobile */
+@media (max-width: 768px) {
+    .public-content > .section {
+        padding-top: 40px;
+        padding-bottom: 40px;
+    }
+
+    .public-content > .section.bg-alt {
+        padding-top: 40px;
+        padding-bottom: 40px;
+    }
+
+    .public-content > .section.text-center {
+        padding-top: 40px;
+        padding-bottom: 50px;
+    }
 }
