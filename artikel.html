@@ -125,11 +125,18 @@
           // RINGKASAN ARTIKEL
           const paragraph = document.createElement("p");
 
-          const content = article.content || "";
+          const rawContent = article.content || "";
+          const plainContent = (() => {
+            const temp = document.createElement("div");
+            temp.innerHTML = rawContent;
+            return (temp.textContent || temp.innerText || "")
+              .replace(/\\s+/g, " ")
+              .trim();
+          })();
 
           paragraph.textContent =
-            content.slice(0, 180) +
-            (content.length > 180 ? "…" : "");
+            plainContent.slice(0, 180) +
+            (plainContent.length > 180 ? "…" : "");
 
           paragraph.className = "mt-8";
 
